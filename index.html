@@ -923,7 +923,7 @@ async function loadState(){
       sb.from('denominaciones').select('*')
     ]);
     if(!maq.error) state.maquinas=maq.data.map(m=>({_id:m.id,name:m.nombre,branch:m.sucursal,marca:m.marca||'',tipo:m.tipo,denom:Number(m.denominacion)||0,activa:m.activa!==false}));
-    if(!lec.error) state.lecturas=lec.data.map(l=>({_id:l.id,maqId:l.maquina_id,date:l.fecha,entradaAc:num0(l.entrada_ac),salidaAc:num0(l.salida_ac),cashBox:l.cash_box!=null?Number(l.cash_box):null,difEntrada:num0(l.dif_entrada),difSalida:num0(l.dif_salida),benMonedas:num0(l.ben_monedas),benDinero:num0(l.ben_dinero),ingreso:num0(l.ingreso),sumado:l.sumado===true}));
+    if(!lec.error) state.lecturas=lec.data.map(l=>({_id:l.id,maqId:l.maquina_id,date:l.fecha,entradaAc:num0(l.entrada_ac),salidaAc:num0(l.salida_ac),cashBox:l.cash_box!=null?Number(l.cash_box):null,difEntrada:num0(l.dif_entrada),difSalida:num0(l.dif_salida),benMonedas:num0(l.ben_monedas),benDinero:num0(l.ben_dinero),ingreso:num0(l.ingreso),sumado:l.sumado===true,maestra:l.es_maestra===true}));
     if(!den.error&&den.data.length) state.denoms=den.data.map(d=>Number(d.valor)).sort((a,b)=>a-b);
     else state.denoms=[5,10,25];
     state._machinesReady = !maq.error && !lec.error;
@@ -1793,17 +1793,88 @@ async function saveLectura(){
 
 function renderLecHistory(maqId){
   const m=state.maquinas.find(x=>x._id===maqId);
-  const r=readingsOf(maqId).slice().reverse();
+  const all=readingsOf(maqId); // chronological
+  const firstId=all.length?all[0]._id:null; // only the first reading can be master
+  const r=all.slice().reverse();
   const el=document.getElementById('lecHistory');
   if(!r.length){ el.innerHTML='<div class="empty-hint" style="padding:14px;">Sin lecturas todavía.</div>'; return; }
   el.innerHTML=r.map(l=>{
     const inc=maqIncome(m,l);
     const badge=l.sumado?'<span style="font-size:9.5px;background:#e8f6f0;color:#1f9d6b;font-weight:700;padding:2px 6px;border-radius:5px;margin-left:6px;">EN CUADRE</span>':'';
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #eef2f4;">
-      <div><div style="font-size:13px;font-weight:600;">${fmtDate(l.date)}${badge}</div><div style="font-size:11px;color:var(--muted);">E: ${fmt(l.difEntrada)} · S: ${fmt(l.difSalida)} · Ben: ${fmt(l.benMonedas)} mon.</div></div>
-      <div style="font-size:14px;font-weight:700;color:${inc<0?'var(--red)':'var(--green)'};">RD$${fmt(inc)}</div>
+    const masterBadge=l.maestra?'<span style="font-size:9.5px;background:#fdf0e8;color:#d9822b;font-weight:700;padding:2px 6px;border-radius:5px;margin-left:6px;">🔒 MAESTRA</span>':'';
+    // action buttons
+    let actions='';
+    if(l.maestra){
+      actions=`<button onclick="unlockMaster('${l._id}')" style="border:none;background:#fdf0e8;color:#d9822b;border-radius:7px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">Desbloquear</button>`;
+    } else {
+      let masterBtn='';
+      if(l._id===firstId){ masterBtn=`<button onclick="markMaster('${l._id}')" style="border:1px solid #e6dcf2;background:#fff;color:#6b3fa0;border-radius:7px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">🔒 Marcar maestra</button>`; }
+      actions=`${masterBtn}<button onclick="delLectura('${l._id}')" style="border:1px solid #f5d5d2;background:#fff;color:var(--red);border-radius:7px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">Eliminar</button>`;
+    }
+    return `<div style="padding:12px 0;border-bottom:1px solid #eef2f4;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div><div style="font-size:13px;font-weight:600;">${fmtDate(l.date)}${masterBadge}${badge}</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">E: ${fmt(l.difEntrada)} · S: ${fmt(l.difSalida)} · Ben: ${fmt(l.benMonedas)} mon.</div></div>
+        <div style="font-size:14px;font-weight:700;color:${inc<0?'var(--red)':'var(--green)'};">RD$${fmt(inc)}</div>
+      </div>
+      <div style="display:flex;gap:6px;justify-content:flex-end;">${actions}</div>
     </div>`;
   }).join('');
+}
+
+// Master key (encoded, not plain text)
+const _mk='TmFzaGxhMjAwOQ==';
+function checkMasterKey(){
+  const entry=prompt('Clave maestra para desbloquear:');
+  if(entry===null)return false;
+  try{ if(entry===atob(_mk)) return true; }catch(e){}
+  toast('Clave incorrecta',false);
+  return false;
+}
+
+async function markMaster(id){
+  const l=state.lecturas.find(x=>x._id===id);
+  if(!l)return;
+  if(!confirm('¿Marcar esta lectura como MAESTRA? Quedará bloqueada y solo podrás quitarle el candado con tu clave maestra.'))return;
+  setSyncState('saving');
+  try{
+    await sb.from('lecturas_maquina').update({es_maestra:true}).eq('id',id);
+    l.maestra=true;
+    setSyncState('ok'); toast('Lectura marcada como maestra',true);
+    renderLecHistory(curMaqId);
+  }catch(e){ console.error(e); setSyncState('error'); toast('Error al marcar',false); }
+}
+
+async function unlockMaster(id){
+  if(!checkMasterKey())return;
+  const l=state.lecturas.find(x=>x._id===id);
+  if(!l)return;
+  setSyncState('saving');
+  try{
+    await sb.from('lecturas_maquina').update({es_maestra:false}).eq('id',id);
+    l.maestra=false;
+    setSyncState('ok'); toast('Lectura desbloqueada',true);
+    renderLecHistory(curMaqId);
+  }catch(e){ console.error(e); setSyncState('error'); toast('Error al desbloquear',false); }
+}
+
+async function delLectura(id){
+  const l=state.lecturas.find(x=>x._id===id);
+  if(!l)return;
+  if(l.maestra){ toast('Esta lectura está bloqueada. Desbloquéala primero.',false); return; }
+  if(!confirm('¿Eliminar esta lectura? Si se había sumado al cuadre diario, también se quitará ese ingreso.'))return;
+  setSyncState('saving');
+  try{
+    await sb.from('lecturas_maquina').delete().eq('id',id);
+    // If it was added to the daily cut, remove the matching income movement
+    if(l.sumado){
+      const m=state.maquinas.find(x=>x._id===l.maqId);
+      const match=state.txns.find(t=>t.type==='income'&&t.category==='Máquinas'&&t.branch===(m?m.branch:'')&&t.date===l.date&&Math.abs(t.amount-l.ingreso)<0.01&&t.note===`Máquina ${m?m.name:''}`);
+      if(match){ await cloudDeleteTxn(match.id); state.txns=state.txns.filter(t=>t.id!==match.id); }
+    }
+    state.lecturas=state.lecturas.filter(x=>x._id!==id);
+    setSyncState('ok'); toast('Lectura eliminada',true);
+    renderLecHistory(curMaqId);
+  }catch(e){ console.error(e); setSyncState('error'); toast('Error al eliminar',false); }
 }
 
 function fmtDate(d){ const x=new Date(d+'T00:00:00'); return `${x.getDate()} ${MONTHS_SHORT[x.getMonth()]} ${x.getFullYear()}`; }
