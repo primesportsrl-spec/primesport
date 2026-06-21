@@ -965,8 +965,10 @@ function renderCatBreakdown(txns,totalInc){
   el.innerHTML=entries.map(([cat,amt])=>{
     const idx=state.incCats.findIndex(c=>c.name===cat);
     const color=CAT_COLORS[(idx>=0?idx:0)%CAT_COLORS.length];
-    const pct=totalInc>0?(amt/totalInc*100):0;
-    return `<div class="cat-row"><div class="top"><div class="nm"><span class="cat-dot" style="background:${color}"></span>${cat}</div><div class="amt">RD$${fmt(amt)}</div></div><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div></div>`;
+    let pct=totalInc>0?(amt/totalInc*100):0;
+    if(pct<0)pct=0; if(pct>100)pct=100;
+    const amtColor=amt<0?'var(--red)':'inherit';
+    return `<div class="cat-row"><div class="top"><div class="nm"><span class="cat-dot" style="background:${amt<0?'var(--red)':color}"></span>${cat}</div><div class="amt" style="color:${amtColor}">RD$${fmt(amt)}</div></div><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${amt<0?'var(--red)':color}"></div></div></div>`;
   }).join('');
 }
 
@@ -1086,7 +1088,7 @@ function renderMultiList(){
 }
 function updateMultiTotal(){
   let total=0;
-  document.querySelectorAll('#multiList input').forEach(inp=>{ const v=parseFloat(inp.value); if(v>0)total+=v; });
+  document.querySelectorAll('#multiList input').forEach(inp=>{ const raw=inp.value.trim(); if(raw==='')return; const v=parseFloat(raw); if(!isNaN(v))total+=v; });
   document.getElementById('multiTotal').textContent='RD$'+fmt(total);
 }
 
@@ -1111,7 +1113,7 @@ function saveIncome(){
 
   if(incMode==='single'){
     const amount=parseFloat(document.getElementById('fAmountInc').value);
-    if(!amount||amount<=0){ shake('fAmountInc'); toast('Ingresa un monto válido',false); return; }
+    if(isNaN(amount)||amount===0){ shake('fAmountInc'); toast('Ingresa un monto (positivo o negativo)',false); return; }
     if(!selIncCat){ toast('Selecciona una categoría',false); return; }
     const tx={id:uid(),type:'income',amount,branch,date,note,category:selIncCat,subtype:document.getElementById('fIncSub').value||''};
     state.txns.push(tx); cloudInsertTxn(tx);
@@ -1119,7 +1121,7 @@ function saveIncome(){
   } else {
     const inputs=document.querySelectorAll('#multiList input');
     const batch=[];
-    inputs.forEach(inp=>{ const v=parseFloat(inp.value); if(v>0)batch.push({cat:inp.dataset.cat,amount:v}); });
+    inputs.forEach(inp=>{ const raw=inp.value.trim(); if(raw==='')return; const v=parseFloat(raw); if(!isNaN(v)&&v!==0)batch.push({cat:inp.dataset.cat,amount:v}); });
     if(!batch.length){ toast('Ingresa al menos un monto',false); return; }
     batch.forEach(b=>{ const tx={id:uid(),type:'income',amount:b.amount,branch,date,note,category:b.cat,subtype:''}; state.txns.push(tx); cloudInsertTxn(tx); });
     afterSave(date,`${batch.length} ingresos guardados`);
