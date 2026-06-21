@@ -299,6 +299,17 @@
     </div>
   </div>
 
+  <div onclick="openMaquinas()" style="background:linear-gradient(135deg,#3a2a52,#4a2f6b);border-radius:16px;padding:15px 16px;margin-bottom:16px;display:flex;align-items:center;gap:13px;cursor:pointer;box-shadow:0 4px 16px rgba(74,47,107,.3);">
+    <div style="width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:22px;height:22px;"><rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="9" r="3"/><line x1="9" y1="16" x2="15" y2="16"/></svg>
+    </div>
+    <div style="flex:1;">
+      <div style="color:#fff;font-size:14.5px;font-weight:700;">Máquinas</div>
+      <div style="color:rgba(255,255,255,.78);font-size:11.5px;margin-top:1px;">Ruletas y lecturas de contadores</div>
+    </div>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
+  </div>
+
   <div class="stat-grid">
     <div class="stat">
       <div class="ic blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-5"/></svg></div>
@@ -553,6 +564,93 @@
   </div>
 </section>
 
+<!-- MÁQUINAS -->
+<section class="view" id="view-maquinas">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="go('dash')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Máquinas</div><div style="font-size:12px;color:var(--muted);">Ruletas y lecturas de contadores</div></div>
+    <button onclick="openMaqConfig()" style="border:none;background:#f0eaf7;color:#6b3fa0;border-radius:10px;padding:8px 12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">⚙ Configurar</button>
+  </div>
+
+  <!-- branch selector -->
+  <div class="fld" style="margin-bottom:14px;">
+    <label>Sucursal</label>
+    <select id="maqBranch" onchange="renderMaqList()"></select>
+  </div>
+
+  <div id="maqListWrap"></div>
+</section>
+
+<!-- CONFIGURAR MÁQUINAS -->
+<section class="view" id="view-maqconfig">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+    <button onclick="openMaquinas()" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div><div style="font-size:17px;font-weight:800;">Configurar máquinas</div><div style="font-size:12px;color:var(--muted);">Agregar y administrar</div></div>
+  </div>
+
+  <div class="panel" style="margin-bottom:14px;">
+    <div class="panel-head"><h3>Nueva máquina</h3></div>
+    <div class="fld" style="margin-bottom:10px;"><label>Nombre / número</label><input type="text" id="mqName" placeholder="Ej: PMS-01"></div>
+    <div class="fld" style="margin-bottom:10px;"><label>Sucursal</label><select id="mqBranch"></select></div>
+    <div class="row2" style="margin-bottom:10px;">
+      <div class="fld"><label>Tipo</label><select id="mqType" onchange="onMqTypeChange()">
+        <option value="ruleta">Otra ruleta (ISFA/China)</option>
+        <option value="bergman">Bergman</option>
+        <option value="pog">POG / Pot o Gold</option>
+      </select></div>
+      <div class="fld"><label>Marca <span style="color:var(--muted);font-weight:400;">(opcional)</span></label><input type="text" id="mqMarca" placeholder="ISFA, China…"></div>
+    </div>
+    <div class="fld" id="mqDenomWrap" style="margin-bottom:14px;"><label>Denominación</label>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <select id="mqDenom" style="flex:1;"></select>
+        <button onclick="addDenom()" style="border:1px solid var(--line);background:#fff;border-radius:9px;padding:11px 13px;font-size:13px;cursor:pointer;white-space:nowrap;" title="Agregar otra denominación">+ Otra</button>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="addMaquina()">Agregar máquina</button>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><h3>Máquinas registradas</h3><span class="hint" id="mqCount"></span></div>
+    <div id="mqConfigList"></div>
+  </div>
+</section>
+
+<!-- REGISTRAR LECTURA (modal-like view) -->
+<section class="view" id="view-maqlectura">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+    <button onclick="openMaquinas()" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div><div style="font-size:17px;font-weight:800;" id="lecMaqName">Lectura</div><div style="font-size:12px;color:var(--muted);" id="lecMaqMeta">—</div></div>
+  </div>
+
+  <div id="lecPrevBox" class="panel" style="margin-bottom:14px;background:#f7f4fb;border-color:#e6dcf2;">
+    <div style="font-size:11.5px;font-weight:700;color:#6b3fa0;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Lectura anterior</div>
+    <div id="lecPrevContent" style="font-size:13px;color:var(--ink);line-height:1.7;"></div>
+  </div>
+
+  <div class="panel">
+    <div class="fld" style="margin-bottom:12px;"><label>Fecha de la lectura</label><input type="date" id="lecDate"></div>
+    <div class="fld" style="margin-bottom:12px;"><label>Entrada (contador acumulado)</label><div class="amount-input"><span class="cur" style="font-size:12px;">AC</span><input type="number" inputmode="decimal" id="lecEntrada" placeholder="0" oninput="calcLectura()" style="padding-left:40px;"></div></div>
+    <div class="fld" style="margin-bottom:12px;"><label>Salida (contador acumulado)</label><div class="amount-input"><span class="cur" style="font-size:12px;">AC</span><input type="number" inputmode="decimal" id="lecSalida" placeholder="0" oninput="calcLectura()" style="padding-left:40px;"></div></div>
+    <div class="fld" id="lecCashWrap" style="margin-bottom:12px;display:none;"><label>Cash Box (en pesos, leído de la máquina)</label><div class="amount-input"><span class="cur">RD$</span><input type="number" inputmode="decimal" id="lecCash" placeholder="0.00" oninput="calcLectura()"></div></div>
+
+    <div id="lecCalc" style="background:#0e1620;border-radius:12px;padding:14px;margin-bottom:14px;display:none;">
+      <div style="font-size:11px;color:#7d909e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:700;">Cálculo del período</div>
+      <div id="lecCalcRows" style="font-size:13px;color:#cdd9e1;line-height:1.9;"></div>
+      <div style="border-top:1px solid #283947;margin-top:10px;padding-top:10px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="color:#9fb1bd;font-size:13px;font-weight:600;">Ingreso a la banca</span>
+        <span id="lecIngreso" style="color:#4cd6a0;font-size:20px;font-weight:800;">RD$0</span>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="saveLectura()">Guardar lectura</button>
+  </div>
+
+  <div class="panel" style="margin-top:14px;">
+    <div class="panel-head"><h3>Historial de lecturas</h3></div>
+    <div id="lecHistory"></div>
+  </div>
+</section>
+
 <!-- CÓMO USAR -->
 <section class="view" id="view-help">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
@@ -742,7 +840,7 @@ const DEFAULTS={
   expCats:['Local / Alquiler','Energía eléctrica','Nómina / Personal','Internet y teléfono','Mantenimiento','Suministros','Impuestos / DGII','Transporte','Publicidad','Otros gastos']
 };
 
-let state={txns:[],branches:[],incCats:[],expCats:[],officeIncCats:[]};
+let state={txns:[],branches:[],incCats:[],expCats:[],officeIncCats:[],maquinas:[],lecturas:[],denoms:[]};
 let curType='income', incMode='single', outMode='withdraw';
 let selIncCat=null;
 let curMonth=new Date().getMonth(), curYear=new Date().getFullYear(), modalYr=curYear;
@@ -806,7 +904,21 @@ async function loadState(){
     const {data}=await sb.from('sucursales').insert({nombre:'Administración / Oficina',fondo_inicial:0,es_oficina:true}).select();
     if(data&&data[0]) state.branches.push({name:data[0].nombre,fund:0,isOffice:true,_id:data[0].id});
   }
+  // Machines tables (may not exist yet if SQL not run — load resiliently)
+  try{
+    const [maq,lec,den]=await Promise.all([
+      sb.from('maquinas').select('*').order('creado'),
+      sb.from('lecturas_maquina').select('*').order('fecha'),
+      sb.from('denominaciones').select('*')
+    ]);
+    if(!maq.error) state.maquinas=maq.data.map(m=>({_id:m.id,name:m.nombre,branch:m.sucursal,marca:m.marca||'',tipo:m.tipo,denom:Number(m.denominacion)||0,activa:m.activa!==false}));
+    if(!lec.error) state.lecturas=lec.data.map(l=>({_id:l.id,maqId:l.maquina_id,date:l.fecha,entradaAc:num0(l.entrada_ac),salidaAc:num0(l.salida_ac),cashBox:l.cash_box!=null?Number(l.cash_box):null,difEntrada:num0(l.dif_entrada),difSalida:num0(l.dif_salida),benMonedas:num0(l.ben_monedas),benDinero:num0(l.ben_dinero),ingreso:num0(l.ingreso)}));
+    if(!den.error&&den.data.length) state.denoms=den.data.map(d=>Number(d.valor)).sort((a,b)=>a-b);
+    else state.denoms=[5,10,25];
+    state._machinesReady = !maq.error && !lec.error;
+  }catch(e){ console.warn('Machines tables not available yet',e); state.maquinas=[]; state.lecturas=[]; state.denoms=[5,10,25]; state._machinesReady=false; }
 }
+function num0(v){ return v!=null?Number(v):0; }
 
 // saveState is kept for API compatibility, but cloud sync happens via specific
 // operations below. We use it as a light debounced "sync branches & categories".
@@ -1412,6 +1524,270 @@ function recordCollect(branch,date,cuadre,moved){
   const tx={ id:uid(), type:'collect', branch, office, date, cuadre, moved, note:'' };
   state.txns.push(tx); cloudInsertTxn(tx);
 }
+
+/* ================= MÁQUINAS ================= */
+const MAQ_TYPES={ruleta:'Otra ruleta',bergman:'Bergman',pog:'POG / Pot o Gold'};
+
+function showOnlyView(id){
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('nav.tabbar button').forEach(b=>b.classList.remove('active'));
+  window.scrollTo(0,0);
+}
+
+function openMaquinas(){
+  if(!state._machinesReady){
+    showOnlyView('view-maquinas');
+    document.getElementById('maqListWrap').innerHTML='<div class="panel" style="padding:20px;text-align:center;"><div style="font-size:14px;color:var(--ink);line-height:1.6;">El módulo de máquinas necesita activarse en la base de datos primero.<br><br>Falta crear las tablas en Supabase (pegar el código SQL que te entregué).</div></div>';
+    fillBranchSelect('maqBranch');
+    return;
+  }
+  showOnlyView('view-maquinas');
+  fillBranchSelect('maqBranch');
+  renderMaqList();
+}
+
+function fillBranchSelect(id){
+  const sel=document.getElementById(id);
+  if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML=state.branches.filter(b=>!b.isOffice).map(b=>`<option>${b.name}</option>`).join('');
+  if(cur)sel.value=cur;
+}
+
+// ---- machine math ----
+function denomOf(maqId){ const m=state.maquinas.find(x=>x._id===maqId); return m?m.denom:0; }
+function readingsOf(maqId){ return state.lecturas.filter(l=>l.maqId===maqId).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:(a._id<b._id?-1:1)); }
+function lastReading(maqId){ const r=readingsOf(maqId); return r.length?r[r.length-1]:null; }
+
+function maqIncome(maq, reading){
+  // returns the income (RD$) a reading contributes for a machine
+  if(maq.tipo==='bergman') return reading.cashBox!=null?reading.cashBox:0;
+  return reading.benDinero||0; // ruleta/others
+}
+
+function renderMaqList(){
+  const branch=document.getElementById('maqBranch').value;
+  const list=state.maquinas.filter(m=>m.branch===branch);
+  const wrap=document.getElementById('maqListWrap');
+  if(!list.length){
+    wrap.innerHTML=`<div class="empty-hint" style="padding:30px 16px;">Esta banca no tiene máquinas configuradas.<br>Toca <b>⚙ Configurar</b> arriba para agregar.</div>`;
+    return;
+  }
+  wrap.innerHTML=list.map(m=>{
+    const last=lastReading(m._id);
+    const lastIncome=last?maqIncome(m,last):0;
+    const typeColor=m.tipo==='bergman'?'#d9822b':m.tipo==='pog'?'#16a8d4':'#6b3fa0';
+    const typeLabel=MAQ_TYPES[m.tipo];
+    return `<div class="panel" style="padding:14px;margin-bottom:11px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+        <div>
+          <div style="font-size:15px;font-weight:700;">${m.name}</div>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:2px;"><span style="color:${typeColor};font-weight:700;">${typeLabel}</span>${m.marca?' · '+m.marca:''}${m.tipo!=='pog'?' · Denom. '+m.denom:''}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:600;">Último ingreso</div>
+          <div style="font-size:15px;font-weight:800;color:${lastIncome<0?'var(--red)':'var(--green)'};">RD$${fmt(lastIncome)}</div>
+        </div>
+      </div>
+      ${m.tipo==='pog'
+        ? `<div style="font-size:11.5px;color:var(--muted);background:#f4f6f7;border-radius:8px;padding:8px 10px;">POG: su ingreso se registra en el cuadre general (botón + → Ingreso → Máquinas → POG).</div>`
+        : `<div style="display:flex;gap:8px;">
+            <button onclick="openLectura('${m._id}')" style="flex:1;border:none;background:var(--navy);color:#fff;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">+ Registrar lectura</button>
+          </div>`}
+    </div>`;
+  }).join('');
+}
+
+// ---- config screen ----
+function openMaqConfig(){
+  showOnlyView('view-maqconfig');
+  fillBranchSelect('mqBranch');
+  onMqTypeChange();
+  fillDenoms();
+  renderMqConfigList();
+}
+function onMqTypeChange(){
+  const t=document.getElementById('mqType').value;
+  document.getElementById('mqDenomWrap').style.display=(t==='pog')?'none':'block';
+}
+function fillDenoms(){
+  const sel=document.getElementById('mqDenom');
+  const cur=sel.value;
+  sel.innerHTML=state.denoms.map(d=>`<option value="${d}">${d}</option>`).join('');
+  if(cur)sel.value=cur;
+}
+async function addDenom(){
+  const v=prompt('Nueva denominación (solo el número, ej: 1, 50):');
+  if(v===null)return;
+  const n=parseFloat(v);
+  if(isNaN(n)||n<=0){ toast('Denominación inválida',false); return; }
+  if(state.denoms.includes(n)){ toast('Esa denominación ya existe',false); fillDenoms(); document.getElementById('mqDenom').value=n; return; }
+  state.denoms.push(n); state.denoms.sort((a,b)=>a-b);
+  fillDenoms(); document.getElementById('mqDenom').value=n;
+  try{ await sb.from('denominaciones').insert({valor:n}); }catch(e){ console.error(e); }
+}
+async function addMaquina(){
+  const name=document.getElementById('mqName').value.trim();
+  const branch=document.getElementById('mqBranch').value;
+  const tipo=document.getElementById('mqType').value;
+  const marca=document.getElementById('mqMarca').value.trim();
+  const denom=tipo==='pog'?0:parseFloat(document.getElementById('mqDenom').value)||0;
+  if(!name){ toast('Escribe el nombre de la máquina',false); return; }
+  if(!branch){ toast('Selecciona la sucursal',false); return; }
+  setSyncState('saving');
+  try{
+    const {data,error}=await sb.from('maquinas').insert({nombre:name,sucursal:branch,marca:marca||null,tipo,denominacion:denom,activa:true}).select();
+    if(error)throw error;
+    if(data&&data[0]) state.maquinas.push({_id:data[0].id,name,branch,marca,tipo,denom,activa:true});
+    document.getElementById('mqName').value='';
+    document.getElementById('mqMarca').value='';
+    setSyncState('ok'); toast('Máquina agregada',true);
+    renderMqConfigList();
+  }catch(e){ console.error(e); setSyncState('error'); toast('Error al guardar la máquina',false); }
+}
+function renderMqConfigList(){
+  const el=document.getElementById('mqConfigList');
+  document.getElementById('mqCount').textContent=state.maquinas.length+' máquinas';
+  if(!state.maquinas.length){ el.innerHTML='<div class="empty-hint" style="padding:16px;">Sin máquinas todavía.</div>'; return; }
+  // group by branch
+  const byBranch={};
+  state.maquinas.forEach(m=>{ (byBranch[m.branch]=byBranch[m.branch]||[]).push(m); });
+  el.innerHTML=Object.entries(byBranch).map(([br,list])=>`
+    <div style="margin-bottom:12px;">
+      <div style="font-size:12px;font-weight:700;color:var(--cerulean);margin-bottom:6px;">${br.replace('PRIME SPORT','PS')}</div>
+      ${list.map(m=>`<div class="el-item"><span class="el-dot" style="background:${m.tipo==='bergman'?'#d9822b':m.tipo==='pog'?'#16a8d4':'#6b3fa0'}"></span><span class="el-name">${m.name} <span style="color:var(--muted);font-size:11px;">${MAQ_TYPES[m.tipo]}${m.tipo!=='pog'?' · '+m.denom:''}</span></span><span class="el-del" onclick="delMaquina('${m._id}')">×</span></div>`).join('')}
+    </div>`).join('');
+}
+async function delMaquina(id){
+  const m=state.maquinas.find(x=>x._id===id);
+  if(!m)return;
+  if(!confirm(`¿Eliminar la máquina "${m.name}"? Se borrarán también sus lecturas.`))return;
+  setSyncState('saving');
+  try{
+    await sb.from('maquinas').delete().eq('id',id);
+    state.maquinas=state.maquinas.filter(x=>x._id!==id);
+    state.lecturas=state.lecturas.filter(l=>l.maqId!==id);
+    setSyncState('ok'); toast('Máquina eliminada',true);
+    renderMqConfigList();
+  }catch(e){ console.error(e); setSyncState('error'); }
+}
+
+// ---- reading screen ----
+let curMaqId=null;
+function openLectura(maqId){
+  curMaqId=maqId;
+  const m=state.maquinas.find(x=>x._id===maqId);
+  if(!m)return;
+  showOnlyView('view-maqlectura');
+  document.getElementById('lecMaqName').textContent=m.name;
+  document.getElementById('lecMaqMeta').textContent=`${m.branch.replace('PRIME SPORT','PS')} · ${MAQ_TYPES[m.tipo]}${m.tipo!=='pog'?' · Denom. '+m.denom:''}`;
+  // cash box only for bergman
+  document.getElementById('lecCashWrap').style.display=(m.tipo==='bergman')?'block':'none';
+  // previous reading
+  const last=lastReading(maqId);
+  const prevBox=document.getElementById('lecPrevContent');
+  if(last){
+    prevBox.innerHTML=`Fecha: <b>${fmtDate(last.date)}</b><br>Entrada AC: <b>${fmt(last.entradaAc)}</b> · Salida AC: <b>${fmt(last.salidaAc)}</b>`;
+    document.getElementById('lecPrevBox').style.display='block';
+  } else {
+    prevBox.innerHTML='No hay lectura previa. Esta será la <b>primera</b>; el período se contará desde 0 (o registra la lectura inicial y luego la siguiente).';
+    document.getElementById('lecPrevBox').style.display='block';
+  }
+  // reset inputs
+  document.getElementById('lecDate').value=new Date().toISOString().slice(0,10);
+  document.getElementById('lecEntrada').value='';
+  document.getElementById('lecSalida').value='';
+  document.getElementById('lecCash').value='';
+  document.getElementById('lecCalc').style.display='none';
+  renderLecHistory(maqId);
+}
+
+function calcLectura(){
+  const m=state.maquinas.find(x=>x._id===curMaqId);
+  if(!m)return;
+  const last=lastReading(curMaqId);
+  const prevE=last?last.entradaAc:0;
+  const prevS=last?last.salidaAc:0;
+  const eAc=parseFloat(document.getElementById('lecEntrada').value);
+  const sAc=parseFloat(document.getElementById('lecSalida').value);
+  if(isNaN(eAc)&&isNaN(sAc)){ document.getElementById('lecCalc').style.display='none'; return; }
+  const difE=(isNaN(eAc)?prevE:eAc)-prevE;
+  const difS=(isNaN(sAc)?prevS:sAc)-prevS;
+  const benMon=difE-difS;
+  const benDin=benMon*m.denom;
+  let ingreso, rows='';
+  rows+=`<div style="display:flex;justify-content:space-between;"><span>Entrada del período</span><span style="color:#fff;font-weight:600;">${fmt(difE)} mon.</span></div>`;
+  rows+=`<div style="display:flex;justify-content:space-between;"><span>Salida del período</span><span style="color:#fff;font-weight:600;">${fmt(difS)} mon.</span></div>`;
+  rows+=`<div style="display:flex;justify-content:space-between;"><span>Beneficio en monedas</span><span style="color:#fff;font-weight:600;">${fmt(benMon)} mon.</span></div>`;
+  if(m.tipo==='bergman'){
+    const cash=parseFloat(document.getElementById('lecCash').value);
+    ingreso=isNaN(cash)?0:cash;
+    rows+=`<div style="display:flex;justify-content:space-between;"><span>BEN $$$ (informativo)</span><span style="color:#9fb1bd;">RD$${fmt(benDin)}</span></div>`;
+    rows+=`<div style="display:flex;justify-content:space-between;"><span>Cash Box (leído)</span><span style="color:#4cd6a0;font-weight:700;">RD$${fmt(ingreso)}</span></div>`;
+  } else {
+    ingreso=benDin;
+    rows+=`<div style="display:flex;justify-content:space-between;"><span>BEN $$$ (× ${m.denom})</span><span style="color:#4cd6a0;font-weight:700;">RD$${fmt(benDin)}</span></div>`;
+  }
+  document.getElementById('lecCalcRows').innerHTML=rows;
+  document.getElementById('lecIngreso').textContent='RD$'+fmt(ingreso);
+  document.getElementById('lecIngreso').style.color=ingreso<0?'#f08980':'#4cd6a0';
+  document.getElementById('lecCalc').style.display='block';
+}
+
+async function saveLectura(){
+  const m=state.maquinas.find(x=>x._id===curMaqId);
+  if(!m)return;
+  const date=document.getElementById('lecDate').value;
+  if(!date){ toast('Selecciona la fecha',false); return; }
+  const last=lastReading(curMaqId);
+  const prevE=last?last.entradaAc:0;
+  const prevS=last?last.salidaAc:0;
+  const eAc=parseFloat(document.getElementById('lecEntrada').value);
+  const sAc=parseFloat(document.getElementById('lecSalida').value);
+  if(isNaN(eAc)||isNaN(sAc)){ toast('Ingresa los contadores de entrada y salida',false); return; }
+  const difE=eAc-prevE, difS=sAc-prevS;
+  const benMon=difE-difS;
+  const benDin=benMon*m.denom;
+  let cashBox=null, ingreso;
+  if(m.tipo==='bergman'){
+    const cash=parseFloat(document.getElementById('lecCash').value);
+    if(isNaN(cash)){ toast('Ingresa el Cash Box (en pesos)',false); return; }
+    cashBox=cash; ingreso=cash;
+  } else { ingreso=benDin; }
+
+  setSyncState('saving');
+  try{
+    const row={maquina_id:curMaqId,fecha:date,entrada_ac:eAc,salida_ac:sAc,cash_box:cashBox,dif_entrada:difE,dif_salida:difS,ben_monedas:benMon,ben_dinero:benDin,ingreso,creado_por:currentUser||null};
+    const {data,error}=await sb.from('lecturas_maquina').insert(row).select();
+    if(error)throw error;
+    const newLec={_id:data&&data[0]?data[0].id:uid(),maqId:curMaqId,date,entradaAc:eAc,salidaAc:sAc,cashBox,difEntrada:difE,difSalida:difS,benMonedas:benMon,benDinero:benDin,ingreso};
+    state.lecturas.push(newLec);
+
+    // Also create an income movement for the branch (category Máquinas) so it integrates
+    const tx={id:uid(),type:'income',amount:ingreso,branch:m.branch,date,note:`Máquina ${m.name}`,category:'Máquinas',subtype:m.name};
+    state.txns.push(tx); cloudInsertTxn(tx);
+
+    setSyncState('ok'); toast('Lectura guardada e ingreso registrado',true);
+    openLectura(curMaqId); // refresh
+  }catch(e){ console.error(e); setSyncState('error'); toast('Error al guardar la lectura',false); }
+}
+
+function renderLecHistory(maqId){
+  const m=state.maquinas.find(x=>x._id===maqId);
+  const r=readingsOf(maqId).slice().reverse();
+  const el=document.getElementById('lecHistory');
+  if(!r.length){ el.innerHTML='<div class="empty-hint" style="padding:14px;">Sin lecturas todavía.</div>'; return; }
+  el.innerHTML=r.map(l=>{
+    const inc=maqIncome(m,l);
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #eef2f4;">
+      <div><div style="font-size:13px;font-weight:600;">${fmtDate(l.date)}</div><div style="font-size:11px;color:var(--muted);">E: ${fmt(l.difEntrada)} · S: ${fmt(l.difSalida)} · Ben: ${fmt(l.benMonedas)} mon.</div></div>
+      <div style="font-size:14px;font-weight:700;color:${inc<0?'var(--red)':'var(--green)'};">RD$${fmt(inc)}</div>
+    </div>`;
+  }).join('');
+}
+
+function fmtDate(d){ const x=new Date(d+'T00:00:00'); return `${x.getDate()} ${MONTHS_SHORT[x.getMonth()]} ${x.getFullYear()}`; }
 
 /* ================= CÓMO USAR ================= */
 function openHelp(){
