@@ -532,10 +532,16 @@
   </div>
 
   <!-- closed-day banner -->
-  <div id="corteClosedBanner" style="display:none;background:linear-gradient(135deg,#1a2733,#22323f);border-radius:14px;padding:14px 16px;margin-bottom:14px;align-items:center;gap:12px;">
-    <svg viewBox="0 0 24 24" fill="none" stroke="#f0b46a" stroke-width="2" style="width:24px;height:24px;flex-shrink:0;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-    <div style="flex:1;color:#fff;"><div style="font-size:13.5px;font-weight:700;">Corte cerrado</div><div style="font-size:11.5px;color:#9fb1bd;margin-top:1px;">Los movimientos de este día están bloqueados.</div></div>
-    <button onclick="reopenCorte()" style="border:1px solid #f0b46a;background:transparent;color:#f0b46a;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Reabrir</button>
+  <div id="corteClosedBanner" style="display:none;background:linear-gradient(135deg,#1a2733,#22323f);border-radius:14px;padding:14px 16px;margin-bottom:14px;flex-direction:column;gap:12px;">
+    <div style="display:flex;align-items:center;gap:12px;width:100%;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#f0b46a" stroke-width="2" style="width:24px;height:24px;flex-shrink:0;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      <div style="flex:1;color:#fff;"><div style="font-size:13.5px;font-weight:700;">Corte cerrado</div><div style="font-size:11.5px;color:#9fb1bd;margin-top:1px;">Los movimientos de este día están bloqueados.</div></div>
+      <button onclick="reopenCorte()" style="border:1px solid #f0b46a;background:transparent;color:#f0b46a;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Reabrir</button>
+    </div>
+    <button onclick="sendCorteWhatsApp()" style="width:100%;border:none;background:#25D366;color:#fff;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;">
+      <svg viewBox="0 0 24 24" fill="#fff" style="width:18px;height:18px;"><path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.4-.1-.6.1-.2.3-.7.9-.8 1-.1.2-.3.2-.5.1-.7-.3-1.4-.7-2-1.3-.5-.5-.9-1.1-1.3-1.7-.1-.2 0-.4.1-.5.1-.1.2-.3.4-.4.1-.1.2-.2.2-.4.1-.1 0-.3 0-.4-.1-.1-.6-1.4-.8-1.9-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.7.6-1 1.5-1 2.4.1 1.1.5 2.1 1.2 3 1.3 1.9 3 3.4 5.1 4.2.5.2 1 .4 1.6.5.5.1 1 .1 1.5 0 .6-.1 1.6-.7 1.8-1.3.2-.5.2-1 .1-1.1-.1-.2-.2-.2-.5-.3M12 21.9c-1.7 0-3.4-.5-4.9-1.3l-.4-.2-3.6.9 1-3.5-.2-.4c-2.6-4.3-1.3-9.8 2.9-12.4S16.9 3.8 19.5 8s1.3 9.8-2.9 12.4c-1.4.9-3 1.4-4.6 1.5m0-20C6.5 1.9 2 6.4 2 11.9c0 1.8.5 3.5 1.4 5L2 22l5.3-1.4c4.8 2.6 10.8.8 13.4-4s.8-10.8-4-13.4c-1.4-.8-3.1-1.3-4.7-1.3z"/></svg>
+      Enviar resumen por WhatsApp
+    </button>
   </div>
 
   <div class="panel" style="padding:16px 14px;margin-bottom:14px;" id="corteActionsPanel">
@@ -1679,7 +1685,39 @@ async function closeCorte(){
     setSyncState('ok');
     toast('Corte cerrado y bloqueado',true);
     renderCorte();
+    // offer to send the summary right away
+    setTimeout(()=>{ if(confirm('¿Enviar el resumen del cierre por WhatsApp ahora?')) sendCorteWhatsApp(); }, 300);
   }catch(e){ console.error(e); setSyncState('error'); toast('Error al cerrar el corte',false); }
+}
+
+// Build the closing summary text and open WhatsApp to the default number
+const CORTE_WA_NUMBER='18097134190'; // número fijo por defecto
+function buildCorteSummary(){
+  const d=new Date(corteDateVal+'T00:00:00');
+  const officeBal=liveFund(officeName());
+  const banks=state.branches.filter(b=>!b.isOffice);
+  const pend=banks.map(b=>({name:b.name,p:bankPending(b.name)})).filter(x=>Math.abs(x.p)>=1);
+  const pendTotal=banks.reduce((s,b)=>s+bankPending(b.name),0);
+  let txt=`*PRIME SPORT — Cierre del ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}*\n\n`;
+  txt+=`💼 Balance en Oficina: RD$${fmt(officeBal)}\n`;
+  txt+=`⏳ Pendientes en bancas: RD$${fmt(pendTotal)}\n`;
+  if(pend.length){
+    txt+=`\n*Detalle de pendientes:*\n`;
+    pend.forEach(x=>{
+      const name=x.name.replace('PRIME SPORT','PS');
+      if(x.p>0) txt+=`• ${name} debe a oficina: RD$${fmt(x.p)}\n`;
+      else txt+=`• Oficina debe a ${name}: RD$${fmt(Math.abs(x.p))}\n`;
+    });
+  } else {
+    txt+=`\n✅ Sin pendientes.\n`;
+  }
+  if(currentUser) txt+=`\nCerrado por: ${currentUser}`;
+  return txt;
+}
+function sendCorteWhatsApp(){
+  const txt=buildCorteSummary();
+  const url=`https://wa.me/${CORTE_WA_NUMBER}?text=${encodeURIComponent(txt)}`;
+  window.open(url,'_blank');
 }
 
 async function reopenCorte(){
