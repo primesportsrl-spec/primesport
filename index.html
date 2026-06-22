@@ -531,11 +531,19 @@
     <input type="date" id="corteDate" onchange="renderCorte()">
   </div>
 
-  <div class="panel" style="padding:16px 14px;margin-bottom:14px;">
+  <!-- closed-day banner -->
+  <div id="corteClosedBanner" style="display:none;background:linear-gradient(135deg,#1a2733,#22323f);border-radius:14px;padding:14px 16px;margin-bottom:14px;align-items:center;gap:12px;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#f0b46a" stroke-width="2" style="width:24px;height:24px;flex-shrink:0;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+    <div style="flex:1;color:#fff;"><div style="font-size:13.5px;font-weight:700;">Corte cerrado</div><div style="font-size:11.5px;color:#9fb1bd;margin-top:1px;">Los movimientos de este día están bloqueados.</div></div>
+    <button onclick="reopenCorte()" style="border:1px solid #f0b46a;background:transparent;color:#f0b46a;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Reabrir</button>
+  </div>
+
+  <div class="panel" style="padding:16px 14px;margin-bottom:14px;" id="corteActionsPanel">
     <div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:12px;">El <b>cuadre</b> es lo que cada banca debería entregar (positivo) o recibir (negativo) ese día. Registra lo que el mensajero <b>movió de verdad</b>; lo que falte queda como <b>pendiente</b> y se arrastra.</div>
-    <button onclick="collectAll()" style="width:100%;border:none;border-radius:12px;padding:14px;font-size:14.5px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,var(--green),#27b87f);box-shadow:0 4px 12px rgba(31,157,107,.3);">
+    <button onclick="collectAll()" style="width:100%;border:none;border-radius:12px;padding:14px;font-size:14.5px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,var(--green),#27b87f);box-shadow:0 4px 12px rgba(31,157,107,.3);margin-bottom:10px;">
       ⚡ Recolectar todo (cuadre completo → Oficina)
     </button>
+    <button onclick="closeCorte()" style="width:100%;border:1px solid var(--navy);background:#fff;border-radius:12px;padding:13px;font-size:13.5px;font-weight:700;color:var(--navy);cursor:pointer;font-family:inherit;">🔒 Cerrar corte del día</button>
   </div>
 
   <div id="corteList"></div>
@@ -877,7 +885,7 @@ const DEFAULTS={
   expCats:['Local / Alquiler','Energía eléctrica','Nómina / Personal','Internet y teléfono','Mantenimiento','Suministros','Impuestos / DGII','Transporte','Publicidad','Otros gastos']
 };
 
-let state={txns:[],branches:[],incCats:[],expCats:[],officeIncCats:[],maquinas:[],lecturas:[],denoms:[]};
+let state={txns:[],branches:[],incCats:[],expCats:[],officeIncCats:[],maquinas:[],lecturas:[],denoms:[],cierres:[]};
 let curType='income', incMode='single', outMode='withdraw';
 let selIncCat=null;
 let curMonth=new Date().getMonth(), curYear=new Date().getFullYear(), modalYr=curYear;
@@ -957,8 +965,15 @@ async function loadState(){
     else state.denoms=[5,10,25];
     state._machinesReady = !maq.error && !lec.error;
   }catch(e){ console.warn('Machines tables not available yet',e); state.maquinas=[]; state.lecturas=[]; state.denoms=[5,10,25]; state._machinesReady=false; }
+  // Closed days (cierres) — resilient
+  try{
+    const c=await sb.from('cierres_dia').select('*');
+    if(!c.error){ state.cierres=c.data.map(x=>x.fecha); state._cierresReady=true; }
+    else { state.cierres=[]; state._cierresReady=false; }
+  }catch(e){ state.cierres=[]; state._cierresReady=false; }
 }
 function num0(v){ return v!=null?Number(v):0; }
+function isDayClosed(date){ return Array.isArray(state.cierres)&&state.cierres.includes(date); }
 
 // saveState is kept for API compatibility, but cloud sync happens via specific
 // operations below. We use it as a light debounced "sync branches & categories".
@@ -1262,6 +1277,7 @@ function saveIncome(){
   const branch=document.getElementById('fBranchInc').value;
   const date=document.getElementById('fDateInc').value||new Date().toISOString().slice(0,10);
   const note=document.getElementById('fNoteInc').value.trim();
+  if(isDayClosed(date)){ toast('El corte de ese día está cerrado. Reábrelo para registrar.',false); return; }
 
   if(incMode==='single'){
     const amount=parseFloat(document.getElementById('fAmountInc').value);
@@ -1287,6 +1303,7 @@ function saveExpense(){
   const branch=document.getElementById('fBranchExp').value;
   const date=document.getElementById('fDateExp').value||new Date().toISOString().slice(0,10);
   const note=document.getElementById('fNoteExp').value.trim();
+  if(isDayClosed(date)){ toast('El corte de ese día está cerrado. Reábrelo para registrar.',false); return; }
   const hasNcf=document.getElementById('fHasNcf').checked;
   const tx={id:uid(),type:'expense',amount,branch,date,note,category:document.getElementById('fExpCat').value,hasNcf,ncf:hasNcf?document.getElementById('fNcf').value.trim().toUpperCase():''};
   state.txns.push(tx); cloudInsertTxn(tx);
@@ -1300,6 +1317,7 @@ function saveOut(){
   const branch=document.getElementById('fBranchOut').value;
   const date=document.getElementById('fDateOut').value||new Date().toISOString().slice(0,10);
   const note=document.getElementById('fNoteOut').value.trim();
+  if(isDayClosed(date)){ toast('El corte de ese día está cerrado. Reábrelo para registrar.',false); return; }
   if(outMode==='transfer'){
     const dest=document.getElementById('fBranchDest').value;
     if(!dest||dest===branch){ toast('Selecciona una sucursal destino distinta',false); return; }
@@ -1351,7 +1369,7 @@ function renderHistory(){
   if(!txns.length){ el.innerHTML='<div class="empty-hint" style="padding:40px 20px;">No hay movimientos con este filtro en '+MONTHS[curMonth]+' '+curYear+'.</div>'; return; }
   el.innerHTML=txns.map(t=>{
     let icBg,icColor,icon,sign,amtClass,amount;
-    if(t.type==='income'){ amount=t.amount;icBg='var(--green-dim)';icColor='#4cd6a0';sign='+';amtClass='inc';icon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>'; }
+    if(t.type==='income'){ amount=t.amount;icBg='var(--green-dim)';icColor='#4cd6a0';sign='';amtClass='inc';icon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>'; }
     else if(t.type==='expense'){ amount=t.amount;icBg='var(--red-dim)';icColor='#f08980';sign='−';amtClass='exp';icon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>'; }
     else if(t.type==='collect'){ amount=Math.abs(t.moved);icBg='var(--cerulean-dim)';icColor='#16a8d4';sign=t.moved>=0?'→':'←';amtClass='';icon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg>'; }
     else { amount=t.amount;icBg='var(--amber-dim)';icColor='#f0b46a';sign='−';amtClass='out';icon=t.outKind==='transfer'?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 16l-4-4 4-4"/><path d="M3 12h12"/><path d="M17 8l4 4-4 4"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>'; }
@@ -1367,10 +1385,12 @@ function renderHistory(){
     let tag='';
     if(t.type==='expense'){ tag=t.hasNcf?`<span class="txn-tag ncf">NCF${t.ncf?' '+t.ncf:''}</span>`:`<span class="txn-tag noncf">SIN NCF</span>`; }
     const delLink=`<span class="swipe-del" onclick="delTxn('${t.id}')">Eliminar</span>`;
+    const negInc=(t.type==='income'&&amount<0);
+    const amtStyle=negInc?' style="color:var(--red)"':'';
     return `<div class="txn">
       <div class="txn-ic" style="background:${icBg};color:${icColor}">${icon}</div>
       <div class="txn-body">
-        <div class="l1"><span class="cat">${catLine}</span><span class="amt ${amtClass}">${sign}RD$${fmt(amount)}</span></div>
+        <div class="l1"><span class="cat">${catLine}</span><span class="amt ${amtClass}"${amtStyle}>${sign}RD$${fmt(amount)}</span></div>
         <div class="l2"><span class="meta">${meta}</span>${tag||delLink}</div>
         ${tag?`<div class="l2" style="margin-top:5px;"><span></span>${delLink}</div>`:''}
       </div>
@@ -1432,7 +1452,7 @@ function cycleHistSort(){
   histSort=order[(order.indexOf(histSort)+1)%order.length];
   renderHistory();
 }
-function delTxn(id){ if(!confirm('¿Eliminar este movimiento?'))return; cloudDeleteTxn(id); state.txns=state.txns.filter(t=>t.id!==id); renderHistory(); toast('Movimiento eliminado',true); }
+function delTxn(id){ const tx=state.txns.find(t=>t.id===id); if(tx&&isDayClosed(tx.date)){ toast('Ese día está cerrado. Reábrelo para eliminar movimientos.',false); return; } if(!confirm('¿Eliminar este movimiento?'))return; cloudDeleteTxn(id); state.txns=state.txns.filter(t=>t.id!==id); renderHistory(); toast('Movimiento eliminado',true); }
 
 /* ---------- REPORTS ---------- */
 function setRepView(v){ repView=v; ['Branch','Cat','Fund','Ncf'].forEach(x=>document.getElementById('rt'+x).classList.toggle('on',v===x.toLowerCase())); renderReports(); }
@@ -1573,6 +1593,11 @@ function renderCorte(){
     el.innerHTML='<div class="empty-hint" style="padding:30px 16px;">No hay movimientos de bancas registrados el '+d.getDate()+' de '+MONTHS[d.getMonth()]+'.<br>Registra primero los ingresos del día con el botón <b>+</b>.</div>';
   }
 
+  // closed-day UI
+  const closed=isDayClosed(corteDateVal);
+  document.getElementById('corteClosedBanner').style.display=closed?'flex':'none';
+  document.getElementById('corteActionsPanel').style.display=closed?'none':'block';
+
   renderCortePending();
 }
 
@@ -1593,6 +1618,7 @@ function renderCortePending(){
 
 // Record a single bank's collection for the selected date
 function collectOne(branch){
+  if(isDayClosed(corteDateVal)){ toast('El corte de este día está cerrado.',false); return; }
   const fieldId='mv_'+branch.replace(/[^a-zA-Z0-9]/g,'_');
   const raw=document.getElementById(fieldId).value;
   const cuadre=dayCuadre(branch,corteDateVal);
@@ -1609,6 +1635,7 @@ function collectOne(branch){
 
 // "Recolectar todo": for each bank with activity today, move the full remaining cuadre
 function collectAll(){
+  if(isDayClosed(corteDateVal)){ toast('El corte de este día está cerrado.',false); return; }
   if(!confirm('¿Recolectar el cuadre completo de todas las bancas con movimientos hoy? El dinero se moverá desde/hacia la Oficina.')) return;
   const banks=state.branches.filter(b=>!b.isOffice);
   let count=0;
@@ -1631,6 +1658,40 @@ function recordCollect(branch,date,cuadre,moved){
   const office=officeName();
   const tx={ id:uid(), type:'collect', branch, office, date, cuadre, moved, note:'' };
   state.txns.push(tx); cloudInsertTxn(tx);
+}
+
+// ---- close / reopen the daily cut ----
+async function closeCorte(){
+  if(!state._cierresReady){ toast('Falta activar el cierre en la base de datos (SQL).',false); return; }
+  if(isDayClosed(corteDateVal)){ toast('Este día ya está cerrado.',false); return; }
+  // compute snapshot: office balance + total pending
+  const officeBal=liveFund(officeName());
+  const banks=state.branches.filter(b=>!b.isOffice);
+  const pendTotal=banks.reduce((s,b)=>s+bankPending(b.name),0);
+  const d=new Date(corteDateVal+'T00:00:00');
+  const msg=`¿Cerrar el corte del ${d.getDate()} de ${MONTHS[d.getMonth()]}?\n\nBalance en Oficina: RD$${fmt(officeBal)}\nPendientes en bancas: RD$${fmt(pendTotal)}\n\nLos movimientos de este día quedarán bloqueados. Para reabrir necesitarás tu clave.`;
+  if(!confirm(msg))return;
+  setSyncState('saving');
+  try{
+    const {error}=await sb.from('cierres_dia').insert({fecha:corteDateVal,cerrado_por:currentUser||null,balance_oficina:officeBal,pendientes_total:pendTotal});
+    if(error)throw error;
+    state.cierres.push(corteDateVal);
+    setSyncState('ok');
+    toast('Corte cerrado y bloqueado',true);
+    renderCorte();
+  }catch(e){ console.error(e); setSyncState('error'); toast('Error al cerrar el corte',false); }
+}
+
+async function reopenCorte(){
+  if(!checkMasterKey())return;
+  setSyncState('saving');
+  try{
+    await sb.from('cierres_dia').delete().eq('fecha',corteDateVal);
+    state.cierres=state.cierres.filter(f=>f!==corteDateVal);
+    setSyncState('ok');
+    toast('Corte reabierto',true);
+    renderCorte();
+  }catch(e){ console.error(e); setSyncState('error'); toast('Error al reabrir',false); }
 }
 
 /* ================= MÁQUINAS ================= */
@@ -1867,6 +1928,7 @@ async function saveLectura(){
 
   setSyncState('saving');
   const sumar=document.getElementById('lecSumar').checked;
+  if(sumar && isDayClosed(date)){ toast('Ese día tiene el corte cerrado. No se puede sumar al cuadre.',false); setSyncState('ok'); return; }
   try{
     const row={maquina_id:curMaqId,fecha:date,entrada_ac:eAc,salida_ac:sAc,cash_box:cashBox,dif_entrada:difE,dif_salida:difS,ben_monedas:benMon,ben_dinero:benDin,ingreso,sumado:sumar,creado_por:currentUser||null};
     const {data,error}=await sb.from('lecturas_maquina').insert(row).select();
