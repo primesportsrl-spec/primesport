@@ -469,6 +469,32 @@
 <section class="view" id="view-history">
   <div class="section-label">Historial de Movimientos</div>
   <div class="filter-bar" id="histFilters"></div>
+
+  <!-- branch + sort controls -->
+  <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <button onclick="toggleHistBranchPanel()" id="histBranchBtn" style="flex:1;border:1px solid var(--line);background:#fff;border-radius:11px;padding:11px 13px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--ink);display:flex;align-items:center;justify-content:space-between;gap:8px;">
+      <span id="histBranchLabel">Todas las bancas</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:15px;height:15px;flex-shrink:0;"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <button onclick="cycleHistSort()" id="histSortBtn" style="border:1px solid var(--line);background:#fff;border-radius:11px;padding:11px 13px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--ink);white-space:nowrap;display:flex;align-items:center;gap:6px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><path d="M3 6h18M7 12h10m-7 6h4"/></svg>
+      <span id="histSortLabel">Fecha ↓</span>
+    </button>
+  </div>
+
+  <!-- branch selection panel (hidden by default) -->
+  <div id="histBranchPanel" style="display:none;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px;box-shadow:0 4px 16px rgba(16,24,32,.08);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <span style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Filtrar por banca</span>
+      <div style="display:flex;gap:8px;">
+        <button onclick="histBranchAll(true)" style="border:none;background:#eef3f5;color:var(--cerulean);border-radius:7px;padding:5px 9px;font-size:11px;font-weight:700;cursor:pointer;">Todas</button>
+        <button onclick="histBranchAll(false)" style="border:none;background:#eef3f5;color:var(--muted);border-radius:7px;padding:5px 9px;font-size:11px;font-weight:700;cursor:pointer;">Ninguna</button>
+      </div>
+    </div>
+    <div id="histBranchChips" style="display:flex;flex-wrap:wrap;gap:7px;"></div>
+    <button onclick="applyHistBranch()" class="btn-primary" style="margin-top:12px;padding:10px;font-size:13px;">Aplicar</button>
+  </div>
+
   <div id="histList"></div>
 </section>
 
@@ -856,6 +882,9 @@ let curType='income', incMode='single', outMode='withdraw';
 let selIncCat=null;
 let curMonth=new Date().getMonth(), curYear=new Date().getFullYear(), modalYr=curYear;
 let histFilter='all', repView='branch';
+let histBranches=null;            // null = all branches; otherwise array of selected names
+let histSort='date-desc';         // date-desc | date-asc | amount-desc | amount-asc
+let _histBranchTmp=null;          // temp selection while panel open
 let fundEditIdx=null;
 
 const fmt=n=>new Intl.NumberFormat('es-DO',{minimumFractionDigits:0,maximumFractionDigits:0}).format(Math.round(n));
@@ -1293,16 +1322,30 @@ function uid(){ return Date.now()+''+Math.floor(Math.random()*99999); }
 function shake(id){ const el=document.getElementById(id); el.style.borderColor='var(--red)'; setTimeout(()=>el.style.borderColor='',1200); }
 
 /* ---------- HISTORY ---------- */
+function amtForSort(t){ return t.type==='collect'?Math.abs(t.moved||0):(t.amount||0); }
+function sortHistTxns(txns){
+  const [field,dir]=histSort.split('-'); // 'date'|'amount' , 'desc'|'asc'
+  const mul=dir==='asc'?1:-1;
+  return txns.slice().sort((a,b)=>{
+    if(field==='amount'){ const d=amtForSort(a)-amtForSort(b); if(d!==0)return d*mul; return a.date.localeCompare(b.date)*mul; }
+    // date
+    if(a.date!==b.date)return a.date.localeCompare(b.date)*mul;
+    return (a.id<b.id?-1:1)*mul;
+  });
+}
 function renderHistory(){
   const filters=[{k:'all',l:'Todos'},{k:'income',l:'Ingresos'},{k:'expense',l:'Gastos'},{k:'out',l:'Salidas'},{k:'collect',l:'Recolección'},{k:'ncf',l:'Con NCF'},{k:'noncf',l:'Sin NCF'}];
   document.getElementById('histFilters').innerHTML=filters.map(f=>`<div class="fchip ${histFilter===f.k?'on':''}" onclick="setHistFilter('${f.k}')">${f.l}</div>`).join('');
-  let txns=monthTxns().slice().sort((a,b)=>b.date!==a.date?b.date.localeCompare(a.date):b.id.localeCompare(a.id));
+  syncHistControls();
+  let txns=sortHistTxns(monthTxns());
   if(histFilter==='income')txns=txns.filter(t=>t.type==='income');
   else if(histFilter==='expense')txns=txns.filter(t=>t.type==='expense');
   else if(histFilter==='out')txns=txns.filter(t=>t.type==='out');
   else if(histFilter==='collect')txns=txns.filter(t=>t.type==='collect');
   else if(histFilter==='ncf')txns=txns.filter(t=>t.type==='expense'&&t.hasNcf);
   else if(histFilter==='noncf')txns=txns.filter(t=>t.type==='expense'&&!t.hasNcf);
+  // branch filter (null = all)
+  if(histBranches!==null) txns=txns.filter(t=>histBranches.includes(t.branch)||(t.type==='collect'&&histBranches.includes(t.office)));
 
   const el=document.getElementById('histList');
   if(!txns.length){ el.innerHTML='<div class="empty-hint" style="padding:40px 20px;">No hay movimientos con este filtro en '+MONTHS[curMonth]+' '+curYear+'.</div>'; return; }
@@ -1335,6 +1378,60 @@ function renderHistory(){
   }).join('');
 }
 function setHistFilter(k){ histFilter=k; renderHistory(); }
+
+// ---- branch filter + sort controls ----
+function allBranchNames(){ return state.branches.map(b=>b.name); }
+function syncHistControls(){
+  // branch label
+  const lbl=document.getElementById('histBranchLabel');
+  if(lbl){
+    if(histBranches===null) lbl.textContent='Todas las bancas';
+    else if(histBranches.length===0) lbl.textContent='Ninguna banca';
+    else if(histBranches.length===1) lbl.textContent=histBranches[0].replace('PRIME SPORT','PS');
+    else lbl.textContent=`${histBranches.length} bancas`;
+  }
+  // sort label
+  const sl=document.getElementById('histSortLabel');
+  if(sl){
+    const map={'date-desc':'Fecha ↓','date-asc':'Fecha ↑','amount-desc':'Monto ↓','amount-asc':'Monto ↑'};
+    sl.textContent=map[histSort];
+  }
+}
+function toggleHistBranchPanel(){
+  const panel=document.getElementById('histBranchPanel');
+  const open=panel.style.display!=='none';
+  if(open){ panel.style.display='none'; return; }
+  // open: init temp selection
+  _histBranchTmp = histBranches===null ? allBranchNames().slice() : histBranches.slice();
+  renderHistBranchChips();
+  panel.style.display='block';
+}
+function renderHistBranchChips(){
+  const el=document.getElementById('histBranchChips');
+  el.innerHTML=state.branches.map(b=>{
+    const on=_histBranchTmp.includes(b.name);
+    return `<div onclick="toggleHistBranchChip('${b.name.replace(/'/g,"\\'")}')" style="cursor:pointer;border:1.5px solid ${on?'var(--cerulean)':'var(--line)'};background:${on?'var(--cerulean-dim)':'#fff'};color:${on?'var(--cerulean-bright)':'var(--muted)'};border-radius:9px;padding:7px 11px;font-size:12px;font-weight:600;">${on?'✓ ':''}${b.name.replace('PRIME SPORT','PS')}</div>`;
+  }).join('');
+}
+function toggleHistBranchChip(name){
+  const i=_histBranchTmp.indexOf(name);
+  if(i>=0)_histBranchTmp.splice(i,1); else _histBranchTmp.push(name);
+  renderHistBranchChips();
+}
+function histBranchAll(sel){ _histBranchTmp = sel ? allBranchNames().slice() : []; renderHistBranchChips(); }
+function applyHistBranch(){
+  // if all selected -> treat as null (all); else store selection
+  const allNames=allBranchNames();
+  if(_histBranchTmp.length===allNames.length) histBranches=null;
+  else histBranches=_histBranchTmp.slice();
+  document.getElementById('histBranchPanel').style.display='none';
+  renderHistory();
+}
+function cycleHistSort(){
+  const order=['date-desc','date-asc','amount-desc','amount-asc'];
+  histSort=order[(order.indexOf(histSort)+1)%order.length];
+  renderHistory();
+}
 function delTxn(id){ if(!confirm('¿Eliminar este movimiento?'))return; cloudDeleteTxn(id); state.txns=state.txns.filter(t=>t.id!==id); renderHistory(); toast('Movimiento eliminado',true); }
 
 /* ---------- REPORTS ---------- */
