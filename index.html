@@ -1174,11 +1174,16 @@ function liveFund(name){
       if(t.type==='income') bal+=t.amount;
       else if(t.type==='expense') bal-=t.amount;
       else if(t.type==='out') bal-=t.amount;
-      else if(t.type==='collect') bal-=t.moved; // bank hands 'moved' to office (or receives if negative)
+      // For the BRANCH: use cuadre (full operational result of the day).
+      // The cuadre reflects what the branch earned/lost operationally.
+      // The 'moved' may differ from cuadre when prior pendientes are netted,
+      // but the fund should reflect the full operational impact.
+      else if(t.type==='collect') bal-=t.cuadre;
     }
-    // transfer destination adds
+    // transfer destination adds to fund
     if(t.type==='out'&&t.outKind==='transfer'&&t.dest===name) bal+=t.amount;
-    // collection lands in the office caja
+    // For the OFFICE: use moved (physical cash that actually arrived).
+    // The office only receives what the mensajero physically brought.
     if(t.type==='collect'&&t.office===name) bal+=t.moved;
   });
   return bal;
@@ -1214,7 +1219,7 @@ function renderDash(){
   const txns=monthTxns();
   const inc=txns.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
   const exp=txns.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
-  const out=txns.filter(t=>t.type==='out'&&t.outKind!=='transfer').reduce((s,t)=>s+t.amount,0);
+  const out=txns.filter(t=>t.type==='out').reduce((s,t)=>s+t.amount,0);
   const net=inc-exp-out;
   document.getElementById('heroNet').textContent=fmt(net);
   document.getElementById('heroNet').style.color=net<0?'#f08980':'#fff';
@@ -1589,7 +1594,7 @@ function renderReports(){
 
   if(repView==='branch'){
     const bb={}; branchNames().forEach(n=>bb[n]={inc:0,exp:0,out:0});
-    txns.forEach(t=>{ if(!bb[t.branch])bb[t.branch]={inc:0,exp:0,out:0}; if(t.type==='income')bb[t.branch].inc+=t.amount; else if(t.type==='expense')bb[t.branch].exp+=t.amount; else if(t.type==='out'&&t.outKind!=='transfer')bb[t.branch].out+=t.amount; });
+    txns.forEach(t=>{ if(!bb[t.branch])bb[t.branch]={inc:0,exp:0,out:0}; if(t.type==='income')bb[t.branch].inc+=t.amount; else if(t.type==='expense')bb[t.branch].exp+=t.amount; else if(t.type==='out')bb[t.branch].out+=t.amount; });
     const rows=Object.entries(bb).filter(([n,v])=>v.inc||v.exp||v.out).sort((a,b)=>(b[1].inc-b[1].exp-b[1].out)-(a[1].inc-a[1].exp-a[1].out));
     let tI=0,tE=0,tO=0;
     let h='<table class="rep-table"><thead><tr><th>Sucursal</th><th class="r">Ing.</th><th class="r">Gas.</th><th class="r">Sal.</th><th class="r">Neto</th></tr></thead><tbody>';
@@ -1660,11 +1665,16 @@ function dayCollected(branch,date){
 // but we track pending directly from collect records vs cuadre.
 function bankPending(branch){
   // pending = all-time cuadre - all-time collected
+  // "collected" includes both: mensajero recolections AND direct branch→office transfers
   let totalCuadre=0;
   const dates=new Set(state.txns.filter(t=>t.branch===branch&&t.type!=='collect').map(t=>t.date));
   dates.forEach(d=>{ totalCuadre+=dayCuadre(branch,d); });
   const totalCollected=state.txns.filter(t=>t.type==='collect'&&t.branch===branch).reduce((s,t)=>s+t.moved,0);
-  return totalCuadre-totalCollected;
+  // Also count direct branch→office transfers as "delivered to office"
+  // (positive = banca sends to office = reduces what banca owes)
+  const office=officeName();
+  const totalTransferred=state.txns.filter(t=>t.type==='out'&&t.outKind==='transfer'&&t.branch===branch&&t.dest===office).reduce((s,t)=>s+t.amount,0);
+  return totalCuadre-totalCollected-totalTransferred;
 }
 
 function openCorte(){
@@ -2576,10 +2586,10 @@ function histRangeTxns(){
 }
 function renderHistoric(){
   const txns=histRangeTxns();
-  // range totals — transfers excluded (internal fund movements, not operational)
+  // range totals (exclude collect from in/out/exp tallies; collect is internal)
   const inc=txns.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
   const exp=txns.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
-  const out=txns.filter(t=>t.type==='out'&&t.outKind!=='transfer').reduce((s,t)=>s+t.amount,0);
+  const out=txns.filter(t=>t.type==='out').reduce((s,t)=>s+t.amount,0);
   document.getElementById('histRangeNet').textContent=fmt(inc-exp-out);
   document.getElementById('histRangeInc').textContent='RD$'+fmt(inc);
   document.getElementById('histRangeExp').textContent='RD$'+fmt(exp);
@@ -2596,8 +2606,7 @@ function renderHistoric(){
     const list=byDay[date];
     const dInc=list.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
     const dExp=list.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
-    const dOut=list.filter(t=>t.type==='out'&&t.outKind!=='transfer').reduce((s,t)=>s+t.amount,0); // solo retiros, no transferencias
-    const dTransfer=list.filter(t=>t.type==='out'&&t.outKind==='transfer').reduce((s,t)=>s+t.amount,0);
+    const dOut=list.filter(t=>t.type==='out').reduce((s,t)=>s+t.amount,0);
     const dNet=dInc-dExp-dOut;
     const d=new Date(date+'T00:00:00');
     const dayName=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][d.getDay()];
@@ -2627,9 +2636,8 @@ function renderHistoric(){
         <div style="display:flex;gap:8px;margin-bottom:14px;">
           <div style="flex:1;background:var(--green-dim);border-radius:9px;padding:9px;text-align:center;"><div style="font-size:10px;color:#4cd6a0;font-weight:700;">INGRESOS</div><div style="font-size:14px;font-weight:800;color:#fff;margin-top:2px;">RD$${fmt(dInc)}</div></div>
           <div style="flex:1;background:var(--red-dim);border-radius:9px;padding:9px;text-align:center;"><div style="font-size:10px;color:#f08980;font-weight:700;">GASTOS</div><div style="font-size:14px;font-weight:800;color:#fff;margin-top:2px;">RD$${fmt(dExp)}</div></div>
-          <div style="flex:1;background:var(--amber-dim);border-radius:9px;padding:9px;text-align:center;"><div style="font-size:10px;color:#f0b46a;font-weight:700;">RETIROS</div><div style="font-size:14px;font-weight:800;color:#fff;margin-top:2px;">RD$${fmt(dOut)}</div></div>
+          <div style="flex:1;background:var(--amber-dim);border-radius:9px;padding:9px;text-align:center;"><div style="font-size:10px;color:#f0b46a;font-weight:700;">SALIDAS</div><div style="font-size:14px;font-weight:800;color:#fff;margin-top:2px;">RD$${fmt(dOut)}</div></div>
         </div>
-        ${dTransfer>0?`<div style="background:#f0f4f7;border-radius:8px;padding:8px 10px;margin-bottom:12px;font-size:11.5px;color:var(--muted);">🔄 Transferencia entre cajas: RD$${fmt(dTransfer)} <span style="font-size:10.5px;">(no afecta el neto operativo)</span></div>`:''}
         ${catRows.length?`<div style="font-size:11.5px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Ingresos por categoría</div>
         <table class="rep-table" style="margin-bottom:14px;"><tbody>${catRows.map(([k,v])=>`<tr><td>${k}</td><td class="r pos">RD$${fmt(v)}</td></tr>`).join('')}</tbody></table>`:''}
         ${expRows.length?`<div style="font-size:11.5px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Gastos por categoría</div>
