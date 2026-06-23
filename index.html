@@ -730,7 +730,10 @@
   <div id="virtTotals"></div>
 
   <!-- register button -->
-  <button onclick="openVirtRegistro()" style="width:100%;border:none;border-radius:13px;padding:14px;font-size:14.5px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#0086AD,#16a8d4);box-shadow:0 4px 14px rgba(0,134,173,.35);margin:6px 0 16px;">+ Registrar / editar mes</button>
+  <div style="display:flex;gap:8px;margin:6px 0 16px;">
+    <button onclick="openVirtRegistro()" style="flex:1;border:none;border-radius:13px;padding:14px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#0086AD,#16a8d4);box-shadow:0 4px 14px rgba(0,134,173,.35);">+ Registrar mes</button>
+    <button onclick="openVirtReparto()" style="flex:1;border:none;border-radius:13px;padding:14px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#3a2a52,#6b3fa0);box-shadow:0 4px 14px rgba(107,63,160,.35);">Reparto socios</button>
+  </div>
 
   <!-- by company -->
   <div class="panel" style="margin-bottom:14px;">
@@ -771,6 +774,39 @@
   <div id="virtRegRows"></div>
 
   <button class="btn-primary" onclick="saveVirtRegistro()" style="margin-top:6px;">Guardar mes</button>
+</section>
+
+<!-- VIRTUALES REPARTO -->
+<section class="view" id="view-virtreparto">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="openVirtuales()" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;" id="virtRepartoTitle">Reparto</div><div style="font-size:12px;color:var(--muted);">Distribución entre socios</div></div>
+    <button onclick="openVirtConfig()" style="border:none;background:#f0eaf7;color:#6b3fa0;border-radius:10px;padding:8px 12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">⚙ %</button>
+  </div>
+
+  <div class="panel" style="margin-bottom:14px;">
+    <div class="panel-head"><h3>Consolidado por socio</h3></div>
+    <div id="virtRepartoConsol"></div>
+  </div>
+
+  <div class="section-label">Detalle por empresa</div>
+  <div id="virtRepartoCompanies"></div>
+</section>
+
+<!-- VIRTUALES CONFIG -->
+<section class="view" id="view-virtconfig">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="openVirtReparto()" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Porcentajes de reparto</div><div style="font-size:12px;color:var(--muted);">Edita los % de cada empresa</div></div>
+  </div>
+
+  <div style="font-size:11.5px;color:var(--muted);background:#f4f6f7;border-radius:9px;padding:9px 11px;margin-bottom:12px;line-height:1.5;">
+    Cambia los porcentajes cuando negocies algo nuevo (ej: el % de VG). La estructura del reparto no cambia, solo los números.
+  </div>
+
+  <div id="virtConfigForm"></div>
+
+  <button class="btn-primary" onclick="saveVirtConfig()" style="margin-top:6px;">Guardar porcentajes</button>
 </section>
 
 <!-- CÓMO USAR -->
@@ -2271,6 +2307,154 @@ function renderVirtuales(){
         <span style="font-size:10.5px;color:var(--muted);margin-left:8px;">v: ${fmt(r.venta)}</span>
       </div>
     </div>`).join('');
+}
+
+// ---- partner distribution (Fase 2) ----
+// Computes the split for one company given its total "balance" (sum of Totales) and registered comision
+function virtDistribute(empresa, balanceTotal, comisionTotal){
+  const cfg = state.virtConfig && state.virtConfig[empresa];
+  if(!cfg) return null;
+  const r = {empresa, balanceTotal, pasos:[], socios:[]};
+  if(cfg.estructura==='merengue'){
+    // Total Neto = balance + digitador(comision, ya negativa); reparto socio1/socio2
+    const dig = comisionTotal; // la comisión registrada (negativa)
+    const neto = balanceTotal + dig;
+    r.pasos.push({label:'Balance Total', val:balanceTotal});
+    r.pasos.push({label:'Digitador (comisión)', val:dig});
+    r.pasos.push({label:'Total Neto', val:neto, bold:true});
+    r.neto = neto;
+    r.socios.push({nombre:cfg.socio1, pct:cfg.socio1Pct, monto:neto*cfg.socio1Pct});
+    r.socios.push({nombre:cfg.socio2, pct:cfg.socio2Pct, monto:neto*cfg.socio2Pct});
+  } else if(cfg.estructura==='varmanex'){
+    // balance - Rivas% -> neto1 ; neto1 - digitador%(sobre neto1) -> Alberto el resto
+    const rivas = balanceTotal*cfg.rivasPct;
+    const neto1 = balanceTotal - rivas;
+    const dig = neto1*cfg.digitadorPct;
+    const alberto = neto1 - dig;
+    r.pasos.push({label:'Balance Total', val:balanceTotal});
+    r.pasos.push({label:`Rivas ${(cfg.rivasPct*100).toFixed(0)}%`, val:-rivas});
+    r.pasos.push({label:'Subtotal', val:neto1});
+    r.pasos.push({label:`Digitador ${(cfg.digitadorPct*100).toFixed(0)}%`, val:-dig});
+    r.pasos.push({label:'Total Neto', val:alberto, bold:true});
+    r.neto = alberto;
+    r.socios.push({nombre:'Rivas', pct:cfg.rivasPct, monto:rivas});
+    r.socios.push({nombre:cfg.socio1, pct:1, monto:alberto}); // Alberto el resto
+  } else {
+    // vg / soll: balance - digitador%(sobre balance) -> neto; reparto socio1/socio2
+    const dig = balanceTotal*cfg.digitadorPct;
+    const neto = balanceTotal - dig;
+    r.pasos.push({label:'Balance Neto', val:balanceTotal});
+    r.pasos.push({label:`Digitador ${(cfg.digitadorPct*100).toFixed(0)}%`, val:-dig});
+    r.pasos.push({label:'Total Neto', val:neto, bold:true});
+    r.neto = neto;
+    r.socios.push({nombre:cfg.socio1, pct:cfg.socio1Pct, monto:neto*cfg.socio1Pct});
+    r.socios.push({nombre:cfg.socio2, pct:cfg.socio2Pct, monto:neto*cfg.socio2Pct});
+  }
+  return r;
+}
+
+// Build the full distribution for the current month
+function virtMonthDistribution(){
+  const regs=virtRegsOf(virtCurMes,virtCurAnio);
+  const result={};
+  VIRT_EMPRESAS.forEach(emp=>{
+    const er=regs.filter(r=>r.empresa===emp);
+    const balanceTotal=er.reduce((s,r)=>s+r.total,0);     // suma de los Totales
+    const comisionTotal=er.reduce((s,r)=>s+r.comision,0); // suma de comisiones (negativas)
+    result[emp]=virtDistribute(emp, balanceTotal, comisionTotal);
+  });
+  return result;
+}
+
+function openVirtReparto(){
+  showOnlyView('view-virtreparto');
+  document.getElementById('virtRepartoTitle').textContent=`Reparto · ${MONTHS[virtCurMes-1]} ${virtCurAnio}`;
+  renderVirtReparto();
+}
+
+function renderVirtReparto(){
+  const dist=virtMonthDistribution();
+  // per-company breakdown
+  const wrap=document.getElementById('virtRepartoCompanies');
+  wrap.innerHTML=VIRT_EMPRESAS.map(emp=>{
+    const d=dist[emp];
+    if(!d) return '';
+    const pasos=d.pasos.map(p=>`<div style="display:flex;justify-content:space-between;font-size:12.5px;${p.bold?'font-weight:700;color:var(--ink);border-top:1px solid #eef2f4;padding-top:6px;margin-top:4px;':'color:var(--muted);'}"><span>${p.label}</span><span style="color:${p.val<0?'var(--red)':p.bold?'var(--ink)':'var(--muted)'};">RD$${fmt(p.val)}</span></div>`).join('');
+    const socios=d.socios.filter(s=>s.nombre).map(s=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:#f4f6f7;border-radius:8px;margin-bottom:5px;"><span style="font-size:12.5px;font-weight:600;">${s.nombre} ${s.pct<1?'('+(s.pct*100).toFixed(0)+'%)':''}</span><span style="font-size:13.5px;font-weight:800;color:var(--green);">RD$${fmt(s.monto)}</span></div>`).join('');
+    return `<div class="panel" style="padding:14px;margin-bottom:12px;">
+      <div style="font-size:15px;font-weight:800;color:var(--cerulean);margin-bottom:10px;">${emp}</div>
+      <div style="margin-bottom:11px;">${pasos}</div>
+      <div>${socios}</div>
+    </div>`;
+  }).join('');
+
+  // consolidated per partner
+  const totals={};
+  VIRT_EMPRESAS.forEach(emp=>{
+    const d=dist[emp]; if(!d)return;
+    d.socios.forEach(s=>{ if(s.nombre){ totals[s.nombre]=(totals[s.nombre]||0)+s.monto; } });
+  });
+  const cons=document.getElementById('virtRepartoConsol');
+  const names=Object.keys(totals).sort((a,b)=>totals[b]-totals[a]);
+  const grandTotal=Object.values(totals).reduce((s,v)=>s+v,0);
+  cons.innerHTML=names.map(n=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #eef2f4;">
+      <span style="font-size:14px;font-weight:700;">${n}</span>
+      <span style="font-size:15px;font-weight:800;color:${totals[n]<0?'var(--red)':'var(--green)'};">RD$${fmt(totals[n])}</span>
+    </div>`).join('')+`<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0 4px;margin-top:4px;border-top:2px solid var(--navy);"><span style="font-size:13px;font-weight:700;color:var(--muted);">TOTAL REPARTIDO</span><span style="font-size:16px;font-weight:800;">RD$${fmt(grandTotal)}</span></div>`;
+}
+
+// ---- config of percentages ----
+function openVirtConfig(){
+  showOnlyView('view-virtconfig');
+  renderVirtConfigForm();
+}
+function renderVirtConfigForm(){
+  const wrap=document.getElementById('virtConfigForm');
+  wrap.innerHTML=VIRT_EMPRESAS.map(emp=>{
+    const c=state.virtConfig[emp];
+    let fields='';
+    if(c.estructura==='merengue'){
+      fields=`
+        ${cfgPctField(emp,'socio1Pct',c.socio1+' %',c.socio1Pct)}
+        ${cfgPctField(emp,'socio2Pct',c.socio2+' %',c.socio2Pct)}`;
+    } else if(c.estructura==='varmanex'){
+      fields=`
+        ${cfgPctField(emp,'rivasPct','Rivas %',c.rivasPct)}
+        ${cfgPctField(emp,'digitadorPct','Digitador %',c.digitadorPct)}`;
+    } else {
+      fields=`
+        ${cfgPctField(emp,'digitadorPct','Digitador %',c.digitadorPct)}
+        ${cfgPctField(emp,'socio1Pct',c.socio1+' %',c.socio1Pct)}
+        ${cfgPctField(emp,'socio2Pct',c.socio2+' %',c.socio2Pct)}`;
+    }
+    return `<div class="panel" style="padding:14px;margin-bottom:12px;">
+      <div style="font-size:14px;font-weight:800;color:var(--cerulean);margin-bottom:10px;">${emp}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;">${fields}</div>
+    </div>`;
+  }).join('');
+}
+function cfgPctField(emp,key,label,val){
+  return `<div class="fld" style="margin:0;"><label style="font-size:11px;">${label}</label><input type="number" inputmode="decimal" id="cfg_${emp}_${key}" value="${(val*100)}" step="0.1" style="font-size:14px;"></div>`;
+}
+async function saveVirtConfig(){
+  setSyncState('saving');
+  try{
+    for(const emp of VIRT_EMPRESAS){
+      const c=state.virtConfig[emp];
+      const get=(key)=>{ const el=document.getElementById(`cfg_${emp}_${key}`); if(!el)return null; const v=parseFloat(el.value); return isNaN(v)?0:v/100; };
+      const upd={};
+      ['socio1Pct','socio2Pct','digitadorPct','rivasPct'].forEach(k=>{ const v=get(k); if(v!==null){ c[k]=v; upd[k]=v; } });
+      // map to DB columns
+      const dbUpd={};
+      if('socio1Pct' in upd) dbUpd.socio1_pct=upd.socio1Pct;
+      if('socio2Pct' in upd) dbUpd.socio2_pct=upd.socio2Pct;
+      if('digitadorPct' in upd) dbUpd.digitador_pct=upd.digitadorPct;
+      if('rivasPct' in upd) dbUpd.rivas_pct=upd.rivasPct;
+      if(Object.keys(dbUpd).length) await sb.from('virtuales_config').update(dbUpd).eq('empresa',emp);
+    }
+    setSyncState('ok'); toast('Porcentajes guardados',true);
+    openVirtuales();
+  }catch(e){ console.error(e); setSyncState('error'); toast('Error al guardar config',false); }
 }
 
 // ---- registro screen ----
