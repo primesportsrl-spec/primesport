@@ -310,6 +310,17 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
   </div>
 
+  <div onclick="openVirtuales()" style="background:linear-gradient(135deg,#0b3d4d,#0086AD);border-radius:16px;padding:15px 16px;margin-bottom:16px;display:flex;align-items:center;gap:13px;cursor:pointer;box-shadow:0 4px 16px rgba(0,134,173,.3);">
+    <div style="width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:22px;height:22px;"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+    </div>
+    <div style="flex:1;">
+      <div style="color:#fff;font-size:14.5px;font-weight:700;">Virtuales</div>
+      <div style="color:rgba(255,255,255,.78);font-size:11.5px;margin-top:1px;">Resumen mensual y reparto por socio</div>
+    </div>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
+  </div>
+
   <div class="stat-grid">
     <div class="stat">
       <div class="ic blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-5"/></svg></div>
@@ -702,6 +713,66 @@
   </div>
 </section>
 
+<!-- VIRTUALES -->
+<section class="view" id="view-virtuales">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="go('dash')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Virtuales</div><div style="font-size:12px;color:var(--muted);">Resumen mensual por empresa</div></div>
+  </div>
+
+  <!-- month/year selector -->
+  <div class="row2" style="margin-bottom:14px;">
+    <div class="fld"><label>Mes</label><select id="virtMes" onchange="renderVirtuales()"></select></div>
+    <div class="fld"><label>Año</label><select id="virtAnio" onchange="renderVirtuales()"></select></div>
+  </div>
+
+  <!-- totals cards -->
+  <div id="virtTotals"></div>
+
+  <!-- register button -->
+  <button onclick="openVirtRegistro()" style="width:100%;border:none;border-radius:13px;padding:14px;font-size:14.5px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#0086AD,#16a8d4);box-shadow:0 4px 14px rgba(0,134,173,.35);margin:6px 0 16px;">+ Registrar / editar mes</button>
+
+  <!-- by company -->
+  <div class="panel" style="margin-bottom:14px;">
+    <div class="panel-head"><h3>Resumen por empresa</h3></div>
+    <div id="virtByCompany"></div>
+  </div>
+
+  <!-- by branch -->
+  <div class="panel" style="margin-bottom:14px;">
+    <div class="panel-head"><h3>Resumen por sucursal</h3></div>
+    <div id="virtByBranch"></div>
+  </div>
+
+  <!-- monthly trend (all year) -->
+  <div class="panel">
+    <div class="panel-head"><h3>Resumen mensual</h3><span class="hint" id="virtYearLabel"></span></div>
+    <div id="virtMonthly"></div>
+  </div>
+</section>
+
+<!-- VIRTUALES REGISTRO -->
+<section class="view" id="view-virtregistro">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="openVirtuales()" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;" id="virtRegTitle">Registrar mes</div><div style="font-size:12px;color:var(--muted);">Una fila por empresa y sucursal</div></div>
+  </div>
+
+  <!-- company selector for entry -->
+  <div class="fld" style="margin-bottom:12px;">
+    <label>Empresa</label>
+    <select id="virtRegEmpresa" onchange="renderVirtRegRows()"></select>
+  </div>
+
+  <div style="font-size:11.5px;color:var(--muted);background:#f4f6f7;border-radius:9px;padding:9px 11px;margin-bottom:12px;line-height:1.5;">
+    Teclea los datos por sucursal. <b>Bonos, Comisión y Faltantes van en negativo</b> (son descuentos). El Total se calcula solo.
+  </div>
+
+  <div id="virtRegRows"></div>
+
+  <button class="btn-primary" onclick="saveVirtRegistro()" style="margin-top:6px;">Guardar mes</button>
+</section>
+
 <!-- CÓMO USAR -->
 <section class="view" id="view-help">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
@@ -891,7 +962,9 @@ const DEFAULTS={
   expCats:['Local / Alquiler','Energía eléctrica','Nómina / Personal','Internet y teléfono','Mantenimiento','Suministros','Impuestos / DGII','Transporte','Publicidad','Otros gastos']
 };
 
-let state={txns:[],branches:[],incCats:[],expCats:[],officeIncCats:[],maquinas:[],lecturas:[],denoms:[],cierres:[]};
+let state={txns:[],branches:[],incCats:[],expCats:[],officeIncCats:[],maquinas:[],lecturas:[],denoms:[],cierres:[],virtRegs:[],virtConfig:null};
+const VIRT_EMPRESAS=['MERENGUE','VARMANEX','VG','SOLL'];
+const VIRT_SUCURSALES=['PRIME SPORT 01','PRIME SPORT 02','PRIME SPORT 03','PRIME SPORT 04','PRIME SPORT 05','PRIME SPORT 06','PRIME SPORT 07','PRIME SPORT 08','PRIME SPORT 09','PRIME SPORT 10'];
 let curType='income', incMode='single', outMode='withdraw';
 let selIncCat=null;
 let curMonth=new Date().getMonth(), curYear=new Date().getFullYear(), modalYr=curYear;
@@ -977,6 +1050,17 @@ async function loadState(){
     if(!c.error){ state.cierres=c.data.map(x=>x.fecha); state._cierresReady=true; }
     else { state.cierres=[]; state._cierresReady=false; }
   }catch(e){ state.cierres=[]; state._cierresReady=false; }
+  // Virtuales — resilient
+  try{
+    const [vr,vc]=await Promise.all([
+      sb.from('virtuales_registros').select('*'),
+      sb.from('virtuales_config').select('*')
+    ]);
+    if(!vr.error){ state.virtRegs=vr.data.map(r=>({_id:r.id,anio:r.anio,mes:r.mes,empresa:r.empresa,sucursal:r.sucursal,tk:num0(r.tk),venta:num0(r.venta),balance:num0(r.balance),bonos:num0(r.bonos),comision:num0(r.comision),faltantes:num0(r.faltantes),total:num0(r.total)})); state._virtReady=true; }
+    else { state.virtRegs=[]; state._virtReady=false; }
+    if(!vc.error&&vc.data.length){ state.virtConfig={}; vc.data.forEach(c=>{ state.virtConfig[c.empresa]={estructura:c.estructura,digitadorPct:num0(c.digitador_pct),usaComisionDigitador:c.usa_comision_digitador===true,socio1:c.socio1_nombre,socio1Pct:num0(c.socio1_pct),socio2:c.socio2_nombre,socio2Pct:num0(c.socio2_pct),rivasPct:num0(c.rivas_pct)}; }); }
+    else state.virtConfig=null;
+  }catch(e){ state.virtRegs=[]; state._virtReady=false; state.virtConfig=null; }
 }
 function num0(v){ return v!=null?Number(v):0; }
 function isDayClosed(date){ return Array.isArray(state.cierres)&&state.cierres.includes(date); }
@@ -1525,7 +1609,7 @@ function dayCuadre(branch,date){
     if(t.branch===branch && t.date===date && !t.isOffice){
       if(t.type==='income') c+=t.amount;
       else if(t.type==='expense') c-=t.amount;
-      else if(t.type==='out') c-=t.amount;
+      else if(t.type==='out' && t.outKind!=='transfer') c-=t.amount; // retiros sí; transferencias (préstamos) NO afectan el cuadre
     }
   });
   return c;
@@ -2075,6 +2159,191 @@ async function delLectura(id){
 }
 
 function fmtDate(d){ const x=new Date(d+'T00:00:00'); return `${x.getDate()} ${MONTHS_SHORT[x.getMonth()]} ${x.getFullYear()}`; }
+
+/* ================= VIRTUALES ================= */
+let virtCurMes, virtCurAnio;
+
+function openVirtuales(){
+  if(!state._virtReady){
+    showOnlyView('view-virtuales');
+    document.getElementById('virtTotals').innerHTML='<div class="panel" style="padding:20px;text-align:center;"><div style="font-size:14px;color:var(--ink);line-height:1.6;">El módulo de Virtuales necesita activarse en la base de datos primero.<br><br>Falta crear las tablas en Supabase (pegar el código SQL que te entregué).</div></div>';
+    return;
+  }
+  showOnlyView('view-virtuales');
+  // init selectors
+  const now=new Date();
+  if(virtCurMes==null) virtCurMes=now.getMonth()+1;
+  if(virtCurAnio==null) virtCurAnio=now.getFullYear();
+  const mesSel=document.getElementById('virtMes');
+  mesSel.innerHTML=MONTHS.map((m,i)=>`<option value="${i+1}">${m}</option>`).join('');
+  mesSel.value=virtCurMes;
+  const anioSel=document.getElementById('virtAnio');
+  const years=[2025,2026,2027];
+  anioSel.innerHTML=years.map(y=>`<option value="${y}">${y}</option>`).join('');
+  anioSel.value=virtCurAnio;
+  renderVirtuales();
+}
+
+function virtRegsOf(mes,anio){ return state.virtRegs.filter(r=>r.mes===mes&&r.anio===anio); }
+
+function renderVirtuales(){
+  virtCurMes=parseInt(document.getElementById('virtMes').value);
+  virtCurAnio=parseInt(document.getElementById('virtAnio').value);
+  const regs=virtRegsOf(virtCurMes,virtCurAnio);
+
+  // Totals
+  const totVenta=regs.reduce((s,r)=>s+r.venta,0);
+  const totBalance=regs.reduce((s,r)=>s+r.balance,0);
+  const totComision=regs.reduce((s,r)=>s+r.comision,0);
+  const totNeto=regs.reduce((s,r)=>s+r.total,0);
+  const totTk=regs.reduce((s,r)=>s+r.tk,0);
+  document.getElementById('virtTotals').innerHTML=`
+    <div style="background:linear-gradient(135deg,#101820,#16242f);border-radius:16px;padding:18px;margin-bottom:14px;">
+      <div style="color:#7d909e;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Total Neto · ${MONTHS[virtCurMes-1]} ${virtCurAnio}</div>
+      <div style="color:#fff;font-size:30px;font-weight:800;margin-bottom:14px;">RD$${fmt(totNeto)}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:90px;background:rgba(255,255,255,.06);border-radius:10px;padding:9px 11px;"><div style="color:#7d909e;font-size:10px;text-transform:uppercase;font-weight:600;">Ventas</div><div style="color:#fff;font-size:14px;font-weight:700;">RD$${fmt(totVenta)}</div></div>
+        <div style="flex:1;min-width:90px;background:rgba(255,255,255,.06);border-radius:10px;padding:9px 11px;"><div style="color:#7d909e;font-size:10px;text-transform:uppercase;font-weight:600;">Balance</div><div style="color:#fff;font-size:14px;font-weight:700;">RD$${fmt(totBalance)}</div></div>
+        <div style="flex:1;min-width:90px;background:rgba(255,255,255,.06);border-radius:10px;padding:9px 11px;"><div style="color:#7d909e;font-size:10px;text-transform:uppercase;font-weight:600;">Tickets</div><div style="color:#fff;font-size:14px;font-weight:700;">${fmt(totTk)}</div></div>
+      </div>
+    </div>`;
+
+  // By company
+  const byComp=document.getElementById('virtByCompany');
+  const compRows=VIRT_EMPRESAS.map(emp=>{
+    const er=regs.filter(r=>r.empresa===emp);
+    const venta=er.reduce((s,r)=>s+r.venta,0);
+    const balance=er.reduce((s,r)=>s+r.balance,0);
+    const neto=er.reduce((s,r)=>s+r.total,0);
+    return {emp,venta,balance,neto,count:er.length};
+  });
+  if(regs.length===0){
+    byComp.innerHTML='<div class="empty-hint" style="padding:16px;">Sin registros este mes. Toca "Registrar / editar mes".</div>';
+  } else {
+    byComp.innerHTML=compRows.map(c=>`
+      <div style="padding:11px 0;border-bottom:1px solid #eef2f4;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+          <span style="font-size:14px;font-weight:700;">${c.emp}</span>
+          <span style="font-size:14px;font-weight:800;color:${c.neto<0?'var(--red)':'var(--green)'};">RD$${fmt(c.neto)}</span>
+        </div>
+        <div style="font-size:11px;color:var(--muted);">Ventas RD$${fmt(c.venta)} · Balance RD$${fmt(c.balance)}</div>
+      </div>`).join('');
+  }
+
+  // By branch
+  const byBranch=document.getElementById('virtByBranch');
+  if(regs.length===0){ byBranch.innerHTML='<div class="empty-hint" style="padding:16px;">—</div>'; }
+  else {
+    const rows=VIRT_SUCURSALES.map(suc=>{
+      const sr=regs.filter(r=>r.sucursal===suc);
+      const venta=sr.reduce((s,r)=>s+r.venta,0);
+      const neto=sr.reduce((s,r)=>s+r.total,0);
+      const tk=sr.reduce((s,r)=>s+r.tk,0);
+      return {suc,venta,neto,tk,count:sr.length};
+    }).filter(x=>x.count>0);
+    byBranch.innerHTML=rows.map(r=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #eef2f4;">
+        <div><div style="font-size:13px;font-weight:600;">${r.suc.replace('PRIME SPORT','PS')}</div><div style="font-size:11px;color:var(--muted);">Ventas RD$${fmt(r.venta)} · ${fmt(r.tk)} tk</div></div>
+        <div style="font-size:13.5px;font-weight:700;color:${r.neto<0?'var(--red)':'var(--green)'};">RD$${fmt(r.neto)}</div>
+      </div>`).join('')||'<div class="empty-hint" style="padding:16px;">—</div>';
+  }
+
+  // Monthly (whole year)
+  document.getElementById('virtYearLabel').textContent=virtCurAnio;
+  const monthly=document.getElementById('virtMonthly');
+  const monRows=MONTHS.map((m,i)=>{
+    const mr=state.virtRegs.filter(r=>r.anio===virtCurAnio&&r.mes===i+1);
+    const venta=mr.reduce((s,r)=>s+r.venta,0);
+    const neto=mr.reduce((s,r)=>s+r.total,0);
+    return {m,venta,neto,has:mr.length>0};
+  });
+  monthly.innerHTML=monRows.map(r=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f2f5f6;${r.has?'':'opacity:.4;'}">
+      <span style="font-size:12.5px;font-weight:600;">${r.m}</span>
+      <div style="text-align:right;">
+        <span style="font-size:12.5px;font-weight:700;color:${r.neto<0?'var(--red)':r.has?'var(--green)':'var(--muted)'};">RD$${fmt(r.neto)}</span>
+        <span style="font-size:10.5px;color:var(--muted);margin-left:8px;">v: ${fmt(r.venta)}</span>
+      </div>
+    </div>`).join('');
+}
+
+// ---- registro screen ----
+function openVirtRegistro(){
+  showOnlyView('view-virtregistro');
+  document.getElementById('virtRegTitle').textContent=`${MONTHS[virtCurMes-1]} ${virtCurAnio}`;
+  const empSel=document.getElementById('virtRegEmpresa');
+  empSel.innerHTML=VIRT_EMPRESAS.map(e=>`<option>${e}</option>`).join('');
+  renderVirtRegRows();
+}
+
+function renderVirtRegRows(){
+  const emp=document.getElementById('virtRegEmpresa').value;
+  const existing=state.virtRegs.filter(r=>r.mes===virtCurMes&&r.anio===virtCurAnio&&r.empresa===emp);
+  const wrap=document.getElementById('virtRegRows');
+  wrap.innerHTML=VIRT_SUCURSALES.map(suc=>{
+    const r=existing.find(x=>x.sucursal===suc);
+    const id=suc.replace(/[^0-9]/g,'');
+    return `<div class="panel" style="padding:12px;margin-bottom:10px;" data-suc="${suc}">
+      <div style="font-size:13px;font-weight:700;margin-bottom:9px;color:var(--cerulean);">${suc}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div class="fld" style="margin:0;"><label style="font-size:11px;">TK (tickets)</label><input type="number" inputmode="numeric" id="vr_tk_${id}" value="${r?r.tk:''}" placeholder="0" oninput="calcVirtRow('${id}')"></div>
+        <div class="fld" style="margin:0;"><label style="font-size:11px;">Venta RD$</label><input type="number" inputmode="decimal" id="vr_venta_${id}" value="${r?r.venta:''}" placeholder="0" oninput="calcVirtRow('${id}')"></div>
+        <div class="fld" style="margin:0;"><label style="font-size:11px;">Balance</label><input type="number" inputmode="decimal" id="vr_balance_${id}" value="${r?r.balance:''}" placeholder="0" oninput="calcVirtRow('${id}')"></div>
+        <div class="fld" style="margin:0;"><label style="font-size:11px;">Bonos/Imp (neg.)</label><input type="number" inputmode="decimal" id="vr_bonos_${id}" value="${r?r.bonos:''}" placeholder="0" oninput="calcVirtRow('${id}')"></div>
+        <div class="fld" style="margin:0;"><label style="font-size:11px;">Comisión (neg.)</label><input type="number" inputmode="decimal" id="vr_comision_${id}" value="${r?r.comision:''}" placeholder="0" oninput="calcVirtRow('${id}')"></div>
+        <div class="fld" style="margin:0;"><label style="font-size:11px;">Faltantes (neg.)</label><input type="number" inputmode="decimal" id="vr_faltantes_${id}" value="${r?r.faltantes:''}" placeholder="0" oninput="calcVirtRow('${id}')"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:9px;padding-top:9px;border-top:1px solid #eef2f4;">
+        <span style="font-size:11.5px;color:var(--muted);font-weight:600;">Total</span>
+        <span style="font-size:15px;font-weight:800;" id="vr_total_${id}">RD$0</span>
+      </div>
+    </div>`;
+  }).join('');
+  // compute existing totals
+  VIRT_SUCURSALES.forEach(suc=>calcVirtRow(suc.replace(/[^0-9]/g,'')));
+}
+
+function calcVirtRow(id){
+  const g=k=>{ const v=parseFloat(document.getElementById(`vr_${k}_${id}`).value); return isNaN(v)?0:v; };
+  const total=g('balance')+g('bonos')+g('comision')+g('faltantes');
+  const el=document.getElementById(`vr_total_${id}`);
+  el.textContent='RD$'+fmt(total);
+  el.style.color=total<0?'var(--red)':(total>0?'var(--green)':'var(--ink)');
+}
+
+async function saveVirtRegistro(){
+  const emp=document.getElementById('virtRegEmpresa').value;
+  setSyncState('saving');
+  let saved=0;
+  try{
+    for(const suc of VIRT_SUCURSALES){
+      const id=suc.replace(/[^0-9]/g,'');
+      const g=k=>{ const v=parseFloat(document.getElementById(`vr_${k}_${id}`).value); return isNaN(v)?0:v; };
+      const tk=g('tk'),venta=g('venta'),balance=g('balance'),bonos=g('bonos'),comision=g('comision'),faltantes=g('faltantes');
+      const hasData=(tk||venta||balance||bonos||comision||faltantes);
+      const total=balance+bonos+comision+faltantes;
+      const existing=state.virtRegs.find(r=>r.mes===virtCurMes&&r.anio===virtCurAnio&&r.empresa===emp&&r.sucursal===suc);
+      if(!hasData){
+        // if there was an existing row and now it's empty, delete it
+        if(existing){ await sb.from('virtuales_registros').delete().eq('id',existing._id); state.virtRegs=state.virtRegs.filter(r=>r._id!==existing._id); }
+        continue;
+      }
+      const row={anio:virtCurAnio,mes:virtCurMes,empresa:emp,sucursal:suc,tk,venta,balance,bonos,comision,faltantes,total,creado_por:currentUser||null};
+      if(existing){
+        await sb.from('virtuales_registros').update(row).eq('id',existing._id);
+        Object.assign(existing,{tk,venta,balance,bonos,comision,faltantes,total});
+      } else {
+        const {data,error}=await sb.from('virtuales_registros').insert(row).select();
+        if(error)throw error;
+        state.virtRegs.push({_id:data[0].id,...row});
+      }
+      saved++;
+    }
+    setSyncState('ok');
+    toast(`${emp}: ${saved} sucursales guardadas`,true);
+    openVirtuales();
+  }catch(e){ console.error(e); setSyncState('error'); toast('Error al guardar Virtuales',false); }
+}
 
 /* ================= CÓMO USAR ================= */
 function openHelp(){
