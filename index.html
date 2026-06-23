@@ -1652,30 +1652,38 @@ function renderCorte(){
   el.innerHTML=banks.map(b=>{
     const cuadre=dayCuadre(b.name,corteDateVal);
     const collected=dayCollected(b.name,corteDateVal);
-    const pending=bankPending(b.name);
+    const pending=bankPending(b.name); // all-time outstanding (includes today + carried)
+    const pendingBefore=pending-cuadre+collected; // outstanding from BEFORE today (carried)
     const hasToday=state.txns.some(t=>t.branch===b.name&&t.date===corteDateVal&&t.type!=='collect');
     if(hasToday||collected!==0) anyActivity=true;
     // Only show banks with activity today OR a carried pending balance
     if(!hasToday && collected===0 && Math.abs(pending)<1) return '';
-    const remaining=cuadre-collected; // what's left to move today
+    // What's left to move to settle EVERYTHING (today's cuadre + carried pending)
+    const remaining=pending;
     const won=cuadre>=0;
     const cuColor=cuadre<0?'var(--red)':'var(--green)';
     const cuLabel=won?'Debe entregar':'Debe recibir';
     const shortName=b.name.replace('PRIME SPORT ','PS ');
+    // net label when there's a carried pending that changes the suggested amount
+    const hasCarry=Math.abs(pendingBefore)>=1;
+    const netColor=remaining>0?'var(--amber)':(Math.abs(remaining)<1?'var(--green)':'var(--red)');
     return `<div class="panel" style="padding:14px;margin-bottom:11px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <div style="font-size:15px;font-weight:700;">${shortName}</div>
-        <div style="text-align:right;"><div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;">${cuLabel}</div><div style="font-size:17px;font-weight:800;color:${cuColor};">RD$${fmt(Math.abs(cuadre))}</div></div>
+        <div style="text-align:right;"><div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;">${cuLabel} (hoy)</div><div style="font-size:17px;font-weight:800;color:${cuColor};">RD$${fmt(Math.abs(cuadre))}</div></div>
       </div>
+      ${hasCarry?`<div style="background:#f0eaf7;border-radius:8px;padding:8px 10px;margin-bottom:10px;font-size:11.5px;color:#6b3fa0;line-height:1.5;">
+        Cuadre de hoy: RD$${fmt(cuadre)}<br>
+        Pendiente anterior: RD$${fmt(pendingBefore)}<br>
+        <b>Neto a ${remaining>=0?'entregar':'recibir'}: RD$${fmt(Math.abs(remaining))}</b></div>`:''}
       <div style="display:flex;gap:8px;font-size:11.5px;color:var(--muted);margin-bottom:11px;">
         <div style="flex:1;background:#f4f6f7;border-radius:8px;padding:7px 9px;"><div style="font-weight:600;">Movido hoy</div><div style="font-size:14px;font-weight:700;color:var(--ink);margin-top:1px;">RD$${fmt(collected)}</div></div>
-        <div style="flex:1;background:${Math.abs(remaining)<1?'#eaf7f0':'#fdf0e8'};border-radius:8px;padding:7px 9px;"><div style="font-weight:600;">Falta mover</div><div style="font-size:14px;font-weight:700;color:${Math.abs(remaining)<1?'var(--green)':'var(--amber)'};margin-top:1px;">RD$${fmt(remaining)}</div></div>
+        <div style="flex:1;background:${Math.abs(remaining)<1?'#eaf7f0':'#fdf0e8'};border-radius:8px;padding:7px 9px;"><div style="font-weight:600;">${remaining>=0?'Falta entregar':'Falta recibir'}</div><div style="font-size:14px;font-weight:700;color:${netColor};margin-top:1px;">RD$${fmt(Math.abs(remaining))}</div></div>
       </div>
       <div style="display:flex;gap:8px;">
         <div class="amount-input" style="flex:1;"><span class="cur" style="font-size:13px;">RD$</span><input type="number" inputmode="decimal" placeholder="${fmt(remaining)}" step="0.01" id="mv_${b.name.replace(/[^a-zA-Z0-9]/g,'_')}" style="padding:10px 11px 10px 44px;font-size:15px;font-weight:700;"></div>
         <button onclick="collectOne('${b.name.replace(/'/g,"\\'")}')" style="border:none;background:var(--navy);color:#fff;border-radius:10px;padding:0 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">Registrar</button>
       </div>
-      ${Math.abs(pending)>=1?`<div style="margin-top:9px;font-size:11.5px;color:${pending<0?'var(--red)':'var(--amber)'};font-weight:600;">${pending>0?'⏳ Pendiente arrastrado: la banca aún debe RD$'+fmt(pending):'⏳ A favor de la banca: oficina debe RD$'+fmt(Math.abs(pending))}</div>`:''}
     </div>`;
   }).join('');
 
@@ -1712,10 +1720,9 @@ function collectOne(branch){
   const fieldId='mv_'+branch.replace(/[^a-zA-Z0-9]/g,'_');
   const raw=document.getElementById(fieldId).value;
   const cuadre=dayCuadre(branch,corteDateVal);
-  const alreadyCollected=dayCollected(branch,corteDateVal);
-  const remaining=cuadre-alreadyCollected;
-  // If empty, default to the full remaining amount
-  let moved = (raw===''||raw===null) ? remaining : parseFloat(raw);
+  // Default to the FULL net outstanding (today's cuadre + carried pending)
+  const netOutstanding=bankPending(branch);
+  let moved = (raw===''||raw===null) ? netOutstanding : parseFloat(raw);
   if(isNaN(moved)){ toast('Monto inválido',false); return; }
   if(moved===0){ toast('El monto no puede ser cero',false); return; }
   recordCollect(branch,corteDateVal,cuadre,moved);
@@ -1723,23 +1730,22 @@ function collectOne(branch){
   renderCorte();
 }
 
-// "Recolectar todo": for each bank with activity today, move the full remaining cuadre
+// "Recolectar todo": for each bank with activity, move the full net outstanding (today + carried)
 function collectAll(){
   if(isDayClosed(corteDateVal)){ toast('El corte de este día está cerrado.',false); return; }
-  if(!confirm('¿Recolectar el cuadre completo de todas las bancas con movimientos hoy? El dinero se moverá desde/hacia la Oficina.')) return;
+  if(!confirm('¿Recolectar el neto completo de todas las bancas (cuadre de hoy + pendientes anteriores)? El dinero se moverá desde/hacia la Oficina.')) return;
   const banks=state.branches.filter(b=>!b.isOffice);
   let count=0;
   banks.forEach(b=>{
     const cuadre=dayCuadre(b.name,corteDateVal);
-    const collected=dayCollected(b.name,corteDateVal);
-    const remaining=cuadre-collected;
+    const netOutstanding=bankPending(b.name);
     const hasToday=state.txns.some(t=>t.branch===b.name&&t.date===corteDateVal&&t.type!=='collect');
-    if(hasToday && Math.abs(remaining)>=1){
-      recordCollect(b.name,corteDateVal,cuadre,remaining);
+    if((hasToday||Math.abs(netOutstanding)>=1) && Math.abs(netOutstanding)>=1){
+      recordCollect(b.name,corteDateVal,cuadre,netOutstanding);
       count++;
     }
   });
-  if(count){ toast(`${count} bancas recolectadas`,true); } else { toast('No hay nada pendiente por recolectar hoy',false); }
+  if(count){ toast(`${count} bancas recolectadas`,true); } else { toast('No hay nada pendiente por recolectar',false); }
   renderCorte();
 }
 
