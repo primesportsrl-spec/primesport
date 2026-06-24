@@ -356,7 +356,7 @@
   <div class="section-label">Nuevo Movimiento</div>
   <div class="form-card">
     <div class="seg">
-      <button id="segInc" class="on inc" onclick="setType('income')">▲ Ingreso</button>
+      <button id="segInc" class="on inc" onclick="setType('income')">▲ Operaciones</button>
       <button id="segExp" onclick="setType('expense')">▼ Gasto</button>
       <button id="segOut" onclick="setType('out')">↗ Salida</button>
     </div>
@@ -384,7 +384,7 @@
           <div class="amount-input"><span class="cur">RD$</span><input type="number" id="fAmountInc" inputmode="decimal" placeholder="0.00" step="0.01"></div>
         </div>
         <div class="fld">
-          <label id="incCatLabel">Categoría de ingreso <span class="req">*</span></label>
+          <label id="incCatLabel">Categoría de operación <span class="req">*</span></label>
           <div class="chip-row" id="incCatChips"></div>
         </div>
         <div class="fld" id="incSubBlock" style="display:none;">
@@ -404,7 +404,7 @@
 
       <div class="fld"><label>Fecha</label><input type="date" id="fDateInc"></div>
       <div class="fld"><label>Nota (opcional)</label><input type="text" id="fNoteInc" placeholder="Detalle o referencia…"></div>
-      <button class="btn-primary green" id="saveBtnInc" onclick="saveIncome()">Guardar ingreso</button>
+      <button class="btn-primary green" id="saveBtnInc" onclick="saveIncome()">Guardar operación</button>
     </div>
 
     <!-- ===== EXPENSE ===== -->
@@ -481,7 +481,7 @@
   <div class="section-label">Historial de Movimientos</div>
   <div class="filter-bar" id="histFilters"></div>
 
-  <!-- branch + sort controls -->
+  <!-- branch + date + sort controls -->
   <div style="display:flex;gap:8px;margin-bottom:12px;">
     <button onclick="toggleHistBranchPanel()" id="histBranchBtn" style="flex:1;border:1px solid var(--line);background:#fff;border-radius:11px;padding:11px 13px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--ink);display:flex;align-items:center;justify-content:space-between;gap:8px;">
       <span id="histBranchLabel">Todas las bancas</span>
@@ -491,6 +491,25 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><path d="M3 6h18M7 12h10m-7 6h4"/></svg>
       <span id="histSortLabel">Fecha ↓</span>
     </button>
+  </div>
+
+  <!-- date filter button -->
+  <button onclick="toggleHistDatePanel()" id="histDateBtn" style="width:100%;border:1px solid var(--line);background:#fff;border-radius:11px;padding:11px 13px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--ink);display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;">
+    <span style="display:flex;align-items:center;gap:8px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span id="histDateLabel">Todo el mes</span></span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:15px;height:15px;flex-shrink:0;"><polyline points="6 9 12 15 18 9"/></svg>
+  </button>
+
+  <!-- date selection panel (hidden by default) -->
+  <div id="histDatePanel" style="display:none;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px;box-shadow:0 4px 16px rgba(16,24,32,.08);">
+    <span style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Filtrar por fechas</span>
+    <div class="row2" style="margin-top:10px;">
+      <div class="fld" style="margin:0;"><label>Desde</label><input type="date" id="histDateFrom"></div>
+      <div class="fld" style="margin:0;"><label>Hasta</label><input type="date" id="histDateTo"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button onclick="clearHistDate()" style="flex:1;border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:9px;padding:10px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">Quitar fechas</button>
+      <button onclick="applyHistDate()" class="btn-primary" style="flex:1;margin:0;padding:10px;font-size:13px;">Aplicar</button>
+    </div>
   </div>
 
   <!-- branch selection panel (hidden by default) -->
@@ -1008,6 +1027,7 @@ let histFilter='all', repView='branch';
 let histBranches=null;            // null = all branches; otherwise array of selected names
 let histSort='date-desc';         // date-desc | date-asc | amount-desc | amount-asc
 let _histBranchTmp=null;          // temp selection while panel open
+let histDateFrom=null, histDateTo=null;  // specific date range filter (null = use month)
 let fundEditIdx=null;
 
 const fmt=n=>new Intl.NumberFormat('es-DO',{minimumFractionDigits:0,maximumFractionDigits:0}).format(Math.round(n));
@@ -1055,7 +1075,7 @@ async function loadState(){
   if(suc.error||ci.error||cg.error||ta.error||mov.error){
     throw (suc.error||ci.error||cg.error||ta.error||mov.error);
   }
-  state.branches=suc.data.map(s=>({name:s.nombre,fund:Number(s.fondo_inicial)||0,isOffice:!!s.es_oficina,_id:s.id}));
+  state.branches=suc.data.map(s=>({name:s.nombre,fund:Number(s.fondo_inicial)||0,isOffice:!!s.es_oficina,activa:s.activa!==false,_id:s.id}));
   state.incCats=ci.data.map(c=>({name:c.nombre,subs:Array.isArray(c.subtipos)?c.subtipos:[],_id:c.id}));
   state.expCats=cg.data.map(c=>c.nombre);
   state._expCatIds=Object.fromEntries(cg.data.map(c=>[c.nombre,c.id]));
@@ -1289,7 +1309,7 @@ function setIncMode(m){
   document.getElementById('miMulti').classList.toggle('on',m==='multi');
   document.getElementById('incSingle').style.display=m==='single'?'block':'none';
   document.getElementById('incMulti').style.display=m==='multi'?'block':'none';
-  document.getElementById('saveBtnInc').textContent=m==='multi'?'Guardar ingresos':'Guardar ingreso';
+  document.getElementById('saveBtnInc').textContent=m==='multi'?'Guardar operaciones':'Guardar operación';
   if(m==='multi')renderMultiList();
 }
 
@@ -1315,7 +1335,8 @@ function setOutMode(m){
 
 function refreshDestOptions(){
   const origin=document.getElementById('fBranchOut').value;
-  document.getElementById('fBranchDest').innerHTML=branchNames().filter(n=>n!==origin).map(n=>`<option>${n}</option>`).join('');
+  const visible=activeBranches().map(b=>b.name);
+  document.getElementById('fBranchDest').innerHTML=visible.filter(n=>n!==origin).map(n=>`<option>${n}</option>`).join('');
 }
 
 /* ---------- FUND BANNER ---------- */
@@ -1343,7 +1364,7 @@ function refreshIncCats(){
     label.innerHTML='Tipo de aporte <span class="req">*</span>';
     chips.innerHTML=state.officeIncCats.map(c=>`<div class="chip" data-cat="${c}" onclick="pickIncCat('${c.replace(/'/g,"\\'")}')">${c}</div>`).join('');
   } else {
-    label.innerHTML='Categoría de ingreso <span class="req">*</span>';
+    label.innerHTML='Categoría de operación <span class="req">*</span>';
     chips.innerHTML=state.incCats.map(c=>`<div class="chip" data-cat="${c.name}" onclick="pickIncCat('${c.name.replace(/'/g,"\\'")}')">${c.name}</div>`).join('');
   }
   selIncCat=null;
@@ -1352,7 +1373,9 @@ function refreshIncCats(){
 
 /* ---------- POPULATE FORMS ---------- */
 function renderFormOptions(){
-  const opts=branchNames().map(n=>`<option>${n}</option>`).join('');
+  // Hide inactive branches from new-entry forms (they remain in history/reports)
+  const visible=activeBranches().map(b=>b.name);
+  const opts=visible.map(n=>`<option>${n}</option>`).join('');
   ['fBranchInc','fBranchExp','fBranchOut'].forEach(id=>document.getElementById(id).innerHTML=opts);
   document.getElementById('incCatChips').innerHTML=state.incCats.map(c=>`<div class="chip" data-cat="${c.name}" onclick="pickIncCat('${c.name.replace(/'/g,"\\'")}')">${c.name}</div>`).join('');
   document.getElementById('fExpCat').innerHTML=state.expCats.map(c=>`<option>${c}</option>`).join('');
@@ -1416,14 +1439,14 @@ function saveIncome(){
     if(!selIncCat){ toast('Selecciona una categoría',false); return; }
     const tx={id:uid(),type:'income',amount,branch,date,note,category:selIncCat,subtype:document.getElementById('fIncSub').value||''};
     state.txns.push(tx); cloudInsertTxn(tx);
-    afterSave(date,'Ingreso guardado');
+    afterSave(date,'Operación guardada');
   } else {
     const inputs=document.querySelectorAll('#multiList input');
     const batch=[];
     inputs.forEach(inp=>{ const raw=inp.value.trim(); if(raw==='')return; const v=parseFloat(raw); if(!isNaN(v)&&v!==0)batch.push({cat:inp.dataset.cat,amount:v}); });
     if(!batch.length){ toast('Ingresa al menos un monto',false); return; }
     batch.forEach(b=>{ const tx={id:uid(),type:'income',amount:b.amount,branch,date,note,category:b.cat,subtype:''}; state.txns.push(tx); cloudInsertTxn(tx); });
-    afterSave(date,`${batch.length} ingresos guardados`);
+    afterSave(date,`${batch.length} operaciones guardadas`);
   }
 }
 
@@ -1486,7 +1509,14 @@ function renderHistory(){
   const filters=[{k:'all',l:'Todos'},{k:'income',l:'Ingresos'},{k:'expense',l:'Gastos'},{k:'out',l:'Salidas'},{k:'collect',l:'Recolección'},{k:'ncf',l:'Con NCF'},{k:'noncf',l:'Sin NCF'}];
   document.getElementById('histFilters').innerHTML=filters.map(f=>`<div class="fchip ${histFilter===f.k?'on':''}" onclick="setHistFilter('${f.k}')">${f.l}</div>`).join('');
   syncHistControls();
-  let txns=sortHistTxns(monthTxns());
+  // source: date range if set, otherwise current month
+  let baseTxns;
+  if(histDateFrom&&histDateTo){
+    baseTxns=state.txns.filter(t=>t.date>=histDateFrom&&t.date<=histDateTo);
+  } else {
+    baseTxns=monthTxns();
+  }
+  let txns=sortHistTxns(baseTxns);
   if(histFilter==='income')txns=txns.filter(t=>t.type==='income');
   else if(histFilter==='expense')txns=txns.filter(t=>t.type==='expense');
   else if(histFilter==='out')txns=txns.filter(t=>t.type==='out');
@@ -1497,7 +1527,7 @@ function renderHistory(){
   if(histBranches!==null) txns=txns.filter(t=>histBranches.includes(t.branch)||(t.type==='collect'&&histBranches.includes(t.office)));
 
   const el=document.getElementById('histList');
-  if(!txns.length){ el.innerHTML='<div class="empty-hint" style="padding:40px 20px;">No hay movimientos con este filtro en '+MONTHS[curMonth]+' '+curYear+'.</div>'; return; }
+  if(!txns.length){ const ctx=(histDateFrom&&histDateTo)?'el rango seleccionado':(MONTHS[curMonth]+' '+curYear); el.innerHTML='<div class="empty-hint" style="padding:40px 20px;">No hay movimientos con este filtro en '+ctx+'.</div>'; return; }
   el.innerHTML=txns.map(t=>{
     let icBg,icColor,icon,sign,amtClass,amount;
     if(t.type==='income'){ amount=t.amount;icBg='var(--green-dim)';icColor='#4cd6a0';sign='';amtClass='inc';icon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>'; }
@@ -1547,6 +1577,41 @@ function syncHistControls(){
     const map={'date-desc':'Fecha ↓','date-asc':'Fecha ↑','amount-desc':'Monto ↓','amount-asc':'Monto ↑'};
     sl.textContent=map[histSort];
   }
+  // date label
+  const dl=document.getElementById('histDateLabel');
+  if(dl){
+    if(histDateFrom&&histDateTo){
+      const f=new Date(histDateFrom+'T00:00:00'), t=new Date(histDateTo+'T00:00:00');
+      dl.textContent=`${f.getDate()} ${MONTHS_SHORT[f.getMonth()]} – ${t.getDate()} ${MONTHS_SHORT[t.getMonth()]}`;
+    } else {
+      dl.textContent='Todo el mes';
+    }
+  }
+}
+// ---- date range filter ----
+function toggleHistDatePanel(){
+  const panel=document.getElementById('histDatePanel');
+  const open=panel.style.display!=='none';
+  if(open){ panel.style.display='none'; return; }
+  // init inputs with current values or month bounds
+  const from=document.getElementById('histDateFrom'), to=document.getElementById('histDateTo');
+  if(histDateFrom) from.value=histDateFrom; else { const d=new Date(curYear,curMonth,1); from.value=d.toISOString().slice(0,10); }
+  if(histDateTo) to.value=histDateTo; else { const d=new Date(curYear,curMonth+1,0); to.value=d.toISOString().slice(0,10); }
+  panel.style.display='block';
+}
+function applyHistDate(){
+  const from=document.getElementById('histDateFrom').value;
+  const to=document.getElementById('histDateTo').value;
+  if(!from||!to){ toast('Selecciona ambas fechas',false); return; }
+  if(from>to){ toast('La fecha "Desde" no puede ser mayor que "Hasta"',false); return; }
+  histDateFrom=from; histDateTo=to;
+  document.getElementById('histDatePanel').style.display='none';
+  renderHistory();
+}
+function clearHistDate(){
+  histDateFrom=null; histDateTo=null;
+  document.getElementById('histDatePanel').style.display='none';
+  renderHistory();
 }
 function toggleHistBranchPanel(){
   const panel=document.getElementById('histBranchPanel');
@@ -1692,7 +1757,7 @@ function renderCorte(){
   const d=new Date(corteDateVal+'T00:00:00');
   document.getElementById('corteDateLabel').textContent=`${d.getDate()} de ${MONTHS[d.getMonth()]}, ${d.getFullYear()}`;
 
-  const banks=state.branches.filter(b=>!b.isOffice);
+  const banks=state.branches.filter(b=>!b.isOffice&&b.activa!==false);
   const el=document.getElementById('corteList');
   let anyActivity=false;
   el.innerHTML=banks.map(b=>{
@@ -1746,7 +1811,7 @@ function renderCorte(){
 }
 
 function renderCortePending(){
-  const banks=state.branches.filter(b=>!b.isOffice);
+  const banks=state.branches.filter(b=>!b.isOffice&&b.activa!==false);
   const pend=banks.map(b=>({name:b.name,p:bankPending(b.name)})).filter(x=>Math.abs(x.p)>=1);
   const panel=document.getElementById('cortePendPanel');
   if(!pend.length){ panel.style.display='none'; return; }
@@ -1780,7 +1845,7 @@ function collectOne(branch){
 function collectAll(){
   if(isDayClosed(corteDateVal)){ toast('El corte de este día está cerrado.',false); return; }
   if(!confirm('¿Recolectar el neto completo de todas las bancas (cuadre de hoy + pendientes anteriores)? El dinero se moverá desde/hacia la Oficina.')) return;
-  const banks=state.branches.filter(b=>!b.isOffice);
+  const banks=state.branches.filter(b=>!b.isOffice&&b.activa!==false);
   let count=0;
   banks.forEach(b=>{
     const cuadre=dayCuadre(b.name,corteDateVal);
@@ -1808,7 +1873,7 @@ async function closeCorte(){
   if(isDayClosed(corteDateVal)){ toast('Este día ya está cerrado.',false); return; }
   // compute snapshot: office balance + total pending
   const officeBal=liveFund(officeName());
-  const banks=state.branches.filter(b=>!b.isOffice);
+  const banks=state.branches.filter(b=>!b.isOffice&&b.activa!==false);
   const pendTotal=banks.reduce((s,b)=>s+bankPending(b.name),0);
   const d=new Date(corteDateVal+'T00:00:00');
   const msg=`¿Cerrar el corte del ${d.getDate()} de ${MONTHS[d.getMonth()]}?\n\nBalance en Oficina: RD$${fmt(officeBal)}\nPendientes en bancas: RD$${fmt(pendTotal)}\n\nLos movimientos de este día quedarán bloqueados. Para reabrir necesitarás tu clave.`;
@@ -1831,7 +1896,7 @@ const CORTE_WA_NUMBER='18097134190'; // número fijo por defecto
 function buildCorteSummary(){
   const d=new Date(corteDateVal+'T00:00:00');
   const officeBal=liveFund(officeName());
-  const banks=state.branches.filter(b=>!b.isOffice);
+  const banks=state.branches.filter(b=>!b.isOffice&&b.activa!==false);
   const pend=banks.map(b=>({name:b.name,p:bankPending(b.name)})).filter(x=>Math.abs(x.p)>=1);
   const pendTotal=banks.reduce((s,b)=>s+bankPending(b.name),0);
   let txt=`*PRIME SPORT — Cierre del ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}*\n\n`;
@@ -1894,7 +1959,7 @@ function fillBranchSelect(id){
   const sel=document.getElementById(id);
   if(!sel)return;
   const cur=sel.value;
-  sel.innerHTML=state.branches.filter(b=>!b.isOffice).map(b=>`<option>${b.name}</option>`).join('');
+  sel.innerHTML=state.branches.filter(b=>!b.isOffice&&b.activa!==false).map(b=>`<option>${b.name}</option>`).join('');
   if(cur)sel.value=cur;
 }
 
@@ -2321,39 +2386,42 @@ function renderVirtuales(){
 
 // ---- partner distribution (Fase 2) ----
 // Computes the split for one company given its total "balance" (sum of Totales) and registered comision
-function virtDistribute(empresa, balanceTotal, comisionTotal){
+function virtDistribute(empresa, balanceTotal, comisionTotal, totalNeto, bonosTotal){
   const cfg = state.virtConfig && state.virtConfig[empresa];
   if(!cfg) return null;
   const r = {empresa, balanceTotal, pasos:[], socios:[]};
   if(cfg.estructura==='merengue'){
-    // Total Neto = balance + digitador(comision, ya negativa); reparto socio1/socio2
-    const dig = comisionTotal; // la comisión registrada (negativa)
-    const neto = balanceTotal + dig;
-    r.pasos.push({label:'Balance Total', val:balanceTotal});
-    r.pasos.push({label:'Digitador (comisión)', val:dig});
+    // MERENGUE: Balance bruto + Comisión (digitador, negativa) = Total Neto
+    // El "totalNeto" YA es balance+comision+bonos+faltantes; lo usamos directo
+    const neto = totalNeto;
+    r.pasos.push({label:'Balance bruto', val:balanceTotal});
+    r.pasos.push({label:'Digitador (comisión)', val:comisionTotal});
     r.pasos.push({label:'Total Neto', val:neto, bold:true});
     r.neto = neto;
     r.socios.push({nombre:cfg.socio1, pct:cfg.socio1Pct, monto:neto*cfg.socio1Pct});
     r.socios.push({nombre:cfg.socio2, pct:cfg.socio2Pct, monto:neto*cfg.socio2Pct});
   } else if(cfg.estructura==='varmanex'){
-    // balance - Rivas% -> neto1 ; neto1 - digitador%(sobre neto1) -> Alberto el resto
-    const rivas = balanceTotal*cfg.rivasPct;
-    const neto1 = balanceTotal - rivas;
-    const dig = neto1*cfg.digitadorPct;
-    const alberto = neto1 - dig;
-    r.pasos.push({label:'Balance Total', val:balanceTotal});
+    // VARMANEX: Balance bruto - Bonos - Rivas%(sobre subtotal) - Digitador%(sobre el siguiente subtotal) = Alberto resto
+    const sub1 = balanceTotal + bonosTotal; // bonos vienen en negativo, suma = resta
+    const rivas = sub1*cfg.rivasPct;
+    const sub2 = sub1 - rivas;
+    const dig = sub2*cfg.digitadorPct;
+    const alberto = sub2 - dig;
+    r.pasos.push({label:'Balance bruto', val:balanceTotal});
+    r.pasos.push({label:'Bonos', val:bonosTotal});
+    r.pasos.push({label:'Subtotal', val:sub1});
     r.pasos.push({label:`Rivas ${(cfg.rivasPct*100).toFixed(0)}%`, val:-rivas});
-    r.pasos.push({label:'Subtotal', val:neto1});
+    r.pasos.push({label:'Subtotal', val:sub2});
     r.pasos.push({label:`Digitador ${(cfg.digitadorPct*100).toFixed(0)}%`, val:-dig});
     r.pasos.push({label:'Total Neto', val:alberto, bold:true});
     r.neto = alberto;
     r.socios.push({nombre:'Rivas', pct:cfg.rivasPct, monto:rivas});
-    r.socios.push({nombre:cfg.socio1, pct:1, monto:alberto}); // Alberto el resto
+    r.socios.push({nombre:cfg.socio1, pct:1, monto:alberto});
   } else {
-    // vg / soll: balance - digitador%(sobre balance) -> neto; reparto socio1/socio2
+    // VG / SOLL: Balance bruto - Digitador%(sobre balance) = Total Neto
     const dig = balanceTotal*cfg.digitadorPct;
     const neto = balanceTotal - dig;
-    r.pasos.push({label:'Balance Neto', val:balanceTotal});
+    r.pasos.push({label:'Balance bruto', val:balanceTotal});
     r.pasos.push({label:`Digitador ${(cfg.digitadorPct*100).toFixed(0)}%`, val:-dig});
     r.pasos.push({label:'Total Neto', val:neto, bold:true});
     r.neto = neto;
@@ -2369,9 +2437,11 @@ function virtMonthDistribution(){
   const result={};
   VIRT_EMPRESAS.forEach(emp=>{
     const er=regs.filter(r=>r.empresa===emp);
-    const balanceTotal=er.reduce((s,r)=>s+r.total,0);     // suma de los Totales
-    const comisionTotal=er.reduce((s,r)=>s+r.comision,0); // suma de comisiones (negativas)
-    result[emp]=virtDistribute(emp, balanceTotal, comisionTotal);
+    const balanceTotal=er.reduce((s,r)=>s+r.balance,0);   // Balance BRUTO de la columna Balance
+    const comisionTotal=er.reduce((s,r)=>s+r.comision,0); // comisiones (negativas, son los digitadores)
+    const totalNeto=er.reduce((s,r)=>s+r.total,0);        // Total ya neto (Balance+Bonos+Comisión+Faltantes)
+    const bonosTotal=er.reduce((s,r)=>s+r.bonos,0);       // bonos (negativos, son descuentos)
+    result[emp]=virtDistribute(emp, balanceTotal, comisionTotal, totalNeto, bonosTotal);
   });
   return result;
 }
@@ -2699,9 +2769,13 @@ function printReport(){ window.print(); }
 /* ---------- SETTINGS ---------- */
 function renderSettings(){
   const ul=document.getElementById('currentUserLabel'); if(ul&&currentUser) ul.textContent=currentUser;
-  document.getElementById('branchList').innerHTML=state.branches.map((b,i)=>
-    `<div class="el-item"><span class="el-dot" style="background:var(--navy)"></span><span class="el-name">${b.name}</span><span class="el-fund" onclick="openFundModal(${i})">RD$${fmt(b.fund||0)}</span><span class="el-del" onclick="delBranch(${i})">×</span></div>`
-  ).join('')||'<div class="empty-hint" style="padding:16px;">Sin sucursales</div>';
+  document.getElementById('branchList').innerHTML=state.branches.map((b,i)=>{
+    const off=b.isOffice;
+    const isActive=b.activa!==false;
+    const opacity=isActive?'1':'.5';
+    const toggle=off?'':`<label class="switch" style="margin-right:6px;flex-shrink:0;" title="${isActive?'Activa':'Inactiva'}"><input type="checkbox" ${isActive?'checked':''} onchange="toggleBranchActive(${i})"><span class="slider"></span></label>`;
+    return `<div class="el-item" style="opacity:${opacity};"><span class="el-dot" style="background:var(--navy)"></span><span class="el-name">${b.name}${!isActive?' <span style="color:var(--muted);font-size:11px;font-weight:600;">(inactiva)</span>':''}</span>${toggle}<span class="el-fund" onclick="openFundModal(${i})">RD$${fmt(b.fund||0)}</span><span class="el-del" onclick="delBranch(${i})">×</span></div>`;
+  }).join('')||'<div class="empty-hint" style="padding:16px;">Sin sucursales</div>';
   document.getElementById('incCatList').innerHTML=state.incCats.map((c,i)=>{
     const color=CAT_COLORS[i%CAT_COLORS.length];
     const sub=c.subs&&c.subs.length?`<span class="el-sub"> · ${c.subs.length} tipos</span>`:'';
@@ -2713,6 +2787,29 @@ function renderSettings(){
 }
 function addBranch(){ const v=document.getElementById('newBranch').value.trim(); if(!v)return; state.branches.push({name:v,fund:0}); document.getElementById('newBranch').value=''; saveState(); renderSettings(); toast('Sucursal agregada',true); }
 function delBranch(i){ if(!confirm(`¿Eliminar "${state.branches[i].name}"? Los movimientos existentes se conservan.`))return; cloudDeleteBranch(state.branches[i]._id); state.branches.splice(i,1); saveState(); renderSettings(); }
+async function toggleBranchActive(i){
+  const b=state.branches[i];
+  if(!b||b.isOffice)return;
+  b.activa = b.activa===false ? true : false;
+  setSyncState('saving');
+  try{
+    await sb.from('sucursales').update({activa:b.activa}).eq('id',b._id);
+    setSyncState('ok');
+    toast(b.activa?`${b.name} activada`:`${b.name} desactivada`,true);
+    renderSettings();
+  }catch(e){
+    console.warn('Activa column may not exist yet — falling back to in-memory only',e);
+    setSyncState('ok');
+    toast(b.activa?`${b.name} activada (memoria)`:`${b.name} desactivada (memoria)`,true);
+    renderSettings();
+  }
+}
+// helper to know if a branch is visible (active or office)
+function isBranchActive(name){
+  const b=state.branches.find(x=>x.name===name);
+  return !b || b.activa!==false;
+}
+function activeBranches(){ return state.branches.filter(b=>b.isOffice||b.activa!==false); }
 function addIncCat(){ const v=document.getElementById('newIncCat').value.trim(); if(!v)return; state.incCats.push({name:v,subs:[]}); document.getElementById('newIncCat').value=''; saveState(); renderSettings(); toast('Categoría agregada',true); }
 function delIncCat(i){ if(!confirm(`¿Eliminar "${state.incCats[i].name}"?`))return; cloudDeleteIncCat(state.incCats[i]._id); state.incCats.splice(i,1); saveState(); renderSettings(); }
 function addExpCat(){ const v=document.getElementById('newExpCat').value.trim(); if(!v)return; state.expCats.push(v); cloudAddExpCat(v); document.getElementById('newExpCat').value=''; renderSettings(); toast('Categoría agregada',true); }
