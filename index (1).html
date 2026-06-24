@@ -129,6 +129,8 @@
   .btn-primary{width:100%;border:none;border-radius:13px;padding:16px;font-size:15.5px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;transition:.2s;letter-spacing:.3px;background:linear-gradient(135deg,var(--cerulean),var(--cerulean-bright));box-shadow:0 4px 14px rgba(0,134,173,.35);}
   .btn-primary:active{transform:scale(.98);}
   .btn-primary.green{background:linear-gradient(135deg,var(--green),#27b87f);box-shadow:0 4px 14px rgba(31,157,107,.35);}
+  .vcfg-tab{flex:1;border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:10px;padding:9px 6px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .vcfg-tab-on{background:var(--navy);color:#fff;border-color:var(--navy);}
   .btn-primary.red{background:linear-gradient(135deg,var(--red),#e06a60);box-shadow:0 4px 14px rgba(211,86,75,.35);}
   .btn-primary.amber{background:linear-gradient(135deg,var(--amber),#e89b4a);box-shadow:0 4px 14px rgba(224,138,43,.35);}
   /* history */
@@ -579,6 +581,7 @@
     <button onclick="collectAll()" style="width:100%;border:none;border-radius:12px;padding:14px;font-size:14.5px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,var(--green),#27b87f);box-shadow:0 4px 12px rgba(31,157,107,.3);margin-bottom:10px;">
       ⚡ Recolectar todo (cuadre completo → Oficina)
     </button>
+    <button onclick="openAuditBranch()" style="width:100%;border:1px solid var(--cerulean);background:#fff;border-radius:12px;padding:13px;font-size:13.5px;font-weight:700;color:var(--cerulean);cursor:pointer;font-family:inherit;margin-bottom:10px;">🔍 Auditar banca (ver rastro completo)</button>
     <button onclick="closeCorte()" style="width:100%;border:1px solid var(--navy);background:#fff;border-radius:12px;padding:13px;font-size:13.5px;font-weight:700;color:var(--navy);cursor:pointer;font-family:inherit;">🔒 Cerrar corte del día</button>
   </div>
 
@@ -588,6 +591,22 @@
     <div class="panel-head"><h3>Saldos pendientes</h3><span class="hint">Arrastrado</span></div>
     <div id="cortePendList"></div>
   </div>
+</section>
+
+<!-- AUDIT BRANCH (diagnostic tool) -->
+<section class="view" id="view-audit">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="openCorte()" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div><div style="font-size:17px;font-weight:800;">Auditar banca</div><div style="font-size:12px;color:var(--muted);">Rastro día por día con saldo acumulado</div></div>
+  </div>
+
+  <div class="row2" style="margin-bottom:14px;">
+    <div class="fld" style="margin:0;"><label>Banca</label><select id="auditBranch" onchange="renderAudit()"></select></div>
+    <div class="fld" style="margin:0;"><label>Desde</label><input type="date" id="auditFrom" onchange="renderAudit()"></div>
+  </div>
+
+  <div id="auditSummary"></div>
+  <div id="auditTrace"></div>
 </section>
 
 <!-- HISTÓRICO POR DÍA -->
@@ -780,10 +799,10 @@
     <div style="flex:1;"><div style="font-size:17px;font-weight:800;" id="virtRegTitle">Registrar mes</div><div style="font-size:12px;color:var(--muted);">Una fila por empresa y sucursal</div></div>
   </div>
 
-  <!-- company selector for entry -->
-  <div class="fld" style="margin-bottom:12px;">
-    <label>Empresa</label>
-    <select id="virtRegEmpresa" onchange="renderVirtRegRows()"></select>
+  <!-- company + provider selector for entry -->
+  <div class="row2" style="margin-bottom:12px;">
+    <div class="fld" style="margin:0;"><label>Empresa</label><select id="virtRegEmpresa" onchange="onVirtRegEmpresaChange()"></select></div>
+    <div class="fld" style="margin:0;"><label>Proveedor</label><select id="virtRegProveedor" onchange="renderVirtRegRows()"></select></div>
   </div>
 
   <div style="font-size:11.5px;color:var(--muted);background:#f4f6f7;border-radius:9px;padding:9px 11px;margin-bottom:12px;line-height:1.5;">
@@ -816,16 +835,66 @@
 <section class="view" id="view-virtconfig">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
     <button onclick="openVirtReparto()" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
-    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Porcentajes de reparto</div><div style="font-size:12px;color:var(--muted);">Edita los % de cada empresa</div></div>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Configuración de Virtuales</div><div style="font-size:12px;color:var(--muted);">Proveedores, sucursales y renglones</div></div>
   </div>
 
-  <div style="font-size:11.5px;color:var(--muted);background:#f4f6f7;border-radius:9px;padding:9px 11px;margin-bottom:12px;line-height:1.5;">
-    Cambia los porcentajes cuando negocies algo nuevo (ej: el % de VG). La estructura del reparto no cambia, solo los números.
+  <!-- Quick nav tabs -->
+  <div style="display:flex;gap:8px;margin-bottom:14px;">
+    <button onclick="showVirtConfigTab('prov')" id="vcfgTabProv" class="vcfg-tab vcfg-tab-on">Proveedores</button>
+    <button onclick="showVirtConfigTab('suc')" id="vcfgTabSuc" class="vcfg-tab">Sucursales</button>
+    <button onclick="showVirtConfigTab('reng')" id="vcfgTabReng" class="vcfg-tab">Renglones</button>
   </div>
 
-  <div id="virtConfigForm"></div>
+  <!-- TAB: Proveedores -->
+  <div id="vcfgSecProv">
+    <div style="font-size:11.5px;color:var(--muted);background:#f4f6f7;border-radius:9px;padding:9px 11px;margin-bottom:12px;line-height:1.5;">
+      Una empresa puede tener varios proveedores con porcentajes y socios distintos. Toca el ⚙ para editar.
+    </div>
+    <div id="virtProvList"></div>
+    <button class="btn-primary" onclick="openVirtProvNew()" style="margin-top:6px;">+ Nuevo proveedor</button>
+  </div>
 
-  <button class="btn-primary" onclick="saveVirtConfig()" style="margin-top:6px;">Guardar porcentajes</button>
+  <!-- TAB: Sucursales -->
+  <div id="vcfgSecSuc" style="display:none;">
+    <div style="font-size:11.5px;color:var(--muted);background:#f4f6f7;border-radius:9px;padding:9px 11px;margin-bottom:12px;line-height:1.5;">
+      Activa o desactiva sucursales para Virtuales. Las desactivadas no aparecen al registrar ni en los resúmenes (solo de Virtuales).
+    </div>
+    <div id="virtSucList"></div>
+  </div>
+
+  <!-- TAB: Renglones -->
+  <div id="vcfgSecReng" style="display:none;">
+    <div style="font-size:11.5px;color:var(--muted);background:#f4f6f7;border-radius:9px;padding:9px 11px;margin-bottom:12px;line-height:1.5;">
+      Activa los campos que necesitas en el registro mensual. Los desactivados no se mostrarán.
+    </div>
+    <div id="virtRengList"></div>
+  </div>
+</section>
+
+<!-- VIRTUALES — Edit/New Provider -->
+<section class="view" id="view-virtprov-edit">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="openVirtConfig()" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;" id="virtProvEditTitle">Proveedor</div><div style="font-size:12px;color:var(--muted);" id="virtProvEditSubtitle">Estructura y porcentajes</div></div>
+  </div>
+
+  <div class="panel" style="padding:14px;margin-bottom:12px;">
+    <div class="row2">
+      <div class="fld" style="margin:0;"><label>Empresa</label><select id="vpEmpresa" onchange="onVirtProvEmpresaChange()"></select></div>
+      <div class="fld" style="margin:0;"><label>Nombre del proveedor</label><input type="text" id="vpNombre" placeholder="Ej: Principal, Provedor B"></div>
+    </div>
+    <div id="vpStructHint" style="font-size:11.5px;color:var(--muted);margin-top:10px;background:#f4f6f7;padding:8px 11px;border-radius:8px;"></div>
+  </div>
+
+  <div class="panel" style="padding:14px;margin-bottom:12px;">
+    <div style="font-size:13px;font-weight:800;color:var(--navy);margin-bottom:10px;">Porcentajes y socios</div>
+    <div id="vpFields"></div>
+  </div>
+
+  <div style="display:flex;gap:8px;">
+    <button class="btn-primary" onclick="saveVirtProv()" style="flex:1;margin:0;">Guardar</button>
+    <button onclick="deleteVirtProv()" id="vpDeleteBtn" style="flex:0 0 auto;border:1px solid #e9b3ad;background:#fff;color:var(--red);border-radius:11px;padding:11px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:none;">Eliminar</button>
+  </div>
 </section>
 
 <!-- CÓMO USAR -->
@@ -1017,9 +1086,18 @@ const DEFAULTS={
   expCats:['Local / Alquiler','Energía eléctrica','Nómina / Personal','Internet y teléfono','Mantenimiento','Suministros','Impuestos / DGII','Transporte','Publicidad','Otros gastos']
 };
 
-let state={txns:[],branches:[],incCats:[],expCats:[],officeIncCats:[],maquinas:[],lecturas:[],denoms:[],cierres:[],virtRegs:[],virtConfig:null};
+let state={txns:[],branches:[],incCats:[],expCats:[],officeIncCats:[],maquinas:[],lecturas:[],denoms:[],cierres:[],virtRegs:[],virtConfig:null,virtProviders:[],virtSucursalesInactivas:{},virtRenglonesInactivos:{}};
 const VIRT_EMPRESAS=['MERENGUE','VARMANEX','VG','SOLL'];
 const VIRT_SUCURSALES=['PRIME SPORT 01','PRIME SPORT 02','PRIME SPORT 03','PRIME SPORT 04','PRIME SPORT 05','PRIME SPORT 06','PRIME SPORT 07','PRIME SPORT 08','PRIME SPORT 09','PRIME SPORT 10'];
+const VIRT_ESTRUCTURAS={MERENGUE:'merengue',VARMANEX:'varmanex',VG:'vg',SOLL:'soll'};
+const VIRT_CAMPOS=[
+  {k:'tk',label:'TK (tickets)'},
+  {k:'venta',label:'Venta RD$'},
+  {k:'balance',label:'Balance'},
+  {k:'bonos',label:'Bonos/Imp (neg.)'},
+  {k:'comision',label:'Comisión (neg.)'},
+  {k:'faltantes',label:'Faltantes (neg.)'}
+];
 let curType='income', incMode='single', outMode='withdraw';
 let selIncCat=null;
 let curMonth=new Date().getMonth(), curYear=new Date().getFullYear(), modalYr=curYear;
@@ -1108,15 +1186,29 @@ async function loadState(){
   }catch(e){ state.cierres=[]; state._cierresReady=false; }
   // Virtuales — resilient
   try{
-    const [vr,vc]=await Promise.all([
+    const [vr,vc,vp,vsuc,vren]=await Promise.all([
       sb.from('virtuales_registros').select('*'),
-      sb.from('virtuales_config').select('*')
+      sb.from('virtuales_config').select('*'),
+      sb.from('virtuales_proveedores').select('*'),
+      sb.from('virtuales_sucursales_estado').select('*'),
+      sb.from('virtuales_renglones_estado').select('*')
     ]);
-    if(!vr.error){ state.virtRegs=vr.data.map(r=>({_id:r.id,anio:r.anio,mes:r.mes,empresa:r.empresa,sucursal:r.sucursal,tk:num0(r.tk),venta:num0(r.venta),balance:num0(r.balance),bonos:num0(r.bonos),comision:num0(r.comision),faltantes:num0(r.faltantes),total:num0(r.total)})); state._virtReady=true; }
+    if(!vr.error){ state.virtRegs=vr.data.map(r=>({_id:r.id,anio:r.anio,mes:r.mes,empresa:r.empresa,proveedorId:r.proveedor_id||null,sucursal:r.sucursal,tk:num0(r.tk),venta:num0(r.venta),balance:num0(r.balance),bonos:num0(r.bonos),comision:num0(r.comision),faltantes:num0(r.faltantes),total:num0(r.total)})); state._virtReady=true; }
     else { state.virtRegs=[]; state._virtReady=false; }
     if(!vc.error&&vc.data.length){ state.virtConfig={}; vc.data.forEach(c=>{ state.virtConfig[c.empresa]={estructura:c.estructura,digitadorPct:num0(c.digitador_pct),usaComisionDigitador:c.usa_comision_digitador===true,socio1:c.socio1_nombre,socio1Pct:num0(c.socio1_pct),socio2:c.socio2_nombre,socio2Pct:num0(c.socio2_pct),rivasPct:num0(c.rivas_pct)}; }); }
     else state.virtConfig=null;
-  }catch(e){ state.virtRegs=[]; state._virtReady=false; state.virtConfig=null; }
+    // Providers (Phase B)
+    if(!vp.error){
+      state.virtProviders=vp.data.map(p=>({_id:p.id,empresa:p.empresa,nombre:p.nombre,digitadorPct:num0(p.digitador_pct),usaComisionDigitador:p.usa_comision_digitador===true,socio1:p.socio1_nombre,socio1Pct:num0(p.socio1_pct),socio2:p.socio2_nombre,socio2Pct:num0(p.socio2_pct),rivasPct:num0(p.rivas_pct),activo:p.activo!==false}));
+      state._providersReady=true;
+    } else { state.virtProviders=[]; state._providersReady=false; }
+    // Active sucursales for Virtuales
+    state.virtSucursalesInactivas={};
+    if(!vsuc.error){ vsuc.data.forEach(r=>{ if(r.activa===false) state.virtSucursalesInactivas[r.sucursal]=true; }); }
+    // Active renglones (fields)
+    state.virtRenglonesInactivos={};
+    if(!vren.error){ vren.data.forEach(r=>{ if(r.activo===false) state.virtRenglonesInactivos[r.campo]=true; }); }
+  }catch(e){ state.virtRegs=[]; state._virtReady=false; state.virtConfig=null; state.virtProviders=[]; state._providersReady=false; state.virtSucursalesInactivas={}; state.virtRenglonesInactivos={}; }
 }
 function num0(v){ return v!=null?Number(v):0; }
 function isDayClosed(date){ return Array.isArray(state.cierres)&&state.cierres.includes(date); }
@@ -1237,10 +1329,19 @@ function monthTxns(){ return state.txns.filter(t=>{ const d=new Date(t.date+'T00
 /* ---------- DASHBOARD ---------- */
 function renderDash(){
   const txns=monthTxns();
+  const office=officeName();
+  // From the office perspective:
+  // - Regular income/expense (anywhere in the system)
+  // - Transfers TO office = ingreso (devolución, banca→oficina)
+  // - Transfers FROM office = salida (préstamo, oficina→banca)
+  // - Retiros (out withdraw) = salida normal
   const inc=txns.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
   const exp=txns.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
-  const out=txns.filter(t=>t.type==='out'&&t.outKind!=='transfer').reduce((s,t)=>s+t.amount,0);
-  const net=inc-exp-out;
+  const withdraw=txns.filter(t=>t.type==='out'&&t.outKind!=='transfer').reduce((s,t)=>s+t.amount,0);
+  const transferOut=txns.filter(t=>t.type==='out'&&t.outKind==='transfer'&&t.branch===office).reduce((s,t)=>s+t.amount,0); // oficina presta
+  const transferIn=txns.filter(t=>t.type==='out'&&t.outKind==='transfer'&&t.dest===office).reduce((s,t)=>s+t.amount,0);   // oficina recibe
+  const out=withdraw+transferOut; // salidas totales
+  const net=inc-exp-withdraw-transferOut+transferIn; // desde la oficina
   document.getElementById('heroNet').textContent=fmt(net);
   document.getElementById('heroNet').style.color=net<0?'#f08980':'#fff';
   document.getElementById('heroInc').textContent='RD$'+fmt(inc);
@@ -1659,7 +1760,22 @@ function renderReports(){
 
   if(repView==='branch'){
     const bb={}; branchNames().forEach(n=>bb[n]={inc:0,exp:0,out:0});
-    txns.forEach(t=>{ if(!bb[t.branch])bb[t.branch]={inc:0,exp:0,out:0}; if(t.type==='income')bb[t.branch].inc+=t.amount; else if(t.type==='expense')bb[t.branch].exp+=t.amount; else if(t.type==='out'&&t.outKind!=='transfer')bb[t.branch].out+=t.amount; });
+    // Per-branch perspective: each branch is treated like a mini "office":
+    //   - income/expense at that branch
+    //   - retiros = salida
+    //   - transferencia FROM this branch = salida
+    //   - transferencia TO this branch = ingreso
+    txns.forEach(t=>{
+      if(!bb[t.branch])bb[t.branch]={inc:0,exp:0,out:0};
+      if(t.type==='income')bb[t.branch].inc+=t.amount;
+      else if(t.type==='expense')bb[t.branch].exp+=t.amount;
+      else if(t.type==='out'&&t.outKind!=='transfer')bb[t.branch].out+=t.amount; // retiros: salida
+      else if(t.type==='out'&&t.outKind==='transfer'){
+        bb[t.branch].out+=t.amount; // origen pierde
+        if(!bb[t.dest])bb[t.dest]={inc:0,exp:0,out:0};
+        bb[t.dest].inc+=t.amount;   // destino recibe como ingreso
+      }
+    });
     const rows=Object.entries(bb).filter(([n,v])=>v.inc||v.exp||v.out).sort((a,b)=>(b[1].inc-b[1].exp-b[1].out)-(a[1].inc-a[1].exp-a[1].out));
     let tI=0,tE=0,tO=0;
     let h='<table class="rep-table"><thead><tr><th>Sucursal</th><th class="r">Ing.</th><th class="r">Gas.</th><th class="r">Sal.</th><th class="r">Neto</th></tr></thead><tbody>';
@@ -1729,17 +1845,127 @@ function dayCollected(branch,date){
 // Total pending (carried) for a bank across ALL history = sum of (cuadre - collected) per day,
 // but we track pending directly from collect records vs cuadre.
 function bankPending(branch){
-  // pending = all-time cuadre - all-time collected
-  // "collected" includes both: mensajero recolections AND direct branch→office transfers
+  // pending = cuadre operativo acumulado - lo que el mensajero ha recolectado
+  // Las transferencias (préstamos/devoluciones) NO afectan el pendiente del cuadre
+  // porque no son cuadre operativo — son flujo de caja aparte.
   let totalCuadre=0;
   const dates=new Set(state.txns.filter(t=>t.branch===branch&&t.type!=='collect').map(t=>t.date));
   dates.forEach(d=>{ totalCuadre+=dayCuadre(branch,d); });
   const totalCollected=state.txns.filter(t=>t.type==='collect'&&t.branch===branch).reduce((s,t)=>s+t.moved,0);
-  // Also count direct branch→office transfers as "delivered to office"
-  // (positive = banca sends to office = reduces what banca owes)
+  return totalCuadre-totalCollected;
+}
+
+/* ---------- AUDIT (diagnostic) ---------- */
+function openAuditBranch(){
+  showOnlyView('view-audit');
+  const sel=document.getElementById('auditBranch');
+  const banks=state.branches.filter(b=>!b.isOffice);
+  sel.innerHTML=banks.map(b=>`<option>${b.name}</option>`).join('');
+  // default: 30 days back
+  const d=new Date(); d.setDate(d.getDate()-30);
+  document.getElementById('auditFrom').value=d.toISOString().slice(0,10);
+  renderAudit();
+}
+
+function renderAudit(){
+  const branch=document.getElementById('auditBranch').value;
+  const from=document.getElementById('auditFrom').value;
+  if(!branch){ document.getElementById('auditTrace').innerHTML=''; return; }
+
   const office=officeName();
-  const totalTransferred=state.txns.filter(t=>t.type==='out'&&t.outKind==='transfer'&&t.branch===branch&&t.dest===office).reduce((s,t)=>s+t.amount,0);
-  return totalCuadre-totalCollected-totalTransferred;
+  // Collect all events related to this branch chronologically
+  const events=[];
+  state.txns.forEach(t=>{
+    if(t.date<from) return;
+    if(t.branch===branch){
+      // operations or transfers leaving
+      if(t.type==='income') events.push({date:t.date,kind:'op',label:t.category+(t.subtype?' · '+t.subtype:''),sign:1,amount:t.amount,raw:t});
+      else if(t.type==='expense') events.push({date:t.date,kind:'op',label:'Gasto: '+t.category,sign:-1,amount:t.amount,raw:t});
+      else if(t.type==='out'&&t.outKind==='withdraw') events.push({date:t.date,kind:'op',label:'Retiro: '+(t.reason||''),sign:-1,amount:t.amount,raw:t});
+      else if(t.type==='out'&&t.outKind==='transfer') events.push({date:t.date,kind:'transfer',label:`Transfer → ${t.dest}`,sign:-1,amount:t.amount,raw:t});
+      else if(t.type==='collect') events.push({date:t.date,kind:'collect',label:'Recolección',moved:t.moved,cuadre:t.cuadre,raw:t});
+    }
+    // Transfers INTO this branch (loan from someone else)
+    if(t.type==='out'&&t.outKind==='transfer'&&t.dest===branch){
+      events.push({date:t.date,kind:'transferIn',label:`Recibido ← ${t.branch}`,sign:1,amount:t.amount,raw:t});
+    }
+  });
+
+  // Sort chronologically by date, then by original order
+  events.sort((a,b)=>a.date.localeCompare(b.date));
+
+  // Compute running cuadre balance day by day:
+  // - Operations (income/expense/withdraw) build up the cuadre
+  // - Collections reduce the cuadre by the amount moved (positive moved = banca delivered, reduces what they owe)
+  // - Transfer FROM branch to office reduces what banca owes (delivered as transfer)
+  // - Transfers don't affect operative cuadre
+  let runningCuadre=0;
+  let totalOps=0, totalCollected=0, totalTransferredOut=0, totalTransferredIn=0;
+
+  const dayMap={};
+  events.forEach(e=>{
+    if(!dayMap[e.date]) dayMap[e.date]={date:e.date,events:[],dailyOps:0,dailyCollect:0,dailyTransferOut:0,dailyTransferIn:0};
+    const d=dayMap[e.date];
+    d.events.push(e);
+    if(e.kind==='op'){ d.dailyOps+=e.sign*e.amount; totalOps+=e.sign*e.amount; }
+    else if(e.kind==='collect'){ d.dailyCollect+=e.moved; totalCollected+=e.moved; }
+    else if(e.kind==='transfer'){ d.dailyTransferOut+=e.amount; totalTransferredOut+=e.amount; }
+    else if(e.kind==='transferIn'){ d.dailyTransferIn+=e.amount; totalTransferredIn+=e.amount; }
+  });
+
+  // bankPending logic: cuadreOps - collected only (transfers don't affect operative pending)
+  const pendingNow=totalOps - totalCollected;
+
+  // Render summary
+  document.getElementById('auditSummary').innerHTML=`
+    <div class="panel" style="padding:14px;margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:800;color:var(--cerulean);margin-bottom:10px;">Resumen acumulado · ${branch}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;">
+        <div style="background:#f4f6f7;border-radius:8px;padding:9px 10px;"><div style="color:var(--muted);font-weight:600;">Cuadre operativo total</div><div style="font-size:15px;font-weight:800;margin-top:3px;color:${totalOps<0?'var(--red)':'var(--green)'};">RD$${fmt(totalOps)}</div></div>
+        <div style="background:#f4f6f7;border-radius:8px;padding:9px 10px;"><div style="color:var(--muted);font-weight:600;">Recolectado / movido</div><div style="font-size:15px;font-weight:800;margin-top:3px;">RD$${fmt(totalCollected)}</div></div>
+        <div style="background:#f4f6f7;border-radius:8px;padding:9px 10px;"><div style="color:var(--muted);font-weight:600;">Transferido a oficina</div><div style="font-size:15px;font-weight:800;margin-top:3px;">RD$${fmt(totalTransferredOut)}</div><div style="font-size:9.5px;color:var(--muted);margin-top:2px;">(no afecta pendiente operativo)</div></div>
+        <div style="background:#f4f6f7;border-radius:8px;padding:9px 10px;"><div style="color:var(--muted);font-weight:600;">Recibido de oficina</div><div style="font-size:15px;font-weight:800;margin-top:3px;">RD$${fmt(totalTransferredIn)}</div><div style="font-size:9.5px;color:var(--muted);margin-top:2px;">(préstamos, no afecta pendiente)</div></div>
+      </div>
+      <div style="margin-top:11px;padding-top:11px;border-top:1px solid #eef2f4;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:12px;font-weight:700;color:var(--muted);">PENDIENTE ACTUAL DEL CUADRE</span>
+        <span style="font-size:18px;font-weight:800;color:${Math.abs(pendingNow)<1?'var(--green)':(pendingNow>0?'var(--amber)':'var(--red)')};">RD$${fmt(pendingNow)}</span>
+      </div>
+      <div style="font-size:10.5px;color:var(--muted);margin-top:4px;line-height:1.4;">Fórmula: Cuadre operativo (${fmt(totalOps)}) − Recolectado (${fmt(totalCollected)}) = ${fmt(pendingNow)}<br>Las transferencias son flujo de caja, no afectan el pendiente operativo.</div>
+    </div>`;
+
+  // Render day-by-day trace
+  const days=Object.values(dayMap).sort((a,b)=>a.date.localeCompare(b.date));
+  let cumulative=0;
+  let html='';
+  days.forEach(d=>{
+    const dayCuadreOps=d.dailyOps;
+    const dayCollect=d.dailyCollect;
+    const dayPending=dayCuadreOps-dayCollect;
+    cumulative+=dayPending;
+    const dateObj=new Date(d.date+'T00:00:00');
+    const dayName=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][dateObj.getDay()];
+    html+=`<div class="panel" style="padding:12px;margin-bottom:9px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="font-size:13px;font-weight:700;">${dayName} ${dateObj.getDate()} ${MONTHS_SHORT[dateObj.getMonth()]}</div>
+        <div style="text-align:right;"><div style="font-size:10px;color:var(--muted);font-weight:600;">SALDO ACUMULADO</div><div style="font-size:14px;font-weight:800;color:${Math.abs(cumulative)<1?'var(--green)':(cumulative>0?'var(--amber)':'var(--red)')};">RD$${fmt(cumulative)}</div></div>
+      </div>
+      <table class="rep-table" style="font-size:11.5px;"><tbody>
+        ${d.events.map(e=>{
+          let amt='';
+          if(e.kind==='op') amt=`<span style="color:${e.sign>0?'var(--green)':'var(--red)'};">${e.sign>0?'+':'-'}RD$${fmt(e.amount)}</span>`;
+          else if(e.kind==='collect') amt=`<span style="color:var(--cerulean);">Movido: ${fmt(e.moved)} (cuadre: ${fmt(e.cuadre)})</span>`;
+          else if(e.kind==='transfer') amt=`<span style="color:#9c5fde;">−RD$${fmt(e.amount)}</span>`;
+          else if(e.kind==='transferIn') amt=`<span style="color:#9c5fde;">+RD$${fmt(e.amount)}</span>`;
+          return `<tr><td style="font-size:11.5px;">${e.label}</td><td class="r" style="font-size:11.5px;">${amt}</td></tr>`;
+        }).join('')}
+      </tbody></table>
+      <div style="margin-top:8px;padding-top:8px;border-top:1px dashed #eef2f4;display:flex;justify-content:space-between;font-size:11px;">
+        <span style="color:var(--muted);">Cuadre día: ${fmt(dayCuadreOps)} − Movido: ${fmt(dayCollect)}</span>
+        <span style="font-weight:700;color:${Math.abs(dayPending)<1?'var(--green)':(dayPending>0?'var(--amber)':'var(--red)')};">= ${fmt(dayPending)}</span>
+      </div>
+    </div>`;
+  });
+  document.getElementById('auditTrace').innerHTML=html||'<div class="empty-hint" style="padding:30px;">Sin movimientos en este rango para esta banca.</div>';
 }
 
 function openCorte(){
@@ -2418,11 +2644,14 @@ function virtDistribute(empresa, balanceTotal, comisionTotal, totalNeto, bonosTo
     r.socios.push({nombre:'Rivas', pct:cfg.rivasPct, monto:rivas});
     r.socios.push({nombre:cfg.socio1, pct:1, monto:alberto});
   } else {
-    // VG / SOLL: Balance bruto - Digitador%(sobre balance) = Total Neto
+    // VG / SOLL: Balance bruto - Digitador%(sobre balance) - Bonos = Total Neto
     const dig = balanceTotal*cfg.digitadorPct;
-    const neto = balanceTotal - dig;
+    const sub = balanceTotal - dig;
+    const neto = sub + bonosTotal; // bonos negativos: suma = resta
     r.pasos.push({label:'Balance bruto', val:balanceTotal});
     r.pasos.push({label:`Digitador ${(cfg.digitadorPct*100).toFixed(0)}%`, val:-dig});
+    r.pasos.push({label:'Subtotal', val:sub});
+    r.pasos.push({label:'Bonos', val:bonosTotal});
     r.pasos.push({label:'Total Neto', val:neto, bold:true});
     r.neto = neto;
     r.socios.push({nombre:cfg.socio1, pct:cfg.socio1Pct, monto:neto*cfg.socio1Pct});
@@ -2431,19 +2660,78 @@ function virtDistribute(empresa, balanceTotal, comisionTotal, totalNeto, bonosTo
   return r;
 }
 
-// Build the full distribution for the current month
+// ---- helpers for providers (Phase B) ----
+function virtProvidersOf(empresa, includeInactive){ return state.virtProviders.filter(p=>p.empresa===empresa && (includeInactive||p.activo!==false)); }
+function virtProvidersAll(includeInactive){ const arr=[]; VIRT_EMPRESAS.forEach(e=>{ arr.push(...virtProvidersOf(e,includeInactive)); }); return arr; }
+function isVirtSucursalActiva(suc){ return !state.virtSucursalesInactivas[suc]; }
+function isVirtRenglonActivo(campo){ return !state.virtRenglonesInactivos[campo]; }
+function activeVirtSucursales(){ return VIRT_SUCURSALES.filter(isVirtSucursalActiva); }
+function activeVirtCampos(){ return VIRT_CAMPOS.filter(c=>isVirtRenglonActivo(c.k)); }
+
+// Build the full distribution for the current month — now PER PROVIDER
 function virtMonthDistribution(){
   const regs=virtRegsOf(virtCurMes,virtCurAnio);
-  const result={};
+  const result={};  // result[empresa][proveedorId] = distribution
   VIRT_EMPRESAS.forEach(emp=>{
-    const er=regs.filter(r=>r.empresa===emp);
-    const balanceTotal=er.reduce((s,r)=>s+r.balance,0);   // Balance BRUTO de la columna Balance
-    const comisionTotal=er.reduce((s,r)=>s+r.comision,0); // comisiones (negativas, son los digitadores)
-    const totalNeto=er.reduce((s,r)=>s+r.total,0);        // Total ya neto (Balance+Bonos+Comisión+Faltantes)
-    const bonosTotal=er.reduce((s,r)=>s+r.bonos,0);       // bonos (negativos, son descuentos)
-    result[emp]=virtDistribute(emp, balanceTotal, comisionTotal, totalNeto, bonosTotal);
+    result[emp]={};
+    const providers=virtProvidersOf(emp,false);
+    providers.forEach(prov=>{
+      const er=regs.filter(r=>r.empresa===emp && r.proveedorId===prov._id);
+      if(!er.length) return;
+      const balanceTotal=er.reduce((s,r)=>s+r.balance,0);
+      const comisionTotal=er.reduce((s,r)=>s+r.comision,0);
+      const totalNeto=er.reduce((s,r)=>s+r.total,0);
+      const bonosTotal=er.reduce((s,r)=>s+r.bonos,0);
+      result[emp][prov._id]=virtDistributeProvider(prov, balanceTotal, comisionTotal, totalNeto, bonosTotal);
+    });
   });
   return result;
+}
+
+// Same as virtDistribute but uses a provider object (with its own porcentajes) instead of the empresa config
+function virtDistributeProvider(prov, balanceTotal, comisionTotal, totalNeto, bonosTotal){
+  if(!prov) return null;
+  const estructura=VIRT_ESTRUCTURAS[prov.empresa];
+  const r={empresa:prov.empresa, proveedor:prov.nombre, balanceTotal, pasos:[], socios:[]};
+  if(estructura==='merengue'){
+    const neto=totalNeto;
+    r.pasos.push({label:'Balance bruto', val:balanceTotal});
+    r.pasos.push({label:'Digitador (comisión)', val:comisionTotal});
+    r.pasos.push({label:'Total Neto', val:neto, bold:true});
+    r.neto=neto;
+    r.socios.push({nombre:prov.socio1, pct:prov.socio1Pct, monto:neto*prov.socio1Pct});
+    r.socios.push({nombre:prov.socio2, pct:prov.socio2Pct, monto:neto*prov.socio2Pct});
+  } else if(estructura==='varmanex'){
+    const sub1=balanceTotal+bonosTotal; // bonos negativo => resta
+    const rivas=sub1*prov.rivasPct;
+    const sub2=sub1-rivas;
+    const dig=sub2*prov.digitadorPct;
+    const alberto=sub2-dig;
+    r.pasos.push({label:'Balance bruto', val:balanceTotal});
+    r.pasos.push({label:'Bonos', val:bonosTotal});
+    r.pasos.push({label:'Subtotal', val:sub1});
+    r.pasos.push({label:`Rivas ${(prov.rivasPct*100).toFixed(0)}%`, val:-rivas});
+    r.pasos.push({label:'Subtotal', val:sub2});
+    r.pasos.push({label:`Digitador ${(prov.digitadorPct*100).toFixed(0)}%`, val:-dig});
+    r.pasos.push({label:'Total Neto', val:alberto, bold:true});
+    r.neto=alberto;
+    r.socios.push({nombre:'Rivas', pct:prov.rivasPct, monto:rivas});
+    r.socios.push({nombre:prov.socio1, pct:1, monto:alberto});
+  } else {
+    // vg / soll: Balance - Digitador% - Bonos
+    const dig=balanceTotal*prov.digitadorPct;
+    const sub=balanceTotal-dig;
+    const neto=sub+bonosTotal;
+    r.pasos.push({label:'Balance bruto', val:balanceTotal});
+    r.pasos.push({label:`Digitador ${(prov.digitadorPct*100).toFixed(0)}%`, val:-dig});
+    r.pasos.push({label:'Subtotal', val:sub});
+    r.pasos.push({label:'Bonos', val:bonosTotal});
+    r.pasos.push({label:'Total Neto', val:neto, bold:true});
+    r.neto=neto;
+    r.socios.push({nombre:prov.socio1, pct:prov.socio1Pct, monto:neto*prov.socio1Pct});
+    r.socios.push({nombre:prov.socio2, pct:prov.socio2Pct, monto:neto*prov.socio2Pct});
+  }
+  return r;
 }
 
 function openVirtReparto(){
@@ -2454,87 +2742,288 @@ function openVirtReparto(){
 
 function renderVirtReparto(){
   const dist=virtMonthDistribution();
-  // per-company breakdown
+  // per-company breakdown — now iterate providers within each company
   const wrap=document.getElementById('virtRepartoCompanies');
-  wrap.innerHTML=VIRT_EMPRESAS.map(emp=>{
-    const d=dist[emp];
-    if(!d) return '';
-    const pasos=d.pasos.map(p=>`<div style="display:flex;justify-content:space-between;font-size:12.5px;${p.bold?'font-weight:700;color:var(--ink);border-top:1px solid #eef2f4;padding-top:6px;margin-top:4px;':'color:var(--muted);'}"><span>${p.label}</span><span style="color:${p.val<0?'var(--red)':p.bold?'var(--ink)':'var(--muted)'};">RD$${fmt(p.val)}</span></div>`).join('');
-    const socios=d.socios.filter(s=>s.nombre).map(s=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:#f4f6f7;border-radius:8px;margin-bottom:5px;"><span style="font-size:12.5px;font-weight:600;">${s.nombre} ${s.pct<1?'('+(s.pct*100).toFixed(0)+'%)':''}</span><span style="font-size:13.5px;font-weight:800;color:var(--green);">RD$${fmt(s.monto)}</span></div>`).join('');
-    return `<div class="panel" style="padding:14px;margin-bottom:12px;">
-      <div style="font-size:15px;font-weight:800;color:var(--cerulean);margin-bottom:10px;">${emp}</div>
-      <div style="margin-bottom:11px;">${pasos}</div>
-      <div>${socios}</div>
-    </div>`;
-  }).join('');
+  let html='';
+  VIRT_EMPRESAS.forEach(emp=>{
+    const provDists=dist[emp]||{};
+    const provIds=Object.keys(provDists);
+    if(!provIds.length) return;
+    provIds.forEach(pid=>{
+      const d=provDists[pid];
+      if(!d) return;
+      const provLabel = (virtProvidersOf(emp,true).length>1) ? ` · ${d.proveedor}` : '';
+      const pasos=d.pasos.map(p=>`<div style="display:flex;justify-content:space-between;font-size:12.5px;${p.bold?'font-weight:700;color:var(--ink);border-top:1px solid #eef2f4;padding-top:6px;margin-top:4px;':'color:var(--muted);'}"><span>${p.label}</span><span style="color:${p.val<0?'var(--red)':p.bold?'var(--ink)':'var(--muted)'};">RD$${fmt(p.val)}</span></div>`).join('');
+      const socios=d.socios.filter(s=>s.nombre).map(s=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:#f4f6f7;border-radius:8px;margin-bottom:5px;"><span style="font-size:12.5px;font-weight:600;">${s.nombre} ${s.pct<1?'('+(s.pct*100).toFixed(0)+'%)':''}</span><span style="font-size:13.5px;font-weight:800;color:${s.monto<0?'var(--red)':'var(--green)'};">RD$${fmt(s.monto)}</span></div>`).join('');
+      html+=`<div class="panel" style="padding:14px;margin-bottom:12px;">
+        <div style="font-size:15px;font-weight:800;color:var(--cerulean);margin-bottom:10px;">${emp}${provLabel}</div>
+        <div style="margin-bottom:11px;">${pasos}</div>
+        <div>${socios}</div>
+      </div>`;
+    });
+  });
+  wrap.innerHTML=html || '<div class="empty-hint" style="padding:30px 16px;">Sin registros este mes para repartir.</div>';
 
-  // consolidated per partner
+  // consolidated per partner — across all providers
   const totals={};
   VIRT_EMPRESAS.forEach(emp=>{
-    const d=dist[emp]; if(!d)return;
-    d.socios.forEach(s=>{ if(s.nombre){ totals[s.nombre]=(totals[s.nombre]||0)+s.monto; } });
+    const provDists=dist[emp]||{};
+    Object.values(provDists).forEach(d=>{
+      d.socios.forEach(s=>{ if(s.nombre){ totals[s.nombre]=(totals[s.nombre]||0)+s.monto; } });
+    });
   });
   const cons=document.getElementById('virtRepartoConsol');
   const names=Object.keys(totals).sort((a,b)=>totals[b]-totals[a]);
   const grandTotal=Object.values(totals).reduce((s,v)=>s+v,0);
+  if(!names.length){ cons.innerHTML='<div class="empty-hint" style="padding:16px;">Sin datos.</div>'; return; }
   cons.innerHTML=names.map(n=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #eef2f4;">
       <span style="font-size:14px;font-weight:700;">${n}</span>
       <span style="font-size:15px;font-weight:800;color:${totals[n]<0?'var(--red)':'var(--green)'};">RD$${fmt(totals[n])}</span>
-    </div>`).join('')+`<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0 4px;margin-top:4px;border-top:2px solid var(--navy);"><span style="font-size:13px;font-weight:700;color:var(--muted);">TOTAL REPARTIDO</span><span style="font-size:16px;font-weight:800;">RD$${fmt(grandTotal)}</span></div>`;
+    </div>`).join('')+`<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0 4px;margin-top:4px;border-top:2px solid var(--navy);"><span style="font-size:13px;font-weight:700;color:var(--muted);">TOTAL REPARTIDO</span><span style="font-size:16px;font-weight:800;color:${grandTotal<0?'var(--red)':'var(--ink)'};">RD$${fmt(grandTotal)}</span></div>`;
 }
 
-// ---- config of percentages ----
+// ---- Virtuales config (Phase B) ----
+let _vcfgTab='prov';
 function openVirtConfig(){
   showOnlyView('view-virtconfig');
-  renderVirtConfigForm();
+  showVirtConfigTab(_vcfgTab);
 }
-function renderVirtConfigForm(){
-  const wrap=document.getElementById('virtConfigForm');
-  wrap.innerHTML=VIRT_EMPRESAS.map(emp=>{
-    const c=state.virtConfig[emp];
-    let fields='';
-    if(c.estructura==='merengue'){
-      fields=`
-        ${cfgPctField(emp,'socio1Pct',c.socio1+' %',c.socio1Pct)}
-        ${cfgPctField(emp,'socio2Pct',c.socio2+' %',c.socio2Pct)}`;
-    } else if(c.estructura==='varmanex'){
-      fields=`
-        ${cfgPctField(emp,'rivasPct','Rivas %',c.rivasPct)}
-        ${cfgPctField(emp,'digitadorPct','Digitador %',c.digitadorPct)}`;
+function showVirtConfigTab(t){
+  _vcfgTab=t;
+  ['prov','suc','reng'].forEach(k=>{
+    document.getElementById('vcfgSec'+k.charAt(0).toUpperCase()+k.slice(1)).style.display = (k===t)?'block':'none';
+    document.getElementById('vcfgTab'+k.charAt(0).toUpperCase()+k.slice(1)).className = (k===t)?'vcfg-tab vcfg-tab-on':'vcfg-tab';
+  });
+  if(t==='prov') renderVirtProvList();
+  else if(t==='suc') renderVirtSucList();
+  else renderVirtRengList();
+}
+
+// Providers list
+function renderVirtProvList(){
+  const wrap=document.getElementById('virtProvList');
+  let html='';
+  VIRT_EMPRESAS.forEach(emp=>{
+    const provs=virtProvidersOf(emp,true);
+    html+=`<div style="margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:800;color:var(--cerulean);margin-bottom:6px;padding:0 4px;">${emp}</div>`;
+    if(!provs.length){
+      html+=`<div style="font-size:12px;color:var(--muted);padding:10px 12px;background:#fff;border:1px dashed var(--line);border-radius:10px;">Sin proveedores. Toca "+ Nuevo proveedor".</div>`;
     } else {
-      fields=`
-        ${cfgPctField(emp,'digitadorPct','Digitador %',c.digitadorPct)}
-        ${cfgPctField(emp,'socio1Pct',c.socio1+' %',c.socio1Pct)}
-        ${cfgPctField(emp,'socio2Pct',c.socio2+' %',c.socio2Pct)}`;
+      provs.forEach(p=>{
+        const opacity=p.activo===false?'.5':'1';
+        const sociosLabel=virtProvSociosLabel(p);
+        html+=`<div class="panel" style="padding:11px 13px;margin-bottom:7px;display:flex;align-items:center;gap:10px;opacity:${opacity};">
+          <label class="switch" style="flex-shrink:0;"><input type="checkbox" ${p.activo!==false?'checked':''} onchange="toggleVirtProvActive('${p._id}')"><span class="slider"></span></label>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;">${p.nombre}${p.activo===false?' <span style="color:var(--muted);font-size:10.5px;font-weight:600;">(inactivo)</span>':''}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">${sociosLabel}</div>
+          </div>
+          <button onclick="openVirtProvEdit('${p._id}')" style="border:none;background:#eef2f4;color:var(--navy);border-radius:8px;padding:6px 10px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;">⚙ Editar</button>
+        </div>`;
+      });
     }
-    return `<div class="panel" style="padding:14px;margin-bottom:12px;">
-      <div style="font-size:14px;font-weight:800;color:var(--cerulean);margin-bottom:10px;">${emp}</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;">${fields}</div>
+    html+=`</div>`;
+  });
+  wrap.innerHTML=html;
+}
+
+function virtProvSociosLabel(p){
+  const est=VIRT_ESTRUCTURAS[p.empresa];
+  if(est==='merengue'||est==='vg'||est==='soll'){
+    return `${p.socio1||'?'} ${(p.socio1Pct*100).toFixed(0)}% · ${p.socio2||'?'} ${(p.socio2Pct*100).toFixed(0)}% · Digitador ${(p.digitadorPct*100).toFixed(0)}%`;
+  }
+  if(est==='varmanex'){
+    return `${p.socio1||'?'} (resto) · Rivas ${(p.rivasPct*100).toFixed(0)}% · Digitador ${(p.digitadorPct*100).toFixed(0)}%`;
+  }
+  return '';
+}
+
+async function toggleVirtProvActive(id){
+  const p=state.virtProviders.find(x=>x._id===id);
+  if(!p)return;
+  p.activo=p.activo===false?true:false;
+  setSyncState('saving');
+  try{
+    await sb.from('virtuales_proveedores').update({activo:p.activo}).eq('id',p._id);
+    setSyncState('ok');
+    toast(p.activo?`${p.nombre} activado`:`${p.nombre} desactivado`,true);
+    renderVirtProvList();
+  }catch(e){ console.error(e); setSyncState('error'); toast('Error al guardar',false); }
+}
+
+// Provider edit screen
+let _vpEditId=null;
+function openVirtProvNew(){
+  _vpEditId=null;
+  showOnlyView('view-virtprov-edit');
+  document.getElementById('virtProvEditTitle').textContent='Nuevo proveedor';
+  document.getElementById('vpDeleteBtn').style.display='none';
+  document.getElementById('vpEmpresa').innerHTML=VIRT_EMPRESAS.map(e=>`<option>${e}</option>`).join('');
+  document.getElementById('vpNombre').value='';
+  onVirtProvEmpresaChange();
+}
+function openVirtProvEdit(id){
+  const p=state.virtProviders.find(x=>x._id===id);
+  if(!p)return;
+  _vpEditId=id;
+  showOnlyView('view-virtprov-edit');
+  document.getElementById('virtProvEditTitle').textContent='Editar proveedor';
+  document.getElementById('vpDeleteBtn').style.display='block';
+  document.getElementById('vpEmpresa').innerHTML=VIRT_EMPRESAS.map(e=>`<option ${e===p.empresa?'selected':''}>${e}</option>`).join('');
+  document.getElementById('vpNombre').value=p.nombre;
+  renderVirtProvFields(p);
+}
+
+function onVirtProvEmpresaChange(){
+  const emp=document.getElementById('vpEmpresa').value;
+  let p;
+  if(_vpEditId){
+    p=state.virtProviders.find(x=>x._id===_vpEditId);
+  } else {
+    // defaults for a new provider, by company structure
+    p={empresa:emp,nombre:'',digitadorPct:0.04,socio1:'Alberto',socio1Pct:0.6,socio2:'Socio',socio2Pct:0.4,rivasPct:0.3};
+    if(emp==='MERENGUE'){p.digitadorPct=0;p.socio2='Gabriel';}
+    if(emp==='VARMANEX'){p.socio2=null;p.socio2Pct=0;p.socio1='Alberto';}
+    if(emp==='VG'){p.socio2='DS';}
+    if(emp==='SOLL'){p.socio1Pct=0.7;p.socio2Pct=0.3;p.socio2='Joan';}
+  }
+  renderVirtProvFields(p);
+}
+
+function renderVirtProvFields(p){
+  const emp=document.getElementById('vpEmpresa').value;
+  const est=VIRT_ESTRUCTURAS[emp];
+  let hint='';
+  let html='';
+  if(est==='merengue'){
+    hint='Estructura MERENGUE: Balance + Comisión (digitador) → Socio1 % / Socio2 %';
+    html=`
+      ${vpFld('socio1','Nombre socio 1',p.socio1||'Alberto')}
+      ${vpPct('socio1Pct','% socio 1',p.socio1Pct||0.6)}
+      ${vpFld('socio2','Nombre socio 2',p.socio2||'Gabriel')}
+      ${vpPct('socio2Pct','% socio 2',p.socio2Pct||0.4)}`;
+  } else if(est==='varmanex'){
+    hint='Estructura VARMANEX: Balance − Bonos − Rivas % − Digitador % → Alberto el resto';
+    html=`
+      ${vpFld('socio1','Quien se lleva el resto',p.socio1||'Alberto')}
+      ${vpPct('rivasPct','% Rivas',p.rivasPct||0.3)}
+      ${vpPct('digitadorPct','% Digitador',p.digitadorPct||0.04)}`;
+  } else {
+    // vg/soll
+    hint='Estructura '+emp+': Balance − Digitador % − Bonos → Socio1 % / Socio2 %';
+    html=`
+      ${vpPct('digitadorPct','% Digitador',p.digitadorPct||0.04)}
+      ${vpFld('socio1','Nombre socio 1',p.socio1||'Alberto')}
+      ${vpPct('socio1Pct','% socio 1',p.socio1Pct||(emp==='SOLL'?0.7:0.6))}
+      ${vpFld('socio2','Nombre socio 2',p.socio2||(emp==='SOLL'?'Joan':'DS'))}
+      ${vpPct('socio2Pct','% socio 2',p.socio2Pct||(emp==='SOLL'?0.3:0.4))}`;
+  }
+  document.getElementById('vpStructHint').textContent=hint;
+  document.getElementById('vpFields').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;">${html}</div>`;
+}
+function vpFld(key,label,val){
+  return `<div class="fld" style="margin:0;"><label style="font-size:11px;">${label}</label><input type="text" id="vp_${key}" value="${val||''}" style="font-size:14px;"></div>`;
+}
+function vpPct(key,label,val){
+  return `<div class="fld" style="margin:0;"><label style="font-size:11px;">${label}</label><input type="number" inputmode="decimal" id="vp_${key}" value="${((val||0)*100).toFixed(2)}" step="0.1" style="font-size:14px;"></div>`;
+}
+
+async function saveVirtProv(){
+  const emp=document.getElementById('vpEmpresa').value;
+  const nombre=document.getElementById('vpNombre').value.trim();
+  if(!nombre){ toast('El nombre del proveedor es requerido',false); return; }
+  // Read fields
+  const get=(k)=>{ const el=document.getElementById('vp_'+k); return el?el.value:''; };
+  const getPct=(k)=>{ const el=document.getElementById('vp_'+k); if(!el)return 0; const v=parseFloat(el.value); return isNaN(v)?0:v/100; };
+  const data={
+    empresa:emp,
+    nombre,
+    socio1_nombre:get('socio1')||null,
+    socio2_nombre:get('socio2')||null,
+    socio1_pct:getPct('socio1Pct'),
+    socio2_pct:getPct('socio2Pct'),
+    digitador_pct:getPct('digitadorPct'),
+    rivas_pct:getPct('rivasPct'),
+    activo:true
+  };
+  setSyncState('saving');
+  try{
+    if(_vpEditId){
+      await sb.from('virtuales_proveedores').update(data).eq('id',_vpEditId);
+      const p=state.virtProviders.find(x=>x._id===_vpEditId);
+      Object.assign(p,{empresa:emp,nombre,socio1:data.socio1_nombre,socio2:data.socio2_nombre,socio1Pct:data.socio1_pct,socio2Pct:data.socio2_pct,digitadorPct:data.digitador_pct,rivasPct:data.rivas_pct});
+    } else {
+      const {data:ret,error}=await sb.from('virtuales_proveedores').insert(data).select();
+      if(error)throw error;
+      state.virtProviders.push({_id:ret[0].id,empresa:emp,nombre,socio1:data.socio1_nombre,socio2:data.socio2_nombre,socio1Pct:data.socio1_pct,socio2Pct:data.socio2_pct,digitadorPct:data.digitador_pct,rivasPct:data.rivas_pct,activo:true});
+    }
+    setSyncState('ok'); toast('Proveedor guardado',true);
+    openVirtConfig();
+  }catch(e){ console.error(e); setSyncState('error'); toast('Error: '+e.message,false); }
+}
+
+async function deleteVirtProv(){
+  if(!_vpEditId)return;
+  const p=state.virtProviders.find(x=>x._id===_vpEditId);
+  if(!p)return;
+  // Check if it has registers
+  const hasRegs=state.virtRegs.some(r=>r.proveedorId===_vpEditId);
+  if(hasRegs){ toast('No se puede eliminar: tiene registros. Desactívalo en su lugar.',false); return; }
+  if(!confirm(`¿Eliminar el proveedor "${p.nombre}" de ${p.empresa}?`))return;
+  setSyncState('saving');
+  try{
+    await sb.from('virtuales_proveedores').delete().eq('id',_vpEditId);
+    state.virtProviders=state.virtProviders.filter(x=>x._id!==_vpEditId);
+    setSyncState('ok'); toast('Proveedor eliminado',true);
+    openVirtConfig();
+  }catch(e){ console.error(e); setSyncState('error'); toast('Error al eliminar',false); }
+}
+
+// Sucursales (de Virtuales) toggle
+function renderVirtSucList(){
+  const wrap=document.getElementById('virtSucList');
+  wrap.innerHTML=VIRT_SUCURSALES.map(suc=>{
+    const active=isVirtSucursalActiva(suc);
+    return `<div class="panel" style="padding:11px 13px;margin-bottom:7px;display:flex;align-items:center;gap:10px;opacity:${active?'1':'.55'};">
+      <label class="switch" style="flex-shrink:0;"><input type="checkbox" ${active?'checked':''} onchange="toggleVirtSuc('${suc}')"><span class="slider"></span></label>
+      <span style="flex:1;font-size:13px;font-weight:700;">${suc}${!active?' <span style="color:var(--muted);font-size:10.5px;font-weight:600;">(inactiva)</span>':''}</span>
     </div>`;
   }).join('');
 }
-function cfgPctField(emp,key,label,val){
-  return `<div class="fld" style="margin:0;"><label style="font-size:11px;">${label}</label><input type="number" inputmode="decimal" id="cfg_${emp}_${key}" value="${(val*100)}" step="0.1" style="font-size:14px;"></div>`;
-}
-async function saveVirtConfig(){
+async function toggleVirtSuc(suc){
+  const wasActive=isVirtSucursalActiva(suc);
+  if(wasActive) state.virtSucursalesInactivas[suc]=true;
+  else delete state.virtSucursalesInactivas[suc];
   setSyncState('saving');
   try{
-    for(const emp of VIRT_EMPRESAS){
-      const c=state.virtConfig[emp];
-      const get=(key)=>{ const el=document.getElementById(`cfg_${emp}_${key}`); if(!el)return null; const v=parseFloat(el.value); return isNaN(v)?0:v/100; };
-      const upd={};
-      ['socio1Pct','socio2Pct','digitadorPct','rivasPct'].forEach(k=>{ const v=get(k); if(v!==null){ c[k]=v; upd[k]=v; } });
-      // map to DB columns
-      const dbUpd={};
-      if('socio1Pct' in upd) dbUpd.socio1_pct=upd.socio1Pct;
-      if('socio2Pct' in upd) dbUpd.socio2_pct=upd.socio2Pct;
-      if('digitadorPct' in upd) dbUpd.digitador_pct=upd.digitadorPct;
-      if('rivasPct' in upd) dbUpd.rivas_pct=upd.rivasPct;
-      if(Object.keys(dbUpd).length) await sb.from('virtuales_config').update(dbUpd).eq('empresa',emp);
-    }
-    setSyncState('ok'); toast('Porcentajes guardados',true);
-    openVirtuales();
-  }catch(e){ console.error(e); setSyncState('error'); toast('Error al guardar config',false); }
+    await sb.from('virtuales_sucursales_estado').upsert({sucursal:suc,activa:!wasActive},{onConflict:'sucursal'});
+    setSyncState('ok'); toast(wasActive?`${suc} desactivada`:`${suc} activada`,true);
+    renderVirtSucList();
+  }catch(e){ console.warn(e); setSyncState('ok'); renderVirtSucList(); }
+}
+
+// Renglones (campos) toggle
+function renderVirtRengList(){
+  const wrap=document.getElementById('virtRengList');
+  wrap.innerHTML=VIRT_CAMPOS.map(c=>{
+    const active=isVirtRenglonActivo(c.k);
+    return `<div class="panel" style="padding:11px 13px;margin-bottom:7px;display:flex;align-items:center;gap:10px;opacity:${active?'1':'.55'};">
+      <label class="switch" style="flex-shrink:0;"><input type="checkbox" ${active?'checked':''} onchange="toggleVirtReng('${c.k}')"><span class="slider"></span></label>
+      <span style="flex:1;font-size:13px;font-weight:700;">${c.label}${!active?' <span style="color:var(--muted);font-size:10.5px;font-weight:600;">(inactivo)</span>':''}</span>
+    </div>`;
+  }).join('');
+}
+async function toggleVirtReng(campo){
+  const wasActive=isVirtRenglonActivo(campo);
+  if(wasActive) state.virtRenglonesInactivos[campo]=true;
+  else delete state.virtRenglonesInactivos[campo];
+  setSyncState('saving');
+  try{
+    await sb.from('virtuales_renglones_estado').upsert({campo,activo:!wasActive},{onConflict:'campo'});
+    setSyncState('ok'); toast(wasActive?`Renglón "${campo}" desactivado`:`Renglón "${campo}" activado`,true);
+    renderVirtRengList();
+  }catch(e){ console.warn(e); setSyncState('ok'); renderVirtRengList(); }
 }
 
 // ---- registro screen ----
@@ -2543,38 +3032,52 @@ function openVirtRegistro(){
   document.getElementById('virtRegTitle').textContent=`${MONTHS[virtCurMes-1]} ${virtCurAnio}`;
   const empSel=document.getElementById('virtRegEmpresa');
   empSel.innerHTML=VIRT_EMPRESAS.map(e=>`<option>${e}</option>`).join('');
+  onVirtRegEmpresaChange();
+}
+
+function onVirtRegEmpresaChange(){
+  const emp=document.getElementById('virtRegEmpresa').value;
+  const provSel=document.getElementById('virtRegProveedor');
+  const providers=virtProvidersOf(emp,false);
+  if(!providers.length){
+    provSel.innerHTML='<option value="">— Sin proveedores —</option>';
+  } else {
+    provSel.innerHTML=providers.map(p=>`<option value="${p._id}">${p.nombre}</option>`).join('');
+  }
   renderVirtRegRows();
 }
 
 function renderVirtRegRows(){
   const emp=document.getElementById('virtRegEmpresa').value;
-  const existing=state.virtRegs.filter(r=>r.mes===virtCurMes&&r.anio===virtCurAnio&&r.empresa===emp);
+  const provId=document.getElementById('virtRegProveedor').value;
   const wrap=document.getElementById('virtRegRows');
-  wrap.innerHTML=VIRT_SUCURSALES.map(suc=>{
+  if(!provId){
+    wrap.innerHTML='<div class="empty-hint" style="padding:20px;">No hay proveedores activos para esta empresa. Crea uno en <b>Gestión de Proveedores</b>.</div>';
+    return;
+  }
+  const existing=state.virtRegs.filter(r=>r.mes===virtCurMes&&r.anio===virtCurAnio&&r.empresa===emp&&r.proveedorId===provId);
+  const activeSucs=activeVirtSucursales();
+  const activeFields=activeVirtCampos();
+  if(!activeSucs.length){ wrap.innerHTML='<div class="empty-hint" style="padding:20px;">No hay sucursales activas para Virtuales.</div>'; return; }
+  if(!activeFields.length){ wrap.innerHTML='<div class="empty-hint" style="padding:20px;">No hay renglones activos. Activa al menos uno en Ajustes de Virtuales.</div>'; return; }
+  wrap.innerHTML=activeSucs.map(suc=>{
     const r=existing.find(x=>x.sucursal===suc);
     const id=suc.replace(/[^0-9]/g,'');
+    const fields=activeFields.map(c=>`<div class="fld" style="margin:0;"><label style="font-size:11px;">${c.label}</label><input type="number" inputmode="decimal" id="vr_${c.k}_${id}" value="${r?r[c.k]:''}" placeholder="0" oninput="calcVirtRow('${id}')"></div>`).join('');
     return `<div class="panel" style="padding:12px;margin-bottom:10px;" data-suc="${suc}">
       <div style="font-size:13px;font-weight:700;margin-bottom:9px;color:var(--cerulean);">${suc}</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-        <div class="fld" style="margin:0;"><label style="font-size:11px;">TK (tickets)</label><input type="number" inputmode="numeric" id="vr_tk_${id}" value="${r?r.tk:''}" placeholder="0" oninput="calcVirtRow('${id}')"></div>
-        <div class="fld" style="margin:0;"><label style="font-size:11px;">Venta RD$</label><input type="number" inputmode="decimal" id="vr_venta_${id}" value="${r?r.venta:''}" placeholder="0" oninput="calcVirtRow('${id}')"></div>
-        <div class="fld" style="margin:0;"><label style="font-size:11px;">Balance</label><input type="number" inputmode="decimal" id="vr_balance_${id}" value="${r?r.balance:''}" placeholder="0" oninput="calcVirtRow('${id}')"></div>
-        <div class="fld" style="margin:0;"><label style="font-size:11px;">Bonos/Imp (neg.)</label><input type="number" inputmode="decimal" id="vr_bonos_${id}" value="${r?r.bonos:''}" placeholder="0" oninput="calcVirtRow('${id}')"></div>
-        <div class="fld" style="margin:0;"><label style="font-size:11px;">Comisión (neg.)</label><input type="number" inputmode="decimal" id="vr_comision_${id}" value="${r?r.comision:''}" placeholder="0" oninput="calcVirtRow('${id}')"></div>
-        <div class="fld" style="margin:0;"><label style="font-size:11px;">Faltantes (neg.)</label><input type="number" inputmode="decimal" id="vr_faltantes_${id}" value="${r?r.faltantes:''}" placeholder="0" oninput="calcVirtRow('${id}')"></div>
-      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">${fields}</div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:9px;padding-top:9px;border-top:1px solid #eef2f4;">
         <span style="font-size:11.5px;color:var(--muted);font-weight:600;">Total</span>
         <span style="font-size:15px;font-weight:800;" id="vr_total_${id}">RD$0</span>
       </div>
     </div>`;
   }).join('');
-  // compute existing totals
-  VIRT_SUCURSALES.forEach(suc=>calcVirtRow(suc.replace(/[^0-9]/g,'')));
+  activeSucs.forEach(suc=>calcVirtRow(suc.replace(/[^0-9]/g,'')));
 }
 
 function calcVirtRow(id){
-  const g=k=>{ const v=parseFloat(document.getElementById(`vr_${k}_${id}`).value); return isNaN(v)?0:v; };
+  const g=k=>{ const el=document.getElementById(`vr_${k}_${id}`); if(!el)return 0; const v=parseFloat(el.value); return isNaN(v)?0:v; };
   const total=g('balance')+g('bonos')+g('comision')+g('faltantes');
   const el=document.getElementById(`vr_total_${id}`);
   el.textContent='RD$'+fmt(total);
@@ -2583,34 +3086,37 @@ function calcVirtRow(id){
 
 async function saveVirtRegistro(){
   const emp=document.getElementById('virtRegEmpresa').value;
+  const provId=document.getElementById('virtRegProveedor').value;
+  if(!provId){ toast('Selecciona un proveedor primero',false); return; }
   setSyncState('saving');
   let saved=0;
   try{
-    for(const suc of VIRT_SUCURSALES){
+    const activeSucs=activeVirtSucursales();
+    for(const suc of activeSucs){
       const id=suc.replace(/[^0-9]/g,'');
-      const g=k=>{ const v=parseFloat(document.getElementById(`vr_${k}_${id}`).value); return isNaN(v)?0:v; };
+      const g=k=>{ const el=document.getElementById(`vr_${k}_${id}`); if(!el)return 0; const v=parseFloat(el.value); return isNaN(v)?0:v; };
       const tk=g('tk'),venta=g('venta'),balance=g('balance'),bonos=g('bonos'),comision=g('comision'),faltantes=g('faltantes');
       const hasData=(tk||venta||balance||bonos||comision||faltantes);
       const total=balance+bonos+comision+faltantes;
-      const existing=state.virtRegs.find(r=>r.mes===virtCurMes&&r.anio===virtCurAnio&&r.empresa===emp&&r.sucursal===suc);
+      const existing=state.virtRegs.find(r=>r.mes===virtCurMes&&r.anio===virtCurAnio&&r.empresa===emp&&r.proveedorId===provId&&r.sucursal===suc);
       if(!hasData){
-        // if there was an existing row and now it's empty, delete it
         if(existing){ await sb.from('virtuales_registros').delete().eq('id',existing._id); state.virtRegs=state.virtRegs.filter(r=>r._id!==existing._id); }
         continue;
       }
-      const row={anio:virtCurAnio,mes:virtCurMes,empresa:emp,sucursal:suc,tk,venta,balance,bonos,comision,faltantes,total,creado_por:currentUser||null};
+      const row={anio:virtCurAnio,mes:virtCurMes,empresa:emp,proveedor_id:provId,sucursal:suc,tk,venta,balance,bonos,comision,faltantes,total,creado_por:currentUser||null};
       if(existing){
         await sb.from('virtuales_registros').update(row).eq('id',existing._id);
         Object.assign(existing,{tk,venta,balance,bonos,comision,faltantes,total});
       } else {
         const {data,error}=await sb.from('virtuales_registros').insert(row).select();
         if(error)throw error;
-        state.virtRegs.push({_id:data[0].id,...row});
+        state.virtRegs.push({_id:data[0].id,anio:virtCurAnio,mes:virtCurMes,empresa:emp,proveedorId:provId,sucursal:suc,tk,venta,balance,bonos,comision,faltantes,total});
       }
       saved++;
     }
     setSyncState('ok');
-    toast(`${emp}: ${saved} sucursales guardadas`,true);
+    const provName=(state.virtProviders.find(p=>p._id===provId)||{}).nombre||'';
+    toast(`${emp} (${provName}): ${saved} sucursales guardadas`,true);
     openVirtuales();
   }catch(e){ console.error(e); setSyncState('error'); toast('Error al guardar Virtuales',false); }
 }
@@ -2656,14 +3162,17 @@ function histRangeTxns(){
 }
 function renderHistoric(){
   const txns=histRangeTxns();
-  // range totals — transfers (préstamos entre cajas) excluded from neto operativo
+  const office=officeName();
+  // range totals — desde el punto de vista de la oficina
   const inc=txns.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
   const exp=txns.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
-  const out=txns.filter(t=>t.type==='out'&&t.outKind!=='transfer').reduce((s,t)=>s+t.amount,0);
-  document.getElementById('histRangeNet').textContent=fmt(inc-exp-out);
-  document.getElementById('histRangeInc').textContent='RD$'+fmt(inc);
+  const withdraw=txns.filter(t=>t.type==='out'&&t.outKind!=='transfer').reduce((s,t)=>s+t.amount,0);
+  const tOut=txns.filter(t=>t.type==='out'&&t.outKind==='transfer'&&t.branch===office).reduce((s,t)=>s+t.amount,0);
+  const tIn=txns.filter(t=>t.type==='out'&&t.outKind==='transfer'&&t.dest===office).reduce((s,t)=>s+t.amount,0);
+  document.getElementById('histRangeNet').textContent=fmt(inc-exp-withdraw-tOut+tIn);
+  document.getElementById('histRangeInc').textContent='RD$'+fmt(inc+tIn);
   document.getElementById('histRangeExp').textContent='RD$'+fmt(exp);
-  document.getElementById('histRangeOut').textContent='RD$'+fmt(out);
+  document.getElementById('histRangeOut').textContent='RD$'+fmt(withdraw+tOut);
 
   // group by day (desc)
   const byDay={};
@@ -2676,9 +3185,11 @@ function renderHistoric(){
     const list=byDay[date];
     const dInc=list.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
     const dExp=list.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
-    const dOut=list.filter(t=>t.type==='out'&&t.outKind!=='transfer').reduce((s,t)=>s+t.amount,0); // retiros solo; las transferencias no son salida operativa
-    const dTransfer=list.filter(t=>t.type==='out'&&t.outKind==='transfer').reduce((s,t)=>s+t.amount,0);
-    const dNet=dInc-dExp-dOut;
+    const dWithdraw=list.filter(t=>t.type==='out'&&t.outKind!=='transfer').reduce((s,t)=>s+t.amount,0);
+    const dTOut=list.filter(t=>t.type==='out'&&t.outKind==='transfer'&&t.branch===office).reduce((s,t)=>s+t.amount,0);
+    const dTIn=list.filter(t=>t.type==='out'&&t.outKind==='transfer'&&t.dest===office).reduce((s,t)=>s+t.amount,0);
+    const dOut=dWithdraw+dTOut;  // salidas: retiros + préstamos desde oficina
+    const dNet=dInc+dTIn-dExp-dWithdraw-dTOut;
     const d=new Date(date+'T00:00:00');
     const dayName=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][d.getDay()];
     const dateStr=`${dayName} ${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`;
@@ -2713,8 +3224,10 @@ function renderHistoric(){
         <table class="rep-table" style="margin-bottom:14px;"><tbody>${catRows.map(([k,v])=>`<tr><td>${k}</td><td class="r ${v<0?'neg':'pos'}">RD$${fmt(v)}</td></tr>`).join('')}</tbody></table>`:''}
         ${expRows.length?`<div style="font-size:11.5px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Gastos por categoría</div>
         <table class="rep-table" style="margin-bottom:14px;"><tbody>${expRows.map(([k,v])=>`<tr><td>${k}</td><td class="r neg">RD$${fmt(v)}</td></tr>`).join('')}</tbody></table>`:''}
-        ${dTransfer>0?`<div style="font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Transferencias entre cajas</div><div style="font-size:12px;color:var(--muted);background:#f4f6f7;border-radius:8px;padding:8px 10px;margin-bottom:10px;">🔄 RD$${fmt(dTransfer)} — movimiento de efectivo entre cajas (no afecta el neto operativo)</div>`:''}
-        ${!catRows.length&&!expRows.length&&dTransfer===0?'<div style="font-size:12.5px;color:var(--muted);text-align:center;padding:8px;">Solo recolecciones este día.</div>':''}
+        ${(dTOut>0||dTIn>0)?`<div style="font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Transferencias entre cajas</div>
+        ${dTOut>0?`<div style="font-size:12px;color:var(--red);background:#fdecea;border-radius:8px;padding:8px 10px;margin-bottom:6px;">↑ Préstamo desde oficina: RD$${fmt(dTOut)}</div>`:''}
+        ${dTIn>0?`<div style="font-size:12px;color:var(--green);background:#eaf7f0;border-radius:8px;padding:8px 10px;margin-bottom:10px;">↓ Devolución a oficina: RD$${fmt(dTIn)}</div>`:''}`:''}
+        ${!catRows.length&&!expRows.length&&dTOut===0&&dTIn===0?'<div style="font-size:12.5px;color:var(--muted);text-align:center;padding:8px;">Solo recolecciones este día.</div>':''}
       </div>
     </div>`;
   }).join('');
