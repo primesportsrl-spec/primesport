@@ -1361,16 +1361,15 @@ function liveFund(name){
       if(t.type==='income') bal+=t.amount;
       else if(t.type==='expense') bal-=t.amount;
       else if(t.type==='out') bal-=t.amount;
-      // For the BRANCH: use cuadre (full operational result of the day).
-      // The cuadre reflects what the branch earned/lost operationally.
-      // The 'moved' may differ from cuadre when prior pendientes are netted,
-      // but the fund should reflect the full operational impact.
-      else if(t.type==='collect') bal-=t.cuadre;
+      // For the BRANCH: use 'moved' (what physically left the branch via the mensajero).
+      // If the mensajero only took 18,304 instead of the full cuadre 18,926
+      // (because office netted the 622 owed from a prior day),
+      // the branch fund should reflect that only 18,304 left.
+      else if(t.type==='collect') bal-=t.moved;
     }
     // transfer destination adds to fund
     if(t.type==='out'&&t.outKind==='transfer'&&t.dest===name) bal+=t.amount;
     // For the OFFICE: use moved (physical cash that actually arrived).
-    // The office only receives what the mensajero physically brought.
     if(t.type==='collect'&&t.office===name) bal+=t.moved;
   });
   return bal;
