@@ -658,17 +658,82 @@
 <section class="view" id="view-maquinas">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
     <button onclick="go('dash')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
-    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Máquinas</div><div style="font-size:12px;color:var(--muted);">Ruletas y lecturas de contadores</div></div>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Máquinas</div><div style="font-size:12px;color:var(--muted);">Ruletas, Bergman y POG</div></div>
     <button onclick="openMaqConfig()" style="border:none;background:#f0eaf7;color:#6b3fa0;border-radius:10px;padding:8px 12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">⚙ Configurar</button>
   </div>
 
   <!-- branch selector -->
-  <div class="fld" style="margin-bottom:14px;">
+  <div class="fld" style="margin-bottom:10px;">
     <label>Sucursal</label>
     <select id="maqBranch" onchange="renderMaqList()"></select>
   </div>
 
+  <!-- monthly summary entry button -->
+  <div style="display:flex;gap:8px;margin-bottom:14px;">
+    <button onclick="openMaqMensual()" style="flex:1;border:none;border-radius:11px;padding:11px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#0086AD,#16a8d4);box-shadow:0 3px 10px rgba(0,134,173,.3);">📅 Resumen Mensual</button>
+    <button onclick="openMaqTopRanking()" style="flex:1;border:1px solid var(--line);background:#fff;border-radius:11px;padding:11px;font-size:12.5px;font-weight:700;color:var(--navy);cursor:pointer;font-family:inherit;">🏆 Top Producción</button>
+  </div>
+
   <div id="maqListWrap"></div>
+</section>
+
+<!-- MAQUINAS RESUMEN MENSUAL -->
+<section class="view" id="view-maqmensual">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="openMaquinas()" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Resumen Mensual · Máquinas</div><div style="font-size:12px;color:var(--muted);">Por banca con gastos y comisión</div></div>
+  </div>
+
+  <div class="row2" style="margin-bottom:12px;">
+    <div class="fld" style="margin:0;"><label>Mes</label><select id="maqMesSel" onchange="renderMaqMensual()"></select></div>
+    <div class="fld" style="margin:0;"><label>Año</label><select id="maqAnioSel" onchange="renderMaqMensual()"></select></div>
+  </div>
+
+  <div class="fld" style="margin-bottom:14px;">
+    <label>Banca</label>
+    <select id="maqMensualBranch" onchange="renderMaqMensual()"></select>
+  </div>
+
+  <!-- Resumen del cálculo (hero) -->
+  <div id="maqMensualHero"></div>
+
+  <!-- Lista de máquinas + producción -->
+  <div class="panel" style="margin-bottom:14px;">
+    <div class="panel-head"><h3>Producción por máquina (Ruletas + Bergman)</h3></div>
+    <div id="maqMensualProduccion"></div>
+  </div>
+
+  <!-- Datos POG manuales -->
+  <div class="panel" style="margin-bottom:14px;">
+    <div class="panel-head"><h3>POG (manual)</h3></div>
+    <div id="maqMensualPog"></div>
+  </div>
+
+  <!-- Gastos -->
+  <div class="panel" style="margin-bottom:14px;">
+    <div class="panel-head"><h3>Gastos del mes</h3><span class="hint" id="maqGastosTotal">RD$0</span></div>
+    <div id="maqMensualGastos"></div>
+    <div style="margin-top:9px;display:grid;grid-template-columns:2fr 1fr auto;gap:6px;">
+      <input type="text" id="maqNewGastoDesc" placeholder="Descripción" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;font-size:13px;font-family:inherit;">
+      <div class="amount-input" style="margin:0;"><span class="cur">RD$</span><input type="number" inputmode="decimal" id="maqNewGastoMonto" placeholder="0" style="border-radius:9px;"></div>
+      <button onclick="addMaqGasto()" style="border:none;background:var(--navy);color:#fff;border-radius:9px;padding:9px 13px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">+</button>
+    </div>
+  </div>
+</section>
+
+<!-- TOP PRODUCCIÓN -->
+<section class="view" id="view-maqtop">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="openMaquinas()" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Top Producción</div><div style="font-size:12px;color:var(--muted);">Ranking de máquinas del mes</div></div>
+  </div>
+
+  <div class="row2" style="margin-bottom:14px;">
+    <div class="fld" style="margin:0;"><label>Mes</label><select id="topMesSel" onchange="renderMaqTopRanking()"></select></div>
+    <div class="fld" style="margin:0;"><label>Año</label><select id="topAnioSel" onchange="renderMaqTopRanking()"></select></div>
+  </div>
+
+  <div id="maqTopList"></div>
 </section>
 
 <!-- CONFIGURAR MÁQUINAS -->
@@ -722,6 +787,20 @@
     <div class="fld" style="margin-bottom:12px;"><label>Entrada (contador acumulado)</label><div class="amount-input"><span class="cur" style="font-size:12px;">AC</span><input type="number" inputmode="decimal" id="lecEntrada" placeholder="0" oninput="calcLectura()" style="padding-left:40px;"></div></div>
     <div class="fld" style="margin-bottom:12px;"><label>Salida (contador acumulado)</label><div class="amount-input"><span class="cur" style="font-size:12px;">AC</span><input type="number" inputmode="decimal" id="lecSalida" placeholder="0" oninput="calcLectura()" style="padding-left:40px;"></div></div>
     <div class="fld" id="lecCashWrap" style="margin-bottom:12px;display:none;"><label>Cashbox actual (monedas en la caja)</label><div class="amount-input"><span class="cur" style="font-size:13px;">mon.</span><input type="number" inputmode="decimal" id="lecCash" placeholder="0" oninput="calcLectura()"></div></div>
+
+    <!-- Reset toggle -->
+    <div style="background:#fff8ea;border:1px solid #f0d8a4;border-radius:10px;padding:10px 12px;margin-bottom:12px;">
+      <label style="display:flex;align-items:center;gap:9px;cursor:pointer;font-size:13px;font-weight:600;color:#8a5e15;">
+        <input type="checkbox" id="lecReset" onchange="toggleResetFields()" style="width:18px;height:18px;flex-shrink:0;cursor:pointer;">
+        ⚠ La máquina tuvo reseteo de contadores (daño)
+      </label>
+      <div id="lecResetWrap" style="display:none;margin-top:10px;">
+        <div style="font-size:11.5px;color:var(--muted);margin-bottom:8px;line-height:1.4;">
+          Los contadores anteriores se ignoran. Indica cuánto produjo la máquina <b>entre el daño y la reparación</b> (período sin lecturas válidas, en pesos).
+        </div>
+        <div class="fld" style="margin:0;"><label style="font-size:11.5px;">Ganancia estimada entre daño y reparación</label><div class="amount-input"><span class="cur">RD$</span><input type="number" inputmode="decimal" id="lecResetGain" placeholder="0" value="0" oninput="calcLectura()"></div></div>
+      </div>
+    </div>
 
     <div id="lecCalc" style="background:#0e1620;border-radius:12px;padding:14px;margin-bottom:14px;display:none;">
       <div style="font-size:11px;color:#7d909e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:700;">Cálculo del período</div>
@@ -1161,7 +1240,7 @@ const DEFAULTS={
   expCats:['Local / Alquiler','Energía eléctrica','Nómina / Personal','Internet y teléfono','Mantenimiento','Suministros','Impuestos / DGII','Transporte','Publicidad','Otros gastos']
 };
 
-let state={txns:[],branches:[],incCats:[],expCats:[],officeIncCats:[],maquinas:[],lecturas:[],denoms:[],cierres:[],virtRegs:[],virtConfig:null,virtProviders:[],virtSucursalesInactivas:{},virtRenglonesInactivos:{}};
+let state={txns:[],branches:[],incCats:[],expCats:[],officeIncCats:[],maquinas:[],lecturas:[],denoms:[],cierres:[],virtRegs:[],virtConfig:null,virtProviders:[],virtSucursalesInactivas:{},virtRenglonesInactivos:{},maqGastos:[],maqPog:[],maqCfgBanca:{}};
 const VIRT_EMPRESAS=['MERENGUE','VARMANEX','VG','SOLL'];
 const VIRT_SUCURSALES=['PRIME SPORT 01','PRIME SPORT 02','PRIME SPORT 03','PRIME SPORT 04','PRIME SPORT 05','PRIME SPORT 06','PRIME SPORT 07','PRIME SPORT 08','PRIME SPORT 09','PRIME SPORT 10'];
 const VIRT_ESTRUCTURAS={MERENGUE:'merengue',VARMANEX:'varmanex',VG:'vg',SOLL:'soll'};
@@ -1247,12 +1326,28 @@ async function loadState(){
       sb.from('lecturas_maquina').select('*').order('fecha'),
       sb.from('denominaciones').select('*')
     ]);
-    if(!maq.error) state.maquinas=maq.data.map(m=>({_id:m.id,name:m.nombre,branch:m.sucursal,marca:m.marca||'',tipo:m.tipo,denom:Number(m.denominacion)||0,activa:m.activa!==false}));
-    if(!lec.error) state.lecturas=lec.data.map(l=>({_id:l.id,maqId:l.maquina_id,date:l.fecha,entradaAc:num0(l.entrada_ac),salidaAc:num0(l.salida_ac),cashBox:l.cash_box!=null?Number(l.cash_box):null,difEntrada:num0(l.dif_entrada),difSalida:num0(l.dif_salida),benMonedas:num0(l.ben_monedas),benDinero:num0(l.ben_dinero),ingreso:num0(l.ingreso),sumado:l.sumado===true,maestra:l.es_maestra===true}));
+    if(!maq.error) state.maquinas=maq.data.map(m=>({_id:m.id,name:m.nombre,branch:m.sucursal,marca:m.marca||'',modelo:m.modelo||'',serie:m.serie||'',tipo:m.tipo,denom:Number(m.denominacion)||0,activa:m.activa!==false}));
+    if(!lec.error) state.lecturas=lec.data.map(l=>({_id:l.id,maqId:l.maquina_id,date:l.fecha,entradaAc:num0(l.entrada_ac),salidaAc:num0(l.salida_ac),cashBox:l.cash_box!=null?Number(l.cash_box):null,difEntrada:num0(l.dif_entrada),difSalida:num0(l.dif_salida),benMonedas:num0(l.ben_monedas),benDinero:num0(l.ben_dinero),ingreso:num0(l.ingreso),sumado:l.sumado===true,maestra:l.es_maestra===true,reset:l.reset===true,resetGain:l.reset_gain!=null?Number(l.reset_gain):null,nota:l.nota||''}));
     if(!den.error&&den.data.length) state.denoms=den.data.map(d=>Number(d.valor)).sort((a,b)=>a-b);
     else state.denoms=[5,10,25];
     state._machinesReady = !maq.error && !lec.error;
   }catch(e){ console.warn('Machines tables not available yet',e); state.maquinas=[]; state.lecturas=[]; state.denoms=[5,10,25]; state._machinesReady=false; }
+
+  // Machine extras (resilient — new tables)
+  try{
+    const [mg,mp,mc]=await Promise.all([
+      sb.from('maquinas_gastos_mes').select('*'),
+      sb.from('maquinas_pog_mes').select('*'),
+      sb.from('maquinas_config_banca').select('*')
+    ]);
+    if(!mg.error) state.maqGastos=mg.data.map(g=>({_id:g.id,anio:g.anio,mes:g.mes,sucursal:g.sucursal,descripcion:g.descripcion,monto:Number(g.monto)||0}));
+    else state.maqGastos=[];
+    if(!mp.error) state.maqPog=mp.data.map(p=>({_id:p.id,anio:p.anio,mes:p.mes,sucursal:p.sucursal,venta:Number(p.venta)||0,balance:Number(p.balance)||0,nota:p.nota||''}));
+    else state.maqPog=[];
+    if(!mc.error){ state.maqCfgBanca={}; mc.data.forEach(c=>{ state.maqCfgBanca[c.sucursal]={digitadorPct:Number(c.digitador_pct)||0.04,notas:c.notas||''}; }); }
+    else state.maqCfgBanca={};
+    state._maqExtrasReady = !mg.error && !mp.error && !mc.error;
+  }catch(e){ console.warn('Machine extras not ready',e); state.maqGastos=[]; state.maqPog=[]; state.maqCfgBanca={}; state._maqExtrasReady=false; }
   // Closed days (cierres) — resilient
   try{
     const c=await sb.from('cierres_dia').select('*');
@@ -2263,6 +2358,239 @@ function fillBranchSelect(id){
   if(cur)sel.value=cur;
 }
 
+// ==========================================================
+// MAQUINAS - Resumen Mensual por banca
+// ==========================================================
+let maqMesCur=new Date().getMonth()+1, maqAnioCur=new Date().getFullYear();
+
+function openMaqMensual(){
+  showOnlyView('view-maqmensual');
+  const mesSel=document.getElementById('maqMesSel');
+  mesSel.innerHTML=MONTHS.map((m,i)=>`<option value="${i+1}" ${(i+1)===maqMesCur?'selected':''}>${m}</option>`).join('');
+  const anioSel=document.getElementById('maqAnioSel');
+  anioSel.innerHTML=[2024,2025,2026,2027].map(y=>`<option value="${y}" ${y===maqAnioCur?'selected':''}>${y}</option>`).join('');
+  fillBranchSelect('maqMensualBranch');
+  renderMaqMensual();
+}
+
+function renderMaqMensual(){
+  maqMesCur=parseInt(document.getElementById('maqMesSel').value);
+  maqAnioCur=parseInt(document.getElementById('maqAnioSel').value);
+  const branch=document.getElementById('maqMensualBranch').value;
+  if(!branch) return;
+
+  // 1) Producción por máquina (Ruletas + Bergman) — lecturas del mes seleccionado
+  const machinesActive=state.maquinas.filter(m=>m.branch===branch && m.activa!==false && m.tipo!=='pog');
+  const machinesProduction=machinesActive.map(m=>{
+    const lecs=state.lecturas.filter(l=>{
+      if(l.maqId!==m._id) return false;
+      const d=new Date(l.date+'T00:00:00');
+      return d.getMonth()+1===maqMesCur && d.getFullYear()===maqAnioCur;
+    });
+    const ingreso=lecs.reduce((s,l)=>s+(l.ingreso||0),0);
+    return {m, lecs, ingreso};
+  });
+  const machinesHtml=machinesProduction.map(({m,lecs,ingreso})=>{
+    const typeColor=m.tipo==='bergman'?'#d9822b':'#6b3fa0';
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f2f5f6;">
+      <div>
+        <div style="font-size:12.5px;font-weight:700;">${m.name}</div>
+        <div style="font-size:10.5px;color:var(--muted);"><span style="color:${typeColor};font-weight:700;">${MAQ_TYPES[m.tipo]}</span> · ${lecs.length} lect.</div>
+      </div>
+      <div style="font-size:13.5px;font-weight:800;color:${ingreso<0?'var(--red)':'var(--green)'};">RD$${fmt(ingreso)}</div>
+    </div>`;
+  }).join('');
+  const subtotalLecturas=machinesProduction.reduce((s,x)=>s+x.ingreso,0);
+  document.getElementById('maqMensualProduccion').innerHTML=(machinesHtml||'<div class="empty-hint" style="padding:14px;">Sin lecturas este mes.</div>')+
+    `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0 2px;margin-top:4px;border-top:2px solid var(--navy);">
+      <span style="font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;">Subtotal lecturas</span>
+      <span style="font-size:14px;font-weight:800;color:${subtotalLecturas<0?'var(--red)':'var(--green)'};">RD$${fmt(subtotalLecturas)}</span>
+    </div>`;
+
+  // 2) POG (manual) — input venta y balance del mes
+  const pogRow=state.maqPog.find(p=>p.anio===maqAnioCur&&p.mes===maqMesCur&&p.sucursal===branch);
+  const pogVenta=pogRow?pogRow.venta:0;
+  const pogBalance=pogRow?pogRow.balance:0;
+  document.getElementById('maqMensualPog').innerHTML=`
+    <div class="row2" style="margin-bottom:0;">
+      <div class="fld" style="margin:0;"><label style="font-size:11.5px;">Venta POG</label><div class="amount-input"><span class="cur">RD$</span><input type="number" inputmode="decimal" id="maqPogVenta" value="${pogVenta||''}" placeholder="0" onblur="saveMaqPog()" oninput="recalcMaqHero()"></div></div>
+      <div class="fld" style="margin:0;"><label style="font-size:11.5px;">Balance POG (Bruto)</label><div class="amount-input"><span class="cur">RD$</span><input type="number" inputmode="decimal" id="maqPogBalance" value="${pogBalance||''}" placeholder="0" onblur="saveMaqPog()" oninput="recalcMaqHero()"></div></div>
+    </div>`;
+
+  // 3) Gastos del mes
+  const gastos=state.maqGastos.filter(g=>g.anio===maqAnioCur&&g.mes===maqMesCur&&g.sucursal===branch);
+  const totalGastos=gastos.reduce((s,g)=>s+g.monto,0);
+  document.getElementById('maqGastosTotal').textContent='RD$'+fmt(totalGastos);
+  const gastosHtml=gastos.length ? gastos.map(g=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f2f5f6;gap:8px;">
+      <div style="flex:1;font-size:12.5px;">${g.descripcion}</div>
+      <div style="font-size:13px;font-weight:700;color:var(--red);">RD$${fmt(g.monto)}</div>
+      <button onclick="delMaqGasto('${g._id}')" style="border:none;background:transparent;color:var(--red);font-size:16px;cursor:pointer;padding:0 4px;">×</button>
+    </div>`).join('') : '<div style="font-size:12px;color:var(--muted);padding:8px 0;">Sin gastos este mes.</div>';
+  document.getElementById('maqMensualGastos').innerHTML=gastosHtml;
+
+  // 4) Cálculo del HERO con la fórmula completa
+  recalcMaqHero();
+}
+
+function recalcMaqHero(){
+  const branch=document.getElementById('maqMensualBranch').value;
+  if(!branch)return;
+  // Bruto = subtotal lecturas + balance POG (segun tu definición: Bruto = todos los ingresos de máquinas)
+  const machinesActive=state.maquinas.filter(m=>m.branch===branch && m.activa!==false && m.tipo!=='pog');
+  const subtotalLecturas=machinesActive.reduce((sum,m)=>{
+    const lecs=state.lecturas.filter(l=>{
+      if(l.maqId!==m._id) return false;
+      const d=new Date(l.date+'T00:00:00');
+      return d.getMonth()+1===maqMesCur && d.getFullYear()===maqAnioCur;
+    });
+    return sum+lecs.reduce((s,l)=>s+(l.ingreso||0),0);
+  },0);
+  const pogVentaEl=document.getElementById('maqPogVenta');
+  const pogBalanceEl=document.getElementById('maqPogBalance');
+  const pogBalance=pogBalanceEl?(parseFloat(pogBalanceEl.value)||0):0;
+  const pogVenta=pogVentaEl?(parseFloat(pogVentaEl.value)||0):0;
+  const bruto=subtotalLecturas+pogBalance;
+  const gastos=state.maqGastos.filter(g=>g.anio===maqAnioCur&&g.mes===maqMesCur&&g.sucursal===branch).reduce((s,g)=>s+g.monto,0);
+  const neto1=bruto-gastos;
+  const digPct=(state.maqCfgBanca[branch]&&state.maqCfgBanca[branch].digitadorPct)||0.04;
+  const comision=neto1*digPct;
+  const netoFinal=neto1-comision;
+
+  document.getElementById('maqMensualHero').innerHTML=`
+    <div style="background:linear-gradient(135deg,#101820,#16242f);border-radius:15px;padding:16px;margin-bottom:14px;color:#fff;">
+      <div style="font-size:11px;color:#7d909e;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">${branch} · ${MONTHS[maqMesCur-1]} ${maqAnioCur}</div>
+      <div style="font-size:26px;font-weight:800;color:${netoFinal<0?'#f08980':'#4cd6a0'};margin-bottom:12px;">RD$${fmt(netoFinal)}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px;">
+        <div style="background:rgba(255,255,255,.07);border-radius:8px;padding:8px 10px;"><div style="color:#9fb1bd;font-weight:600;">Bruto (lecturas + POG)</div><div style="font-size:13px;font-weight:700;">RD$${fmt(bruto)}</div></div>
+        <div style="background:rgba(255,255,255,.07);border-radius:8px;padding:8px 10px;"><div style="color:#9fb1bd;font-weight:600;">− Gastos</div><div style="font-size:13px;font-weight:700;color:#f0b46a;">RD$${fmt(gastos)}</div></div>
+        <div style="background:rgba(255,255,255,.07);border-radius:8px;padding:8px 10px;"><div style="color:#9fb1bd;font-weight:600;">= Neto 1</div><div style="font-size:13px;font-weight:700;">RD$${fmt(neto1)}</div></div>
+        <div style="background:rgba(255,255,255,.07);border-radius:8px;padding:8px 10px;"><div style="color:#9fb1bd;font-weight:600;">− Digit. ${(digPct*100).toFixed(1)}% <button onclick="editMaqDigPct('${branch}')" style="background:transparent;border:none;color:#16a8d4;cursor:pointer;font-size:10px;padding:0 2px;">✎</button></div><div style="font-size:13px;font-weight:700;color:#f0b46a;">RD$${fmt(comision)}</div></div>
+      </div>
+      ${pogVenta?`<div style="font-size:10px;color:#7d909e;margin-top:8px;">POG venta del mes: RD$${fmt(pogVenta)}</div>`:''}
+    </div>`;
+}
+
+async function saveMaqPog(){
+  const branch=document.getElementById('maqMensualBranch').value;
+  if(!branch)return;
+  const venta=parseFloat(document.getElementById('maqPogVenta').value)||0;
+  const balance=parseFloat(document.getElementById('maqPogBalance').value)||0;
+  setSyncState('saving');
+  const existing=state.maqPog.find(p=>p.anio===maqAnioCur&&p.mes===maqMesCur&&p.sucursal===branch);
+  try{
+    if(existing){
+      await sb.from('maquinas_pog_mes').update({venta,balance}).eq('id',existing._id);
+      existing.venta=venta; existing.balance=balance;
+    } else if(venta||balance){
+      const {data,error}=await sb.from('maquinas_pog_mes').insert({anio:maqAnioCur,mes:maqMesCur,sucursal:branch,venta,balance,creado_por:currentUser||null}).select();
+      if(error)throw error;
+      state.maqPog.push({_id:data[0].id,anio:maqAnioCur,mes:maqMesCur,sucursal:branch,venta,balance,nota:''});
+    }
+    setSyncState('ok');
+    recalcMaqHero();
+  }catch(e){ console.error(e); setSyncState('error'); toast('Error al guardar POG: '+(e.message||''),false); }
+}
+
+async function addMaqGasto(){
+  const branch=document.getElementById('maqMensualBranch').value;
+  const desc=document.getElementById('maqNewGastoDesc').value.trim();
+  const monto=parseFloat(document.getElementById('maqNewGastoMonto').value);
+  if(!desc){ toast('Pon una descripción',false); return; }
+  if(!monto || isNaN(monto)){ toast('Pon un monto',false); return; }
+  setSyncState('saving');
+  try{
+    const {data,error}=await sb.from('maquinas_gastos_mes').insert({anio:maqAnioCur,mes:maqMesCur,sucursal:branch,descripcion:desc,monto,creado_por:currentUser||null}).select();
+    if(error)throw error;
+    state.maqGastos.push({_id:data[0].id,anio:maqAnioCur,mes:maqMesCur,sucursal:branch,descripcion:desc,monto});
+    document.getElementById('maqNewGastoDesc').value='';
+    document.getElementById('maqNewGastoMonto').value='';
+    setSyncState('ok');
+    toast('Gasto agregado',true);
+    renderMaqMensual();
+  }catch(e){ console.error(e); setSyncState('error'); toast('Error al guardar: '+(e.message||''),false); }
+}
+
+async function delMaqGasto(id){
+  if(!confirm('¿Eliminar este gasto?'))return;
+  setSyncState('saving');
+  try{
+    await sb.from('maquinas_gastos_mes').delete().eq('id',id);
+    state.maqGastos=state.maqGastos.filter(g=>g._id!==id);
+    setSyncState('ok');
+    renderMaqMensual();
+  }catch(e){ console.error(e); setSyncState('error'); }
+}
+
+async function editMaqDigPct(branch){
+  const current=(state.maqCfgBanca[branch]&&state.maqCfgBanca[branch].digitadorPct)||0.04;
+  const newVal=prompt(`% comisión digitador para ${branch} (actual: ${(current*100).toFixed(1)}%)`, (current*100).toString());
+  if(newVal===null)return;
+  const num=parseFloat(newVal);
+  if(isNaN(num)||num<0||num>100){ toast('Valor inválido',false); return; }
+  const pct=num/100;
+  setSyncState('saving');
+  try{
+    await sb.from('maquinas_config_banca').upsert({sucursal:branch,digitador_pct:pct},{onConflict:'sucursal'});
+    state.maqCfgBanca[branch]={digitadorPct:pct,notas:(state.maqCfgBanca[branch]||{}).notas||''};
+    setSyncState('ok');
+    toast('Guardado',true);
+    recalcMaqHero();
+  }catch(e){ console.error(e); setSyncState('error'); toast('Error: '+e.message,false); }
+}
+
+// ==========================================================
+// MAQUINAS - Top Producción Ranking
+// ==========================================================
+function openMaqTopRanking(){
+  showOnlyView('view-maqtop');
+  const mesSel=document.getElementById('topMesSel');
+  mesSel.innerHTML=MONTHS.map((m,i)=>`<option value="${i+1}" ${(i+1)===maqMesCur?'selected':''}>${m}</option>`).join('');
+  const anioSel=document.getElementById('topAnioSel');
+  anioSel.innerHTML=[2024,2025,2026,2027].map(y=>`<option value="${y}" ${y===maqAnioCur?'selected':''}>${y}</option>`).join('');
+  renderMaqTopRanking();
+}
+
+function renderMaqTopRanking(){
+  const mes=parseInt(document.getElementById('topMesSel').value);
+  const anio=parseInt(document.getElementById('topAnioSel').value);
+  const allMachines=state.maquinas.filter(m=>m.activa!==false && m.tipo!=='pog');
+  const ranks=allMachines.map(m=>{
+    const lecs=state.lecturas.filter(l=>{
+      if(l.maqId!==m._id) return false;
+      const d=new Date(l.date+'T00:00:00');
+      return d.getMonth()+1===mes && d.getFullYear()===anio;
+    });
+    const ingreso=lecs.reduce((s,l)=>s+(l.ingreso||0),0);
+    return {m,ingreso,count:lecs.length};
+  }).filter(x=>x.count>0).sort((a,b)=>b.ingreso-a.ingreso);
+
+  const list=document.getElementById('maqTopList');
+  if(!ranks.length){ list.innerHTML='<div class="empty-hint" style="padding:30px 16px;">Sin lecturas este mes.</div>'; return; }
+  const total=ranks.reduce((s,r)=>s+r.ingreso,0);
+  list.innerHTML=`
+    <div class="panel" style="padding:14px;margin-bottom:14px;background:linear-gradient(135deg,#101820,#16242f);color:#fff;">
+      <div style="font-size:11px;color:#9fb1bd;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Total ${MONTHS[mes-1]} ${anio}</div>
+      <div style="font-size:24px;font-weight:800;margin-top:3px;color:${total<0?'#f08980':'#4cd6a0'};">RD$${fmt(total)}</div>
+      <div style="font-size:10.5px;color:#9fb1bd;margin-top:3px;">${ranks.length} máquinas con producción</div>
+    </div>
+    <div class="panel">${ranks.map((r,i)=>{
+      const m=r.m;
+      const typeColor=m.tipo==='bergman'?'#d9822b':'#6b3fa0';
+      const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}.`;
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f2f5f6;">
+        <div style="display:flex;align-items:center;gap:9px;flex:1;">
+          <div style="font-size:14px;font-weight:700;min-width:24px;text-align:center;">${medal}</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;">${m.name}</div>
+            <div style="font-size:10.5px;color:var(--muted);"><span style="color:${typeColor};font-weight:700;">${MAQ_TYPES[m.tipo]}</span> · ${m.branch.replace('PRIME SPORT','PS')} · ${r.count} lect.</div>
+          </div>
+        </div>
+        <div style="font-size:13.5px;font-weight:800;color:${r.ingreso<0?'var(--red)':'var(--green)'};">RD$${fmt(r.ingreso)}</div>
+      </div>`;
+    }).join('')}</div>`;
+}
+
 // ---- machine math ----
 function denomOf(maqId){ const m=state.maquinas.find(x=>x._id===maqId); return m?m.denom:0; }
 function readingsOf(maqId){ return state.lecturas.filter(l=>l.maqId===maqId).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:(a._id<b._id?-1:1)); }
@@ -2285,11 +2613,16 @@ function renderMaqList(){
     wrap.innerHTML=`<div class="empty-hint" style="padding:30px 16px;">Esta banca no tiene máquinas configuradas.<br>Toca <b>⚙ Configurar</b> arriba para agregar.</div>`;
     return;
   }
+  // Sort: active first, then inactive
+  list.sort((a,b)=>(b.activa!==false?1:0)-(a.activa!==false?1:0));
   wrap.innerHTML=list.map(m=>{
     const last=lastReading(m._id);
     const lastIncome=last?maqIncome(m,last):0;
     const typeColor=m.tipo==='bergman'?'#d9822b':m.tipo==='pog'?'#16a8d4':'#6b3fa0';
     const typeLabel=MAQ_TYPES[m.tipo];
+    const isActive=m.activa!==false;
+    const opacity=isActive?'1':'.55';
+    const inactiveBadge=!isActive?'<span style="font-size:10px;background:#f4f6f7;color:var(--muted);font-weight:700;padding:2px 7px;border-radius:5px;margin-left:6px;">INACTIVA</span>':'';
     // Acumulados (only for Bergman): show last accumulated counters
     let acumHtml='';
     if(m.tipo==='bergman' && last){
@@ -2299,25 +2632,45 @@ function renderMaqList(){
         <div><div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;font-weight:700;">Cashbox</div><div style="font-size:12.5px;font-weight:800;color:#d9822b;">${fmt(last.cashBox||0)} mon.</div></div>
       </div>`;
     }
-    return `<div class="panel" style="padding:14px;margin-bottom:11px;">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
-        <div>
-          <div style="font-size:15px;font-weight:700;">${m.name}</div>
+    return `<div class="panel" style="padding:14px;margin-bottom:11px;opacity:${opacity};">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:8px;">
+        <div style="flex:1;">
+          <div style="font-size:15px;font-weight:700;display:flex;align-items:center;flex-wrap:wrap;">${m.name}${inactiveBadge}</div>
           <div style="font-size:11.5px;color:var(--muted);margin-top:2px;"><span style="color:${typeColor};font-weight:700;">${typeLabel}</span>${m.marca?' · '+m.marca:''}${m.tipo!=='pog'?' · Denom. '+m.denom:''}</div>
         </div>
-        <div style="text-align:right;">
-          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:600;">Último ingreso</div>
-          <div style="font-size:15px;font-weight:800;color:${lastIncome<0?'var(--red)':'var(--green)'};">RD$${fmt(lastIncome)}</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+          <label class="switch" style="margin:0;" title="${isActive?'Activa':'Inactiva'}"><input type="checkbox" ${isActive?'checked':''} onchange="toggleMaqActive('${m._id}')"><span class="slider"></span></label>
+          <div style="text-align:right;">
+            <div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;font-weight:600;">Último</div>
+            <div style="font-size:13.5px;font-weight:800;color:${lastIncome<0?'var(--red)':'var(--green)'};">RD$${fmt(lastIncome)}</div>
+          </div>
         </div>
       </div>
       ${acumHtml}
       ${m.tipo==='pog'
-        ? `<div style="font-size:11.5px;color:var(--muted);background:#f4f6f7;border-radius:8px;padding:8px 10px;">POG: su ingreso se registra en el cuadre general (botón + → Operaciones → Máquinas → POG).</div>`
-        : `<div style="display:flex;gap:8px;">
+        ? `<div style="font-size:11.5px;color:var(--muted);background:#f4f6f7;border-radius:8px;padding:9px 10px;line-height:1.4;">POG: registra Venta y Balance del mes en <b>📅 Resumen Mensual</b> de máquinas. También puedes usar el botón + → Operaciones → Máquinas → POG.</div>`
+        : (isActive ? `<div style="display:flex;gap:8px;">
             <button onclick="openLectura('${m._id}')" style="flex:1;border:none;background:var(--navy);color:#fff;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">+ Registrar lectura</button>
-          </div>`}
+          </div>` : '<div style="font-size:11.5px;color:var(--muted);text-align:center;padding:6px;">Máquina inactiva — activa para registrar lecturas</div>')}
     </div>`;
   }).join('');
+}
+
+async function toggleMaqActive(id){
+  const m=state.maquinas.find(x=>x._id===id);
+  if(!m)return;
+  m.activa = m.activa===false ? true : false;
+  setSyncState('saving');
+  try{
+    await sb.from('maquinas').update({activa:m.activa}).eq('id',id);
+    setSyncState('ok');
+    toast(m.activa?`${m.name} activada`:`${m.name} desactivada`,true);
+    renderMaqList();
+  }catch(e){
+    console.warn('Activa column may not exist',e);
+    setSyncState('ok');
+    renderMaqList();
+  }
 }
 
 // ---- config screen ----
@@ -2421,16 +2774,30 @@ function openLectura(maqId){
   document.getElementById('lecSalida').value='';
   document.getElementById('lecCash').value='';
   document.getElementById('lecSumar').checked=false;
+  document.getElementById('lecReset').checked=false;
+  document.getElementById('lecResetGain').value='0';
+  document.getElementById('lecResetWrap').style.display='none';
   document.getElementById('lecCalc').style.display='none';
   renderLecHistory(maqId);
+}
+
+function toggleResetFields(){
+  const checked=document.getElementById('lecReset').checked;
+  document.getElementById('lecResetWrap').style.display=checked?'block':'none';
+  calcLectura();
 }
 
 function calcLectura(){
   const m=state.maquinas.find(x=>x._id===curMaqId);
   if(!m)return;
   const last=lastReading(curMaqId);
-  const prevE=last?last.entradaAc:0;
-  const prevS=last?last.salidaAc:0;
+  const isReset=document.getElementById('lecReset').checked;
+  // If reset: previous counters are treated as 0 (counters were reset to 0)
+  const prevE=isReset?0:(last?last.entradaAc:0);
+  const prevS=isReset?0:(last?last.salidaAc:0);
+  const prevCash=isReset?0:(last?(last.cashBox||0):0);
+  const resetGain=parseFloat(document.getElementById('lecResetGain').value)||0;
+
   const eAc=parseFloat(document.getElementById('lecEntrada').value);
   const sAc=parseFloat(document.getElementById('lecSalida').value);
   if(isNaN(eAc)&&isNaN(sAc)){ document.getElementById('lecCalc').style.display='none'; return; }
@@ -2439,32 +2806,41 @@ function calcLectura(){
   const benMon=difE-difS;
   const benDin=benMon*m.denom;
   let ingreso, rows='';
+  if(isReset){
+    rows+=`<div style="display:flex;justify-content:space-between;color:#f0b46a;font-size:11px;margin-bottom:4px;"><span>⚠ Reseteo de contadores</span><span>Contadores anteriores ignorados</span></div>`;
+  }
   rows+=`<div style="display:flex;justify-content:space-between;"><span>Entrada del período</span><span style="color:#fff;font-weight:600;">${fmt(difE)} mon.</span></div>`;
   rows+=`<div style="display:flex;justify-content:space-between;"><span>Salida del período</span><span style="color:#fff;font-weight:600;">${fmt(difS)} mon.</span></div>`;
   if(m.tipo==='bergman'){
-    // Bergman: lo que importa es el Cashbox (monedas físicas en la caja)
-    // Beneficio = (Cashbox actual − Cashbox anterior) × denominación
-    const prevCash=last?(last.cashBox||0):0;
+    // Bergman: Beneficio = (Cashbox actual − Cashbox anterior) × denominación
     const cashAc=parseFloat(document.getElementById('lecCash').value);
     const cashNew=isNaN(cashAc)?prevCash:cashAc;
     const difCash=cashNew-prevCash;
     const benDinCash=difCash*m.denom;
-    ingreso=benDinCash;
+    ingreso=benDinCash+(isReset?resetGain:0);
     rows+=`<div style="display:flex;justify-content:space-between;"><span>Cashbox anterior</span><span style="color:#9fb1bd;">${fmt(prevCash)} mon.</span></div>`;
     rows+=`<div style="display:flex;justify-content:space-between;"><span>Cashbox actual</span><span style="color:#fff;font-weight:600;">${fmt(cashAc||0)} mon.</span></div>`;
     rows+=`<div style="display:flex;justify-content:space-between;"><span>Δ Cashbox</span><span style="color:#fff;font-weight:700;">${fmt(difCash)} mon.</span></div>`;
-    rows+=`<div style="display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,.12);padding-top:6px;margin-top:4px;"><span>Beneficio (Δ Cashbox × ${m.denom})</span><span style="color:#4cd6a0;font-weight:700;">RD$${fmt(benDinCash)}</span></div>`;
-    // Audit info: difference between E-S and Cashbox change (rechazadas, atascadas, etc)
+    rows+=`<div style="display:flex;justify-content:space-between;${isReset?'':'border-top:1px solid rgba(255,255,255,.12);padding-top:6px;margin-top:4px;'}"><span>Beneficio (Δ Cashbox × ${m.denom})</span><span style="color:#4cd6a0;font-weight:700;">RD$${fmt(benDinCash)}</span></div>`;
+    if(isReset && resetGain){
+      rows+=`<div style="display:flex;justify-content:space-between;"><span>+ Ganancia daño-reparación</span><span style="color:#4cd6a0;font-weight:700;">RD$${fmt(resetGain)}</span></div>`;
+      rows+=`<div style="display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,.12);padding-top:6px;margin-top:4px;"><span style="font-weight:700;">Total ingreso</span><span style="color:#4cd6a0;font-weight:800;">RD$${fmt(ingreso)}</span></div>`;
+    }
+    // Audit: (E-S) vs Δ Cashbox
     const descuadre=benMon-difCash;
-    if(descuadre!==0){
+    if(!isReset && descuadre!==0){
       const colorDesc=Math.abs(descuadre)>5?'#f0b46a':'#9fb1bd';
       rows+=`<div style="display:flex;justify-content:space-between;font-size:11px;margin-top:6px;color:#9fb1bd;"><span>Auditoría: (E−S) vs Δ Cash</span><span style="color:${colorDesc};">${descuadre>0?'+':''}${fmt(descuadre)} mon.</span></div>`;
     }
   } else {
     // Normal (ruleta, etc.): benefit = (E - S) × denom
     rows+=`<div style="display:flex;justify-content:space-between;"><span>Beneficio en monedas</span><span style="color:#fff;font-weight:600;">${fmt(benMon)} mon.</span></div>`;
-    ingreso=benDin;
-    rows+=`<div style="display:flex;justify-content:space-between;"><span>BEN $$$ (× ${m.denom})</span><span style="color:#4cd6a0;font-weight:700;">RD$${fmt(benDin)}</span></div>`;
+    ingreso=benDin+(isReset?resetGain:0);
+    rows+=`<div style="display:flex;justify-content:space-between;${isReset?'':'border-top:1px solid rgba(255,255,255,.12);padding-top:6px;margin-top:4px;'}"><span>BEN $$$ (× ${m.denom})</span><span style="color:#4cd6a0;font-weight:700;">RD$${fmt(benDin)}</span></div>`;
+    if(isReset && resetGain){
+      rows+=`<div style="display:flex;justify-content:space-between;"><span>+ Ganancia daño-reparación</span><span style="color:#4cd6a0;font-weight:700;">RD$${fmt(resetGain)}</span></div>`;
+      rows+=`<div style="display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,.12);padding-top:6px;margin-top:4px;"><span style="font-weight:700;">Total ingreso</span><span style="color:#4cd6a0;font-weight:800;">RD$${fmt(ingreso)}</span></div>`;
+    }
   }
   document.getElementById('lecCalcRows').innerHTML=rows;
   document.getElementById('lecIngreso').textContent='RD$'+fmt(ingreso);
@@ -2478,8 +2854,13 @@ async function saveLectura(){
   const date=document.getElementById('lecDate').value;
   if(!date){ toast('Selecciona la fecha',false); return; }
   const last=lastReading(curMaqId);
-  const prevE=last?last.entradaAc:0;
-  const prevS=last?last.salidaAc:0;
+  const isReset=document.getElementById('lecReset').checked;
+  const resetGain=parseFloat(document.getElementById('lecResetGain').value)||0;
+  // If reset: previous counters treated as 0
+  const prevE=isReset?0:(last?last.entradaAc:0);
+  const prevS=isReset?0:(last?last.salidaAc:0);
+  const prevCash=isReset?0:(last?(last.cashBox||0):0);
+
   const eAc=parseFloat(document.getElementById('lecEntrada').value);
   const sAc=parseFloat(document.getElementById('lecSalida').value);
   if(isNaN(eAc)||isNaN(sAc)){ toast('Ingresa los contadores de entrada y salida',false); return; }
@@ -2490,20 +2871,27 @@ async function saveLectura(){
   if(m.tipo==='bergman'){
     const cashAc=parseFloat(document.getElementById('lecCash').value);
     if(isNaN(cashAc)){ toast('Ingresa el Cashbox actual (en monedas)',false); return; }
-    const prevCash=last?(last.cashBox||0):0;
     const difCash=cashAc-prevCash;
     cashBox=cashAc;
-    ingreso=difCash*m.denom;
-  } else { ingreso=benDin; }
+    ingreso=difCash*m.denom + (isReset?resetGain:0);
+  } else {
+    ingreso=benDin + (isReset?resetGain:0);
+  }
 
   setSyncState('saving');
   const sumar=document.getElementById('lecSumar').checked;
   if(sumar && isDayClosed(date)){ toast('Ese día tiene el corte cerrado. No se puede sumar al cuadre.',false); setSyncState('ok'); return; }
   try{
-    const row={maquina_id:curMaqId,fecha:date,entrada_ac:eAc,salida_ac:sAc,cash_box:cashBox,dif_entrada:difE,dif_salida:difS,ben_monedas:benMon,ben_dinero:benDin,ingreso,sumado:sumar,creado_por:currentUser||null};
-    const {data,error}=await sb.from('lecturas_maquina').insert(row).select();
+    let row={maquina_id:curMaqId,fecha:date,entrada_ac:eAc,salida_ac:sAc,cash_box:cashBox,dif_entrada:difE,dif_salida:difS,ben_monedas:benMon,ben_dinero:benDin,ingreso,sumado:sumar,reset:isReset,reset_gain:isReset?resetGain:null,creado_por:currentUser||null};
+    let {data,error}=await sb.from('lecturas_maquina').insert(row).select();
+    if(error && /column.*reset/i.test(error.message||'')){
+      // Backward compat: DB doesn't have reset columns yet
+      console.warn('reset columns not in DB yet, retrying without them');
+      delete row.reset; delete row.reset_gain;
+      ({data,error}=await sb.from('lecturas_maquina').insert(row).select());
+    }
     if(error)throw error;
-    const newLec={_id:data&&data[0]?data[0].id:uid(),maqId:curMaqId,date,entradaAc:eAc,salidaAc:sAc,cashBox,difEntrada:difE,difSalida:difS,benMonedas:benMon,benDinero:benDin,ingreso,sumado:sumar};
+    const newLec={_id:data&&data[0]?data[0].id:uid(),maqId:curMaqId,date,entradaAc:eAc,salidaAc:sAc,cashBox,difEntrada:difE,difSalida:difS,benMonedas:benMon,benDinero:benDin,ingreso,sumado:sumar,reset:isReset,resetGain:isReset?resetGain:null};
     state.lecturas.push(newLec);
 
     // Only create a branch income movement if the user chose to add it to the daily cut.
@@ -2531,6 +2919,7 @@ function renderLecHistory(maqId){
     const inc=maqIncome(m,l);
     const badge=l.sumado?'<span style="font-size:9.5px;background:#e8f6f0;color:#1f9d6b;font-weight:700;padding:2px 6px;border-radius:5px;margin-left:6px;">EN CUADRE</span>':'';
     const masterBadge=l.maestra?'<span style="font-size:9.5px;background:#fdf0e8;color:#d9822b;font-weight:700;padding:2px 6px;border-radius:5px;margin-left:6px;">🔒 MAESTRA</span>':'';
+    const resetBadge=l.reset?'<span style="font-size:9.5px;background:#fff8ea;color:#8a5e15;font-weight:700;padding:2px 6px;border-radius:5px;margin-left:6px;">⚠ RESET</span>':'';
     // action buttons
     let actions='';
     if(l.maestra){
@@ -2540,9 +2929,10 @@ function renderLecHistory(maqId){
       if(l._id===firstId){ masterBtn=`<button onclick="markMaster('${l._id}')" style="border:1px solid #e6dcf2;background:#fff;color:#6b3fa0;border-radius:7px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">🔒 Marcar maestra</button>`; }
       actions=`${masterBtn}<button onclick="delLectura('${l._id}')" style="border:1px solid #f5d5d2;background:#fff;color:var(--red);border-radius:7px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">Eliminar</button>`;
     }
-    return `<div style="padding:12px 0;border-bottom:1px solid #eef2f4;">
+    return `<div style="padding:12px 0;border-bottom:1px solid #eef2f4;${l.reset?'background:#fffaef;':''}">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <div><div style="font-size:13px;font-weight:600;">${fmtDate(l.date)}${masterBadge}${badge}</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">E: ${fmt(l.difEntrada)} · S: ${fmt(l.difSalida)} · Ben: ${fmt(l.benMonedas)} mon.</div></div>
+        <div><div style="font-size:13px;font-weight:600;">${fmtDate(l.date)}${masterBadge}${resetBadge}${badge}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">E: ${fmt(l.difEntrada)} · S: ${fmt(l.difSalida)} · Ben: ${fmt(l.benMonedas)} mon.${l.reset&&l.resetGain?` · +RD$${fmt(l.resetGain)} reparación`:''}</div></div>
         <div style="font-size:14px;font-weight:700;color:${inc<0?'var(--red)':'var(--green)'};">RD$${fmt(inc)}</div>
       </div>
       <div style="display:flex;gap:6px;justify-content:flex-end;">${actions}</div>
