@@ -581,6 +581,7 @@
     <button onclick="collectAll()" style="width:100%;border:none;border-radius:12px;padding:14px;font-size:14.5px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,var(--green),#27b87f);box-shadow:0 4px 12px rgba(31,157,107,.3);margin-bottom:10px;">
       ⚡ Recolectar todo (cuadre completo → Oficina)
     </button>
+    <button onclick="openAuditBranch()" style="width:100%;border:1px solid var(--cerulean);background:#fff;border-radius:12px;padding:13px;font-size:13.5px;font-weight:700;color:var(--cerulean);cursor:pointer;font-family:inherit;margin-bottom:10px;">🔍 Auditar banca (ver rastro completo)</button>
     <button onclick="closeCorte()" style="width:100%;border:1px solid var(--navy);background:#fff;border-radius:12px;padding:13px;font-size:13.5px;font-weight:700;color:var(--navy);cursor:pointer;font-family:inherit;">🔒 Cerrar corte del día</button>
   </div>
 
@@ -590,6 +591,22 @@
     <div class="panel-head"><h3>Saldos pendientes</h3><span class="hint">Arrastrado</span></div>
     <div id="cortePendList"></div>
   </div>
+</section>
+
+<!-- AUDIT BRANCH (diagnostic tool) -->
+<section class="view" id="view-audit">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="openCorte()" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div><div style="font-size:17px;font-weight:800;">Auditar banca</div><div style="font-size:12px;color:var(--muted);">Rastro día por día con saldo acumulado</div></div>
+  </div>
+
+  <div class="row2" style="margin-bottom:14px;">
+    <div class="fld" style="margin:0;"><label>Banca</label><select id="auditBranch" onchange="renderAudit()"></select></div>
+    <div class="fld" style="margin:0;"><label>Desde</label><input type="date" id="auditFrom" onchange="renderAudit()"></div>
+  </div>
+
+  <div id="auditSummary"></div>
+  <div id="auditTrace"></div>
 </section>
 
 <!-- HISTÓRICO POR DÍA -->
@@ -1312,10 +1329,19 @@ function monthTxns(){ return state.txns.filter(t=>{ const d=new Date(t.date+'T00
 /* ---------- DASHBOARD ---------- */
 function renderDash(){
   const txns=monthTxns();
+  const office=officeName();
+  // From the office perspective:
+  // - Regular income/expense (anywhere in the system)
+  // - Transfers TO office = ingreso (devolución, banca→oficina)
+  // - Transfers FROM office = salida (préstamo, oficina→banca)
+  // - Retiros (out withdraw) = salida normal
   const inc=txns.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
   const exp=txns.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
-  const out=txns.filter(t=>t.type==='out'&&t.outKind!=='transfer').reduce((s,t)=>s+t.amount,0);
-  const net=inc-exp-out;
+  const withdraw=txns.filter(t=>t.type==='out'&&t.outKind!=='transfer').reduce((s,t)=>s+t.amount,0);
+  const transferOut=txns.filter(t=>t.type==='out'&&t.outKind==='transfer'&&t.branch===office).reduce((s,t)=>s+t.amount,0); // oficina presta
+  const transferIn=txns.filter(t=>t.type==='out'&&t.outKind==='transfer'&&t.dest===office).reduce((s,t)=>s+t.amount,0);   // oficina recibe
+  const out=withdraw+transferOut; // salidas totales
+  const net=inc-exp-withdraw-transferOut+transferIn; // desde la oficina
   document.getElementById('heroNet').textContent=fmt(net);
   document.getElementById('heroNet').style.color=net<0?'#f08980':'#fff';
   document.getElementById('heroInc').textContent='RD$'+fmt(inc);
@@ -1734,7 +1760,22 @@ function renderReports(){
 
   if(repView==='branch'){
     const bb={}; branchNames().forEach(n=>bb[n]={inc:0,exp:0,out:0});
-    txns.forEach(t=>{ if(!bb[t.branch])bb[t.branch]={inc:0,exp:0,out:0}; if(t.type==='income')bb[t.branch].inc+=t.amount; else if(t.type==='expense')bb[t.branch].exp+=t.amount; else if(t.type==='out'&&t.outKind!=='transfer')bb[t.branch].out+=t.amount; });
+    // Per-branch perspective: each branch is treated like a mini "office":
+    //   - income/expense at that branch
+    //   - retiros = salida
+    //   - transferencia FROM this branch = salida
+    //   - transferencia TO this branch = ingreso
+    txns.forEach(t=>{
+      if(!bb[t.branch])bb[t.branch]={inc:0,exp:0,out:0};
+      if(t.type==='income')bb[t.branch].inc+=t.amount;
+      else if(t.type==='expense')bb[t.branch].exp+=t.amount;
+      else if(t.type==='out'&&t.outKind!=='transfer')bb[t.branch].out+=t.amount; // retiros: salida
+      else if(t.type==='out'&&t.outKind==='transfer'){
+        bb[t.branch].out+=t.amount; // origen pierde
+        if(!bb[t.dest])bb[t.dest]={inc:0,exp:0,out:0};
+        bb[t.dest].inc+=t.amount;   // destino recibe como ingreso
+      }
+    });
     const rows=Object.entries(bb).filter(([n,v])=>v.inc||v.exp||v.out).sort((a,b)=>(b[1].inc-b[1].exp-b[1].out)-(a[1].inc-a[1].exp-a[1].out));
     let tI=0,tE=0,tO=0;
     let h='<table class="rep-table"><thead><tr><th>Sucursal</th><th class="r">Ing.</th><th class="r">Gas.</th><th class="r">Sal.</th><th class="r">Neto</th></tr></thead><tbody>';
@@ -1804,17 +1845,127 @@ function dayCollected(branch,date){
 // Total pending (carried) for a bank across ALL history = sum of (cuadre - collected) per day,
 // but we track pending directly from collect records vs cuadre.
 function bankPending(branch){
-  // pending = all-time cuadre - all-time collected
-  // "collected" includes both: mensajero recolections AND direct branch→office transfers
+  // pending = cuadre operativo acumulado - lo que el mensajero ha recolectado
+  // Las transferencias (préstamos/devoluciones) NO afectan el pendiente del cuadre
+  // porque no son cuadre operativo — son flujo de caja aparte.
   let totalCuadre=0;
   const dates=new Set(state.txns.filter(t=>t.branch===branch&&t.type!=='collect').map(t=>t.date));
   dates.forEach(d=>{ totalCuadre+=dayCuadre(branch,d); });
   const totalCollected=state.txns.filter(t=>t.type==='collect'&&t.branch===branch).reduce((s,t)=>s+t.moved,0);
-  // Also count direct branch→office transfers as "delivered to office"
-  // (positive = banca sends to office = reduces what banca owes)
+  return totalCuadre-totalCollected;
+}
+
+/* ---------- AUDIT (diagnostic) ---------- */
+function openAuditBranch(){
+  showOnlyView('view-audit');
+  const sel=document.getElementById('auditBranch');
+  const banks=state.branches.filter(b=>!b.isOffice);
+  sel.innerHTML=banks.map(b=>`<option>${b.name}</option>`).join('');
+  // default: 30 days back
+  const d=new Date(); d.setDate(d.getDate()-30);
+  document.getElementById('auditFrom').value=d.toISOString().slice(0,10);
+  renderAudit();
+}
+
+function renderAudit(){
+  const branch=document.getElementById('auditBranch').value;
+  const from=document.getElementById('auditFrom').value;
+  if(!branch){ document.getElementById('auditTrace').innerHTML=''; return; }
+
   const office=officeName();
-  const totalTransferred=state.txns.filter(t=>t.type==='out'&&t.outKind==='transfer'&&t.branch===branch&&t.dest===office).reduce((s,t)=>s+t.amount,0);
-  return totalCuadre-totalCollected-totalTransferred;
+  // Collect all events related to this branch chronologically
+  const events=[];
+  state.txns.forEach(t=>{
+    if(t.date<from) return;
+    if(t.branch===branch){
+      // operations or transfers leaving
+      if(t.type==='income') events.push({date:t.date,kind:'op',label:t.category+(t.subtype?' · '+t.subtype:''),sign:1,amount:t.amount,raw:t});
+      else if(t.type==='expense') events.push({date:t.date,kind:'op',label:'Gasto: '+t.category,sign:-1,amount:t.amount,raw:t});
+      else if(t.type==='out'&&t.outKind==='withdraw') events.push({date:t.date,kind:'op',label:'Retiro: '+(t.reason||''),sign:-1,amount:t.amount,raw:t});
+      else if(t.type==='out'&&t.outKind==='transfer') events.push({date:t.date,kind:'transfer',label:`Transfer → ${t.dest}`,sign:-1,amount:t.amount,raw:t});
+      else if(t.type==='collect') events.push({date:t.date,kind:'collect',label:'Recolección',moved:t.moved,cuadre:t.cuadre,raw:t});
+    }
+    // Transfers INTO this branch (loan from someone else)
+    if(t.type==='out'&&t.outKind==='transfer'&&t.dest===branch){
+      events.push({date:t.date,kind:'transferIn',label:`Recibido ← ${t.branch}`,sign:1,amount:t.amount,raw:t});
+    }
+  });
+
+  // Sort chronologically by date, then by original order
+  events.sort((a,b)=>a.date.localeCompare(b.date));
+
+  // Compute running cuadre balance day by day:
+  // - Operations (income/expense/withdraw) build up the cuadre
+  // - Collections reduce the cuadre by the amount moved (positive moved = banca delivered, reduces what they owe)
+  // - Transfer FROM branch to office reduces what banca owes (delivered as transfer)
+  // - Transfers don't affect operative cuadre
+  let runningCuadre=0;
+  let totalOps=0, totalCollected=0, totalTransferredOut=0, totalTransferredIn=0;
+
+  const dayMap={};
+  events.forEach(e=>{
+    if(!dayMap[e.date]) dayMap[e.date]={date:e.date,events:[],dailyOps:0,dailyCollect:0,dailyTransferOut:0,dailyTransferIn:0};
+    const d=dayMap[e.date];
+    d.events.push(e);
+    if(e.kind==='op'){ d.dailyOps+=e.sign*e.amount; totalOps+=e.sign*e.amount; }
+    else if(e.kind==='collect'){ d.dailyCollect+=e.moved; totalCollected+=e.moved; }
+    else if(e.kind==='transfer'){ d.dailyTransferOut+=e.amount; totalTransferredOut+=e.amount; }
+    else if(e.kind==='transferIn'){ d.dailyTransferIn+=e.amount; totalTransferredIn+=e.amount; }
+  });
+
+  // bankPending logic: cuadreOps - collected only (transfers don't affect operative pending)
+  const pendingNow=totalOps - totalCollected;
+
+  // Render summary
+  document.getElementById('auditSummary').innerHTML=`
+    <div class="panel" style="padding:14px;margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:800;color:var(--cerulean);margin-bottom:10px;">Resumen acumulado · ${branch}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;">
+        <div style="background:#f4f6f7;border-radius:8px;padding:9px 10px;"><div style="color:var(--muted);font-weight:600;">Cuadre operativo total</div><div style="font-size:15px;font-weight:800;margin-top:3px;color:${totalOps<0?'var(--red)':'var(--green)'};">RD$${fmt(totalOps)}</div></div>
+        <div style="background:#f4f6f7;border-radius:8px;padding:9px 10px;"><div style="color:var(--muted);font-weight:600;">Recolectado / movido</div><div style="font-size:15px;font-weight:800;margin-top:3px;">RD$${fmt(totalCollected)}</div></div>
+        <div style="background:#f4f6f7;border-radius:8px;padding:9px 10px;"><div style="color:var(--muted);font-weight:600;">Transferido a oficina</div><div style="font-size:15px;font-weight:800;margin-top:3px;">RD$${fmt(totalTransferredOut)}</div><div style="font-size:9.5px;color:var(--muted);margin-top:2px;">(no afecta pendiente operativo)</div></div>
+        <div style="background:#f4f6f7;border-radius:8px;padding:9px 10px;"><div style="color:var(--muted);font-weight:600;">Recibido de oficina</div><div style="font-size:15px;font-weight:800;margin-top:3px;">RD$${fmt(totalTransferredIn)}</div><div style="font-size:9.5px;color:var(--muted);margin-top:2px;">(préstamos, no afecta pendiente)</div></div>
+      </div>
+      <div style="margin-top:11px;padding-top:11px;border-top:1px solid #eef2f4;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:12px;font-weight:700;color:var(--muted);">PENDIENTE ACTUAL DEL CUADRE</span>
+        <span style="font-size:18px;font-weight:800;color:${Math.abs(pendingNow)<1?'var(--green)':(pendingNow>0?'var(--amber)':'var(--red)')};">RD$${fmt(pendingNow)}</span>
+      </div>
+      <div style="font-size:10.5px;color:var(--muted);margin-top:4px;line-height:1.4;">Fórmula: Cuadre operativo (${fmt(totalOps)}) − Recolectado (${fmt(totalCollected)}) = ${fmt(pendingNow)}<br>Las transferencias son flujo de caja, no afectan el pendiente operativo.</div>
+    </div>`;
+
+  // Render day-by-day trace
+  const days=Object.values(dayMap).sort((a,b)=>a.date.localeCompare(b.date));
+  let cumulative=0;
+  let html='';
+  days.forEach(d=>{
+    const dayCuadreOps=d.dailyOps;
+    const dayCollect=d.dailyCollect;
+    const dayPending=dayCuadreOps-dayCollect;
+    cumulative+=dayPending;
+    const dateObj=new Date(d.date+'T00:00:00');
+    const dayName=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][dateObj.getDay()];
+    html+=`<div class="panel" style="padding:12px;margin-bottom:9px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="font-size:13px;font-weight:700;">${dayName} ${dateObj.getDate()} ${MONTHS_SHORT[dateObj.getMonth()]}</div>
+        <div style="text-align:right;"><div style="font-size:10px;color:var(--muted);font-weight:600;">SALDO ACUMULADO</div><div style="font-size:14px;font-weight:800;color:${Math.abs(cumulative)<1?'var(--green)':(cumulative>0?'var(--amber)':'var(--red)')};">RD$${fmt(cumulative)}</div></div>
+      </div>
+      <table class="rep-table" style="font-size:11.5px;"><tbody>
+        ${d.events.map(e=>{
+          let amt='';
+          if(e.kind==='op') amt=`<span style="color:${e.sign>0?'var(--green)':'var(--red)'};">${e.sign>0?'+':'-'}RD$${fmt(e.amount)}</span>`;
+          else if(e.kind==='collect') amt=`<span style="color:var(--cerulean);">Movido: ${fmt(e.moved)} (cuadre: ${fmt(e.cuadre)})</span>`;
+          else if(e.kind==='transfer') amt=`<span style="color:#9c5fde;">−RD$${fmt(e.amount)}</span>`;
+          else if(e.kind==='transferIn') amt=`<span style="color:#9c5fde;">+RD$${fmt(e.amount)}</span>`;
+          return `<tr><td style="font-size:11.5px;">${e.label}</td><td class="r" style="font-size:11.5px;">${amt}</td></tr>`;
+        }).join('')}
+      </tbody></table>
+      <div style="margin-top:8px;padding-top:8px;border-top:1px dashed #eef2f4;display:flex;justify-content:space-between;font-size:11px;">
+        <span style="color:var(--muted);">Cuadre día: ${fmt(dayCuadreOps)} − Movido: ${fmt(dayCollect)}</span>
+        <span style="font-weight:700;color:${Math.abs(dayPending)<1?'var(--green)':(dayPending>0?'var(--amber)':'var(--red)')};">= ${fmt(dayPending)}</span>
+      </div>
+    </div>`;
+  });
+  document.getElementById('auditTrace').innerHTML=html||'<div class="empty-hint" style="padding:30px;">Sin movimientos en este rango para esta banca.</div>';
 }
 
 function openCorte(){
@@ -2566,8 +2717,21 @@ function virtDistributeProvider(prov, balanceTotal, comisionTotal, totalNeto, bo
     r.neto=alberto;
     r.socios.push({nombre:'Rivas', pct:prov.rivasPct, monto:rivas});
     r.socios.push({nombre:prov.socio1, pct:1, monto:alberto});
+  } else if(estructura==='vg'){
+    // VG NUEVO: Balance bruto - Bonos = Neto1 ; Neto1 - (4% de Neto1 = Digitador) = Total a repartir
+    const neto1=balanceTotal+bonosTotal; // bonos negativo => resta
+    const dig=neto1*prov.digitadorPct;
+    const neto=neto1-dig;
+    r.pasos.push({label:'Balance bruto', val:balanceTotal});
+    r.pasos.push({label:'Bonos', val:bonosTotal});
+    r.pasos.push({label:'Neto 1', val:neto1});
+    r.pasos.push({label:`Digitador ${(prov.digitadorPct*100).toFixed(0)}% (sobre Neto 1)`, val:-dig});
+    r.pasos.push({label:'Total Neto', val:neto, bold:true});
+    r.neto=neto;
+    r.socios.push({nombre:prov.socio1, pct:prov.socio1Pct, monto:neto*prov.socio1Pct});
+    r.socios.push({nombre:prov.socio2, pct:prov.socio2Pct, monto:neto*prov.socio2Pct});
   } else {
-    // vg / soll: Balance - Digitador% - Bonos
+    // SOLL: Balance - Digitador% - Bonos (sin cambios)
     const dig=balanceTotal*prov.digitadorPct;
     const sub=balanceTotal-dig;
     const neto=sub+bonosTotal;
@@ -3011,14 +3175,17 @@ function histRangeTxns(){
 }
 function renderHistoric(){
   const txns=histRangeTxns();
-  // range totals — transfers (préstamos entre cajas) excluded from neto operativo
+  const office=officeName();
+  // range totals — desde el punto de vista de la oficina
   const inc=txns.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
   const exp=txns.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
-  const out=txns.filter(t=>t.type==='out'&&t.outKind!=='transfer').reduce((s,t)=>s+t.amount,0);
-  document.getElementById('histRangeNet').textContent=fmt(inc-exp-out);
-  document.getElementById('histRangeInc').textContent='RD$'+fmt(inc);
+  const withdraw=txns.filter(t=>t.type==='out'&&t.outKind!=='transfer').reduce((s,t)=>s+t.amount,0);
+  const tOut=txns.filter(t=>t.type==='out'&&t.outKind==='transfer'&&t.branch===office).reduce((s,t)=>s+t.amount,0);
+  const tIn=txns.filter(t=>t.type==='out'&&t.outKind==='transfer'&&t.dest===office).reduce((s,t)=>s+t.amount,0);
+  document.getElementById('histRangeNet').textContent=fmt(inc-exp-withdraw-tOut+tIn);
+  document.getElementById('histRangeInc').textContent='RD$'+fmt(inc+tIn);
   document.getElementById('histRangeExp').textContent='RD$'+fmt(exp);
-  document.getElementById('histRangeOut').textContent='RD$'+fmt(out);
+  document.getElementById('histRangeOut').textContent='RD$'+fmt(withdraw+tOut);
 
   // group by day (desc)
   const byDay={};
@@ -3031,9 +3198,11 @@ function renderHistoric(){
     const list=byDay[date];
     const dInc=list.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
     const dExp=list.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
-    const dOut=list.filter(t=>t.type==='out'&&t.outKind!=='transfer').reduce((s,t)=>s+t.amount,0); // retiros solo; las transferencias no son salida operativa
-    const dTransfer=list.filter(t=>t.type==='out'&&t.outKind==='transfer').reduce((s,t)=>s+t.amount,0);
-    const dNet=dInc-dExp-dOut;
+    const dWithdraw=list.filter(t=>t.type==='out'&&t.outKind!=='transfer').reduce((s,t)=>s+t.amount,0);
+    const dTOut=list.filter(t=>t.type==='out'&&t.outKind==='transfer'&&t.branch===office).reduce((s,t)=>s+t.amount,0);
+    const dTIn=list.filter(t=>t.type==='out'&&t.outKind==='transfer'&&t.dest===office).reduce((s,t)=>s+t.amount,0);
+    const dOut=dWithdraw+dTOut;  // salidas: retiros + préstamos desde oficina
+    const dNet=dInc+dTIn-dExp-dWithdraw-dTOut;
     const d=new Date(date+'T00:00:00');
     const dayName=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][d.getDay()];
     const dateStr=`${dayName} ${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`;
@@ -3068,8 +3237,10 @@ function renderHistoric(){
         <table class="rep-table" style="margin-bottom:14px;"><tbody>${catRows.map(([k,v])=>`<tr><td>${k}</td><td class="r ${v<0?'neg':'pos'}">RD$${fmt(v)}</td></tr>`).join('')}</tbody></table>`:''}
         ${expRows.length?`<div style="font-size:11.5px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Gastos por categoría</div>
         <table class="rep-table" style="margin-bottom:14px;"><tbody>${expRows.map(([k,v])=>`<tr><td>${k}</td><td class="r neg">RD$${fmt(v)}</td></tr>`).join('')}</tbody></table>`:''}
-        ${dTransfer>0?`<div style="font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Transferencias entre cajas</div><div style="font-size:12px;color:var(--muted);background:#f4f6f7;border-radius:8px;padding:8px 10px;margin-bottom:10px;">🔄 RD$${fmt(dTransfer)} — movimiento de efectivo entre cajas (no afecta el neto operativo)</div>`:''}
-        ${!catRows.length&&!expRows.length&&dTransfer===0?'<div style="font-size:12.5px;color:var(--muted);text-align:center;padding:8px;">Solo recolecciones este día.</div>':''}
+        ${(dTOut>0||dTIn>0)?`<div style="font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Transferencias entre cajas</div>
+        ${dTOut>0?`<div style="font-size:12px;color:var(--red);background:#fdecea;border-radius:8px;padding:8px 10px;margin-bottom:6px;">↑ Préstamo desde oficina: RD$${fmt(dTOut)}</div>`:''}
+        ${dTIn>0?`<div style="font-size:12px;color:var(--green);background:#eaf7f0;border-radius:8px;padding:8px 10px;margin-bottom:10px;">↓ Devolución a oficina: RD$${fmt(dTIn)}</div>`:''}`:''}
+        ${!catRows.length&&!expRows.length&&dTOut===0&&dTIn===0?'<div style="font-size:12.5px;color:var(--muted);text-align:center;padding:8px;">Solo recolecciones este día.</div>':''}
       </div>
     </div>`;
   }).join('');
