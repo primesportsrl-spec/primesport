@@ -721,7 +721,7 @@
     <div class="fld" style="margin-bottom:12px;"><label>Fecha de la lectura</label><input type="date" id="lecDate"></div>
     <div class="fld" style="margin-bottom:12px;"><label>Entrada (contador acumulado)</label><div class="amount-input"><span class="cur" style="font-size:12px;">AC</span><input type="number" inputmode="decimal" id="lecEntrada" placeholder="0" oninput="calcLectura()" style="padding-left:40px;"></div></div>
     <div class="fld" style="margin-bottom:12px;"><label>Salida (contador acumulado)</label><div class="amount-input"><span class="cur" style="font-size:12px;">AC</span><input type="number" inputmode="decimal" id="lecSalida" placeholder="0" oninput="calcLectura()" style="padding-left:40px;"></div></div>
-    <div class="fld" id="lecCashWrap" style="margin-bottom:12px;display:none;"><label>Cash Box (en pesos, leído de la máquina)</label><div class="amount-input"><span class="cur">RD$</span><input type="number" inputmode="decimal" id="lecCash" placeholder="0.00" oninput="calcLectura()"></div></div>
+    <div class="fld" id="lecCashWrap" style="margin-bottom:12px;display:none;"><label>Cashbox actual (monedas en la caja)</label><div class="amount-input"><span class="cur" style="font-size:13px;">mon.</span><input type="number" inputmode="decimal" id="lecCash" placeholder="0" oninput="calcLectura()"></div></div>
 
     <div id="lecCalc" style="background:#0e1620;border-radius:12px;padding:14px;margin-bottom:14px;display:none;">
       <div style="font-size:11px;color:#7d909e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:700;">Cálculo del período</div>
@@ -2270,8 +2270,11 @@ function lastReading(maqId){ const r=readingsOf(maqId); return r.length?r[r.leng
 
 function maqIncome(maq, reading){
   // returns the income (RD$) a reading contributes for a machine
-  if(maq.tipo==='bergman') return reading.cashBox!=null?reading.cashBox:0;
-  return reading.benDinero||0; // ruleta/others
+  // Both Bergman and others now use the 'ingreso' field saved at insertion time
+  if(reading.ingreso!=null) return reading.ingreso;
+  // Backward compat: if no ingreso field, fall back to old logic
+  if(maq.tipo==='bergman') return reading.cashBox||0;
+  return reading.benDinero||0;
 }
 
 function renderMaqList(){
@@ -2287,6 +2290,15 @@ function renderMaqList(){
     const lastIncome=last?maqIncome(m,last):0;
     const typeColor=m.tipo==='bergman'?'#d9822b':m.tipo==='pog'?'#16a8d4':'#6b3fa0';
     const typeLabel=MAQ_TYPES[m.tipo];
+    // Acumulados (only for Bergman): show last accumulated counters
+    let acumHtml='';
+    if(m.tipo==='bergman' && last){
+      acumHtml=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px;background:#f4f6f7;border-radius:9px;padding:9px;">
+        <div><div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;font-weight:700;">Entrada Ac.</div><div style="font-size:12.5px;font-weight:800;color:var(--ink);">${fmt(last.entradaAc||0)}</div></div>
+        <div><div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;font-weight:700;">Salida Ac.</div><div style="font-size:12.5px;font-weight:800;color:var(--ink);">${fmt(last.salidaAc||0)}</div></div>
+        <div><div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;font-weight:700;">Cashbox</div><div style="font-size:12.5px;font-weight:800;color:#d9822b;">${fmt(last.cashBox||0)} mon.</div></div>
+      </div>`;
+    }
     return `<div class="panel" style="padding:14px;margin-bottom:11px;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
         <div>
@@ -2298,8 +2310,9 @@ function renderMaqList(){
           <div style="font-size:15px;font-weight:800;color:${lastIncome<0?'var(--red)':'var(--green)'};">RD$${fmt(lastIncome)}</div>
         </div>
       </div>
+      ${acumHtml}
       ${m.tipo==='pog'
-        ? `<div style="font-size:11.5px;color:var(--muted);background:#f4f6f7;border-radius:8px;padding:8px 10px;">POG: su ingreso se registra en el cuadre general (botón + → Ingreso → Máquinas → POG).</div>`
+        ? `<div style="font-size:11.5px;color:var(--muted);background:#f4f6f7;border-radius:8px;padding:8px 10px;">POG: su ingreso se registra en el cuadre general (botón + → Operaciones → Máquinas → POG).</div>`
         : `<div style="display:flex;gap:8px;">
             <button onclick="openLectura('${m._id}')" style="flex:1;border:none;background:var(--navy);color:#fff;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">+ Registrar lectura</button>
           </div>`}
@@ -2428,13 +2441,28 @@ function calcLectura(){
   let ingreso, rows='';
   rows+=`<div style="display:flex;justify-content:space-between;"><span>Entrada del período</span><span style="color:#fff;font-weight:600;">${fmt(difE)} mon.</span></div>`;
   rows+=`<div style="display:flex;justify-content:space-between;"><span>Salida del período</span><span style="color:#fff;font-weight:600;">${fmt(difS)} mon.</span></div>`;
-  rows+=`<div style="display:flex;justify-content:space-between;"><span>Beneficio en monedas</span><span style="color:#fff;font-weight:600;">${fmt(benMon)} mon.</span></div>`;
   if(m.tipo==='bergman'){
-    const cash=parseFloat(document.getElementById('lecCash').value);
-    ingreso=isNaN(cash)?0:cash;
-    rows+=`<div style="display:flex;justify-content:space-between;"><span>BEN $$$ (informativo)</span><span style="color:#9fb1bd;">RD$${fmt(benDin)}</span></div>`;
-    rows+=`<div style="display:flex;justify-content:space-between;"><span>Cash Box (leído)</span><span style="color:#4cd6a0;font-weight:700;">RD$${fmt(ingreso)}</span></div>`;
+    // Bergman: lo que importa es el Cashbox (monedas físicas en la caja)
+    // Beneficio = (Cashbox actual − Cashbox anterior) × denominación
+    const prevCash=last?(last.cashBox||0):0;
+    const cashAc=parseFloat(document.getElementById('lecCash').value);
+    const cashNew=isNaN(cashAc)?prevCash:cashAc;
+    const difCash=cashNew-prevCash;
+    const benDinCash=difCash*m.denom;
+    ingreso=benDinCash;
+    rows+=`<div style="display:flex;justify-content:space-between;"><span>Cashbox anterior</span><span style="color:#9fb1bd;">${fmt(prevCash)} mon.</span></div>`;
+    rows+=`<div style="display:flex;justify-content:space-between;"><span>Cashbox actual</span><span style="color:#fff;font-weight:600;">${fmt(cashAc||0)} mon.</span></div>`;
+    rows+=`<div style="display:flex;justify-content:space-between;"><span>Δ Cashbox</span><span style="color:#fff;font-weight:700;">${fmt(difCash)} mon.</span></div>`;
+    rows+=`<div style="display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,.12);padding-top:6px;margin-top:4px;"><span>Beneficio (Δ Cashbox × ${m.denom})</span><span style="color:#4cd6a0;font-weight:700;">RD$${fmt(benDinCash)}</span></div>`;
+    // Audit info: difference between E-S and Cashbox change (rechazadas, atascadas, etc)
+    const descuadre=benMon-difCash;
+    if(descuadre!==0){
+      const colorDesc=Math.abs(descuadre)>5?'#f0b46a':'#9fb1bd';
+      rows+=`<div style="display:flex;justify-content:space-between;font-size:11px;margin-top:6px;color:#9fb1bd;"><span>Auditoría: (E−S) vs Δ Cash</span><span style="color:${colorDesc};">${descuadre>0?'+':''}${fmt(descuadre)} mon.</span></div>`;
+    }
   } else {
+    // Normal (ruleta, etc.): benefit = (E - S) × denom
+    rows+=`<div style="display:flex;justify-content:space-between;"><span>Beneficio en monedas</span><span style="color:#fff;font-weight:600;">${fmt(benMon)} mon.</span></div>`;
     ingreso=benDin;
     rows+=`<div style="display:flex;justify-content:space-between;"><span>BEN $$$ (× ${m.denom})</span><span style="color:#4cd6a0;font-weight:700;">RD$${fmt(benDin)}</span></div>`;
   }
@@ -2460,9 +2488,12 @@ async function saveLectura(){
   const benDin=benMon*m.denom;
   let cashBox=null, ingreso;
   if(m.tipo==='bergman'){
-    const cash=parseFloat(document.getElementById('lecCash').value);
-    if(isNaN(cash)){ toast('Ingresa el Cash Box (en pesos)',false); return; }
-    cashBox=cash; ingreso=cash;
+    const cashAc=parseFloat(document.getElementById('lecCash').value);
+    if(isNaN(cashAc)){ toast('Ingresa el Cashbox actual (en monedas)',false); return; }
+    const prevCash=last?(last.cashBox||0):0;
+    const difCash=cashAc-prevCash;
+    cashBox=cashAc;
+    ingreso=difCash*m.denom;
   } else { ingreso=benDin; }
 
   setSyncState('saving');
