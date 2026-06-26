@@ -669,12 +669,57 @@
   </div>
 
   <!-- monthly summary entry button -->
+  <div style="display:flex;gap:8px;margin-bottom:8px;">
+    <button onclick="openMaqMensual()" style="flex:1;border:none;border-radius:11px;padding:11px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#0086AD,#16a8d4);box-shadow:0 3px 10px rgba(0,134,173,.3);">📅 Resumen por banca</button>
+    <button onclick="openMaqGlobal()" style="flex:1;border:none;border-radius:11px;padding:11px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#3a2a52,#6b3fa0);box-shadow:0 3px 10px rgba(107,63,160,.3);">🗂 Global del mes</button>
+  </div>
   <div style="display:flex;gap:8px;margin-bottom:14px;">
-    <button onclick="openMaqMensual()" style="flex:1;border:none;border-radius:11px;padding:11px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#0086AD,#16a8d4);box-shadow:0 3px 10px rgba(0,134,173,.3);">📅 Resumen Mensual</button>
     <button onclick="openMaqTopRanking()" style="flex:1;border:1px solid var(--line);background:#fff;border-radius:11px;padding:11px;font-size:12.5px;font-weight:700;color:var(--navy);cursor:pointer;font-family:inherit;">🏆 Top Producción</button>
   </div>
 
   <div id="maqListWrap"></div>
+</section>
+
+<!-- MAQUINAS GLOBAL MENSUAL (todas las bancas) -->
+<section class="view" id="view-maqglobal">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="openMaquinas()" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Resumen Global · Máquinas</div><div style="font-size:12px;color:var(--muted);">Todas las bancas del mes</div></div>
+  </div>
+
+  <div class="row2" style="margin-bottom:12px;">
+    <div class="fld" style="margin:0;"><label>Mes</label><select id="maqGlobalMes" onchange="renderMaqGlobal()"></select></div>
+    <div class="fld" style="margin:0;"><label>Año</label><select id="maqGlobalAnio" onchange="renderMaqGlobal()"></select></div>
+  </div>
+
+  <!-- Hero with totals and comparisons -->
+  <div id="maqGlobalHero"></div>
+
+  <!-- Export buttons -->
+  <div style="display:flex;gap:6px;margin-bottom:12px;">
+    <button onclick="exportMaqGlobalImage()" style="flex:1;border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px;font-size:11.5px;font-weight:700;color:var(--navy);cursor:pointer;font-family:inherit;">📷 Imagen</button>
+    <button onclick="exportMaqGlobalPDF()" style="flex:1;border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px;font-size:11.5px;font-weight:700;color:var(--navy);cursor:pointer;font-family:inherit;">📄 PDF</button>
+    <button onclick="exportMaqGlobalWhatsApp()" style="flex:1;border:1px solid #25d366;background:#25d366;color:#fff;border-radius:10px;padding:9px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;">📱 WhatsApp</button>
+  </div>
+
+  <!-- Alerts -->
+  <div id="maqGlobalAlerts"></div>
+
+  <div id="maqGlobalExportArea">
+    <!-- Main table -->
+    <div class="panel" style="margin-bottom:14px;padding:0;overflow:hidden;">
+      <div style="padding:12px 14px;border-bottom:1px solid #eef2f4;"><h3 style="font-size:14px;font-weight:700;">Por banca</h3></div>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+        <table id="maqGlobalTable" class="rep-table" style="min-width:680px;width:100%;font-size:11.5px;"></table>
+      </div>
+    </div>
+
+    <!-- Top bancas -->
+    <div class="panel" style="margin-bottom:14px;">
+      <div class="panel-head"><h3>Top bancas por Neto Real</h3></div>
+      <div id="maqGlobalTop"></div>
+    </div>
+  </div>
 </section>
 
 <!-- MAQUINAS RESUMEN MENSUAL -->
@@ -2589,6 +2634,241 @@ function renderMaqTopRanking(){
         <div style="font-size:13.5px;font-weight:800;color:${r.ingreso<0?'var(--red)':'var(--green)'};">RD$${fmt(r.ingreso)}</div>
       </div>`;
     }).join('')}</div>`;
+}
+
+// ==========================================================
+// MAQUINAS - Resumen Global (todas las bancas, todas en una tabla)
+// ==========================================================
+let maqGlobalMesCur=new Date().getMonth()+1, maqGlobalAnioCur=new Date().getFullYear();
+
+function openMaqGlobal(){
+  showOnlyView('view-maqglobal');
+  const mesSel=document.getElementById('maqGlobalMes');
+  mesSel.innerHTML=MONTHS.map((m,i)=>`<option value="${i+1}" ${(i+1)===maqGlobalMesCur?'selected':''}>${m}</option>`).join('');
+  const anioSel=document.getElementById('maqGlobalAnio');
+  anioSel.innerHTML=[2024,2025,2026,2027].map(y=>`<option value="${y}" ${y===maqGlobalAnioCur?'selected':''}>${y}</option>`).join('');
+  renderMaqGlobal();
+}
+
+// Compute the financial breakdown for a given branch in a given month
+function maqGlobalRow(branch, mes, anio){
+  // Ruletas = sum of incomes from all machines (Bergman + Ruleta) of this branch for the month
+  const machinesActive=state.maquinas.filter(m=>m.branch===branch && m.activa!==false && m.tipo!=='pog');
+  const ruletas=machinesActive.reduce((sum,m)=>{
+    const lecs=state.lecturas.filter(l=>{
+      if(l.maqId!==m._id) return false;
+      const d=new Date(l.date+'T00:00:00');
+      return d.getMonth()+1===mes && d.getFullYear()===anio;
+    });
+    return sum+lecs.reduce((s,l)=>s+(l.ingreso||0),0);
+  },0);
+  // POG: manual balance entry for the month (the income piece)
+  const pogRow=state.maqPog.find(p=>p.anio===anio&&p.mes===mes&&p.sucursal===branch);
+  const pog=pogRow?pogRow.balance:0;
+  const pogVenta=pogRow?pogRow.venta:0;
+  const bruto=ruletas+pog;
+  const gastos=state.maqGastos.filter(g=>g.anio===anio&&g.mes===mes&&g.sucursal===branch).reduce((s,g)=>s+g.monto,0);
+  const neto1=bruto-gastos;
+  const digPct=(state.maqCfgBanca[branch]&&state.maqCfgBanca[branch].digitadorPct)||0.04;
+  const comision=neto1*digPct;
+  const netoReal=neto1-comision;
+  return {branch, ruletas, pog, pogVenta, bruto, gastos, neto1, digPct, comision, netoReal, machinesCount:machinesActive.length};
+}
+
+function renderMaqGlobal(){
+  maqGlobalMesCur=parseInt(document.getElementById('maqGlobalMes').value);
+  maqGlobalAnioCur=parseInt(document.getElementById('maqGlobalAnio').value);
+  const branches=state.branches.filter(b=>!b.isOffice && b.activa!==false).map(b=>b.name);
+  if(!branches.length){ document.getElementById('maqGlobalTable').innerHTML='<tr><td>No hay sucursales activas</td></tr>'; return; }
+
+  // Compute current month rows
+  const rows=branches.map(b=>maqGlobalRow(b, maqGlobalMesCur, maqGlobalAnioCur));
+  // Previous month rows for comparison
+  const prevMes = maqGlobalMesCur===1 ? 12 : maqGlobalMesCur-1;
+  const prevAnio = maqGlobalMesCur===1 ? maqGlobalAnioCur-1 : maqGlobalAnioCur;
+  const prevRows=branches.map(b=>maqGlobalRow(b, prevMes, prevAnio));
+
+  // Totals current
+  const tot={ruletas:0,pog:0,bruto:0,gastos:0,neto1:0,comision:0,netoReal:0};
+  rows.forEach(r=>{ Object.keys(tot).forEach(k=>tot[k]+=r[k]||0); });
+  // Totals previous
+  const totPrev={ruletas:0,pog:0,bruto:0,gastos:0,neto1:0,comision:0,netoReal:0};
+  prevRows.forEach(r=>{ Object.keys(totPrev).forEach(k=>totPrev[k]+=r[k]||0); });
+
+  // Hero
+  document.getElementById('maqGlobalHero').innerHTML=`
+    <div style="background:linear-gradient(135deg,#101820,#16242f);border-radius:15px;padding:16px;margin-bottom:14px;color:#fff;">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:4px;">
+        <div style="font-size:11px;color:#7d909e;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Neto Real · ${MONTHS[maqGlobalMesCur-1]} ${maqGlobalAnioCur}</div>
+        ${pctBadge(tot.netoReal, totPrev.netoReal)}
+      </div>
+      <div style="font-size:28px;font-weight:800;color:${tot.netoReal<0?'#f08980':'#4cd6a0'};margin-bottom:12px;">RD$${fmt(tot.netoReal)}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:10.5px;">
+        <div style="background:rgba(255,255,255,.07);border-radius:8px;padding:7px 9px;">
+          <div style="color:#9fb1bd;font-weight:600;display:flex;justify-content:space-between;">Bruto ${pctBadge(tot.bruto,totPrev.bruto)}</div>
+          <div style="font-size:12px;font-weight:700;color:#fff;">RD$${fmt(tot.bruto)}</div>
+        </div>
+        <div style="background:rgba(255,255,255,.07);border-radius:8px;padding:7px 9px;">
+          <div style="color:#9fb1bd;font-weight:600;display:flex;justify-content:space-between;">Gastos ${pctBadge(tot.gastos,totPrev.gastos)}</div>
+          <div style="font-size:12px;font-weight:700;color:#f0b46a;">RD$${fmt(tot.gastos)}</div>
+        </div>
+        <div style="background:rgba(255,255,255,.07);border-radius:8px;padding:7px 9px;">
+          <div style="color:#9fb1bd;font-weight:600;">Comisión</div>
+          <div style="font-size:12px;font-weight:700;color:#f0b46a;">RD$${fmt(tot.comision)}</div>
+        </div>
+      </div>
+    </div>`;
+
+  // Alerts: bancas con Neto Real negativo, sin lecturas, comisión muy alta vs neto
+  const alerts=[];
+  rows.forEach(r=>{
+    if(r.machinesCount===0 && r.pog===0) return; // skip branches with no machines and no POG
+    if(r.netoReal<0) alerts.push({type:'neg',branch:r.branch,msg:`Neto Real negativo (RD$${fmt(r.netoReal)})`});
+    if(r.bruto===0 && r.machinesCount>0) alerts.push({type:'sin',branch:r.branch,msg:'No tiene lecturas ni POG este mes'});
+    if(r.bruto>0 && r.gastos>r.bruto*0.7) alerts.push({type:'gastos',branch:r.branch,msg:`Gastos altos: ${(r.gastos/r.bruto*100).toFixed(0)}% del bruto`});
+  });
+  const alertsWrap=document.getElementById('maqGlobalAlerts');
+  if(alerts.length){
+    alertsWrap.innerHTML=`<div class="panel" style="padding:11px;margin-bottom:12px;">
+      <div style="font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:7px;letter-spacing:.5px;">⚠ Alertas (${alerts.length})</div>
+      ${alerts.slice(0,5).map(a=>`<div style="display:flex;align-items:center;gap:9px;padding:6px 10px;background:${a.type==='neg'?'#fdecea':a.type==='gastos'?'#fff8ea':'#eef6fa'};border-left:3px solid ${a.type==='neg'?'var(--red)':a.type==='gastos'?'#f0b46a':'var(--cerulean)'};border-radius:7px;margin-bottom:5px;">
+        <div style="font-size:13px;">${a.type==='neg'?'🔻':a.type==='gastos'?'⚠️':'ℹ️'}</div>
+        <div style="flex:1;font-size:11.5px;line-height:1.4;"><b>${a.branch.replace('PRIME SPORT','PS')}</b> — <span style="color:var(--muted);">${a.msg}</span></div>
+      </div>`).join('')}
+    </div>`;
+  } else {
+    alertsWrap.innerHTML='';
+  }
+
+  // Main table
+  const tbl=document.getElementById('maqGlobalTable');
+  const head=`<thead>
+    <tr style="background:#101820;color:#fff;">
+      <th style="text-align:left;padding:9px 8px;font-size:11px;font-weight:700;position:sticky;left:0;background:#101820;z-index:2;">Banca</th>
+      <th style="text-align:right;padding:9px 8px;font-size:11px;font-weight:700;">Ruletas</th>
+      <th style="text-align:right;padding:9px 8px;font-size:11px;font-weight:700;">POG</th>
+      <th style="text-align:right;padding:9px 8px;font-size:11px;font-weight:700;">Bruto</th>
+      <th style="text-align:right;padding:9px 8px;font-size:11px;font-weight:700;">Gastos</th>
+      <th style="text-align:right;padding:9px 8px;font-size:11px;font-weight:700;">Neto 1</th>
+      <th style="text-align:right;padding:9px 8px;font-size:11px;font-weight:700;">Comisión</th>
+      <th style="text-align:right;padding:9px 8px;font-size:11px;font-weight:700;background:#16242f;">Neto Real</th>
+    </tr>
+  </thead>`;
+  const body=rows.map(r=>{
+    const isEmpty=r.bruto===0 && r.gastos===0;
+    return `<tr style="${isEmpty?'opacity:.5;':''}border-bottom:1px solid #eef2f4;">
+      <td style="padding:9px 8px;font-size:11.5px;font-weight:700;position:sticky;left:0;background:#fff;z-index:1;">${r.branch.replace('PRIME SPORT','PS')}</td>
+      <td style="text-align:right;padding:9px 8px;font-size:11.5px;">${fmt(r.ruletas)}</td>
+      <td style="text-align:right;padding:9px 8px;font-size:11.5px;">${fmt(r.pog)}</td>
+      <td style="text-align:right;padding:9px 8px;font-size:11.5px;font-weight:700;">${fmt(r.bruto)}</td>
+      <td style="text-align:right;padding:9px 8px;font-size:11.5px;color:var(--red);">${fmt(r.gastos)}</td>
+      <td style="text-align:right;padding:9px 8px;font-size:11.5px;">${fmt(r.neto1)}</td>
+      <td style="text-align:right;padding:9px 8px;font-size:11.5px;color:var(--red);">${fmt(r.comision)} <span style="color:var(--muted);font-size:9.5px;">(${(r.digPct*100).toFixed(1)}%)</span></td>
+      <td style="text-align:right;padding:9px 8px;font-size:12px;font-weight:800;color:${r.netoReal<0?'var(--red)':'var(--green)'};background:#fafbfc;">${fmt(r.netoReal)}</td>
+    </tr>`;
+  }).join('');
+  const totalRow=`<tr style="background:#101820;color:#fff;">
+    <td style="padding:11px 8px;font-size:12px;font-weight:800;position:sticky;left:0;background:#101820;text-transform:uppercase;letter-spacing:.4px;">TOTAL</td>
+    <td style="text-align:right;padding:11px 8px;font-size:12px;font-weight:700;">${fmt(tot.ruletas)}</td>
+    <td style="text-align:right;padding:11px 8px;font-size:12px;font-weight:700;">${fmt(tot.pog)}</td>
+    <td style="text-align:right;padding:11px 8px;font-size:12px;font-weight:800;">${fmt(tot.bruto)}</td>
+    <td style="text-align:right;padding:11px 8px;font-size:12px;color:#f0b46a;">${fmt(tot.gastos)}</td>
+    <td style="text-align:right;padding:11px 8px;font-size:12px;font-weight:700;">${fmt(tot.neto1)}</td>
+    <td style="text-align:right;padding:11px 8px;font-size:12px;color:#f0b46a;">${fmt(tot.comision)}</td>
+    <td style="text-align:right;padding:11px 8px;font-size:13px;font-weight:800;color:${tot.netoReal<0?'#f08980':'#4cd6a0'};background:#16242f;">${fmt(tot.netoReal)}</td>
+  </tr>`;
+  tbl.innerHTML=head+'<tbody>'+body+totalRow+'</tbody>';
+
+  // Top bancas by Neto Real
+  const topRows=rows.filter(r=>r.bruto!==0||r.gastos!==0).sort((a,b)=>b.netoReal-a.netoReal);
+  const topHtml=topRows.map((r,i)=>{
+    const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}.`;
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #f2f5f6;">
+      <div style="display:flex;align-items:center;gap:9px;flex:1;">
+        <div style="font-size:13px;font-weight:700;min-width:22px;text-align:center;">${medal}</div>
+        <div>
+          <div style="font-size:12.5px;font-weight:700;">${r.branch.replace('PRIME SPORT','PS')}</div>
+          <div style="font-size:10.5px;color:var(--muted);">Bruto RD$${fmt(r.bruto)} · Comisión ${(r.digPct*100).toFixed(1)}%</div>
+        </div>
+      </div>
+      <div style="font-size:13.5px;font-weight:800;color:${r.netoReal<0?'var(--red)':'var(--green)'};">RD$${fmt(r.netoReal)}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('maqGlobalTop').innerHTML=topHtml||'<div class="empty-hint" style="padding:14px;">Sin datos.</div>';
+}
+
+// === Export functions ===
+function exportMaqGlobalImage(){
+  const node=document.getElementById('maqGlobalExportArea');
+  if(typeof html2canvas==='undefined'){ toast('Herramienta no disponible',false); return; }
+  toast('Generando imagen...',true);
+  const origBg=node.style.background;
+  node.style.background='#fff'; node.style.padding='14px';
+  html2canvas(node,{backgroundColor:'#fff',scale:2}).then(canvas=>{
+    node.style.background=origBg; node.style.padding='';
+    const link=document.createElement('a');
+    link.download=`Maquinas_${MONTHS[maqGlobalMesCur-1]}_${maqGlobalAnioCur}.png`;
+    link.href=canvas.toDataURL('image/png');
+    link.click();
+    toast('Imagen guardada',true);
+  }).catch(e=>{
+    node.style.background=origBg; node.style.padding='';
+    console.error(e); toast('Error al generar imagen',false);
+  });
+}
+
+function exportMaqGlobalPDF(){
+  const node=document.getElementById('maqGlobalExportArea');
+  const w=window.open('','_blank','width=900,height=900');
+  if(!w){ toast('Habilita pop-ups para PDF',false); return; }
+  const title=`Resumen Máquinas · ${MONTHS[maqGlobalMesCur-1]} ${maqGlobalAnioCur}`;
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${title}</title>
+    <style>
+      body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;background:#fff;margin:20px;color:#101820;}
+      h1{font-size:18px;margin:0 0 4px;}
+      .meta{color:#7d909e;font-size:12px;margin-bottom:18px;}
+      .panel{border:1px solid #e1e5e8;border-radius:10px;padding:14px;margin-bottom:14px;}
+      table{border-collapse:collapse;width:100%;font-size:11px;}
+      th,td{padding:6px 8px;border-bottom:1px solid #eef2f4;}
+      th{background:#101820;color:#fff;text-align:right;}
+      th:first-child,td:first-child{text-align:left;}
+      @media print { @page { size: A4 landscape; margin: 10mm; } body{margin:0;} }
+    </style></head><body>
+    <h1>PRIME SPORT · ${title}</h1>
+    <div class="meta">Generado ${new Date().toLocaleString('es-DO')}</div>
+    ${node.innerHTML}
+    <script>window.onload=()=>{setTimeout(()=>window.print(),300);};</`+`script>
+    </body></html>`);
+  w.document.close();
+  toast('Abriendo diálogo de impresión...',true);
+}
+
+function exportMaqGlobalWhatsApp(){
+  const branches=state.branches.filter(b=>!b.isOffice && b.activa!==false).map(b=>b.name);
+  const rows=branches.map(b=>maqGlobalRow(b, maqGlobalMesCur, maqGlobalAnioCur));
+  const lines=[];
+  lines.push(`*PRIME SPORT · Máquinas*`);
+  lines.push(`📅 ${MONTHS[maqGlobalMesCur-1]} ${maqGlobalAnioCur}`);
+  lines.push('');
+  let totBruto=0, totGastos=0, totNeto=0;
+  rows.forEach(r=>{
+    if(r.bruto===0&&r.gastos===0) return;
+    lines.push(`*${r.branch.replace('PRIME SPORT','PS')}*`);
+    lines.push(`  Ruletas: RD$${fmt(r.ruletas)}`);
+    lines.push(`  POG: RD$${fmt(r.pog)}`);
+    lines.push(`  Bruto: RD$${fmt(r.bruto)}`);
+    lines.push(`  − Gastos: RD$${fmt(r.gastos)}`);
+    lines.push(`  − Comisión ${(r.digPct*100).toFixed(1)}%: RD$${fmt(r.comision)}`);
+    lines.push(`  *Neto Real: RD$${fmt(r.netoReal)}*`);
+    lines.push('');
+    totBruto+=r.bruto; totGastos+=r.gastos; totNeto+=r.netoReal;
+  });
+  lines.push(`*TOTAL*`);
+  lines.push(`Bruto: RD$${fmt(totBruto)}`);
+  lines.push(`Gastos: RD$${fmt(totGastos)}`);
+  lines.push(`*Neto Real: RD$${fmt(totNeto)}*`);
+  const url=`https://wa.me/?text=${encodeURIComponent(lines.join('\n'))}`;
+  window.open(url,'_blank');
 }
 
 // ---- machine math ----
