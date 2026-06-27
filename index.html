@@ -131,6 +131,20 @@
   .btn-primary.green{background:linear-gradient(135deg,var(--green),#27b87f);box-shadow:0 4px 14px rgba(31,157,107,.35);}
   .vcfg-tab{flex:1;border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:10px;padding:9px 6px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;}
   .vcfg-tab-on{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .cb-tab{flex:1;min-width:140px;border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:9px;padding:9px 8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .cb-tab-on{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .cb-matrix{width:100%;border-collapse:separate;border-spacing:0;font-size:11.5px;}
+  .cb-matrix th, .cb-matrix td{padding:7px 8px;text-align:right;border-bottom:1px solid #eef2f4;white-space:nowrap;}
+  .cb-matrix th{background:var(--navy);color:#fff;font-weight:700;font-size:10.5px;text-transform:uppercase;letter-spacing:.3px;position:sticky;top:0;}
+  .cb-matrix th:first-child, .cb-matrix td:first-child{text-align:left;position:sticky;left:0;background:#fff;font-weight:700;color:var(--ink);z-index:1;}
+  .cb-matrix th:first-child{background:var(--navy);color:#fff;z-index:2;}
+  .cb-matrix tr:hover td{background:#fafbfc;}
+  .cb-matrix tr.cb-row-total td{background:var(--navy)!important;color:#fff;font-weight:800;}
+  .cb-matrix tr.cb-row-total td:first-child{background:var(--navy)!important;color:#fff;}
+  .cb-matrix tr.cb-row-sep td{background:#f4f6f7!important;font-weight:700;}
+  .cb-matrix tr.cb-row-sep td:first-child{background:#f4f6f7!important;}
+  .cb-matrix tr.cb-row-balance td{background:#101820!important;color:#fff!important;font-weight:800;font-size:13px;}
+  .cb-matrix tr.cb-row-balance td:first-child{background:#101820!important;color:#fff!important;}
   .btn-primary.red{background:linear-gradient(135deg,var(--red),#e06a60);box-shadow:0 4px 14px rgba(211,86,75,.35);}
   .btn-primary.amber{background:linear-gradient(135deg,var(--amber),#e89b4a);box-shadow:0 4px 14px rgba(224,138,43,.35);}
   /* history */
@@ -313,13 +327,24 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
   </div>
 
-  <div onclick="openVirtuales()" style="background:linear-gradient(135deg,#0b3d4d,#0086AD);border-radius:16px;padding:15px 16px;margin-bottom:16px;display:flex;align-items:center;gap:13px;cursor:pointer;box-shadow:0 4px 16px rgba(0,134,173,.3);">
+  <div onclick="openVirtuales()" style="background:linear-gradient(135deg,#0b3d4d,#0086AD);border-radius:16px;padding:15px 16px;margin-bottom:12px;display:flex;align-items:center;gap:13px;cursor:pointer;box-shadow:0 4px 16px rgba(0,134,173,.3);">
     <div style="width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
       <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:22px;height:22px;"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
     </div>
     <div style="flex:1;">
       <div style="color:#fff;font-size:14.5px;font-weight:700;">Virtuales</div>
       <div style="color:rgba(255,255,255,.78);font-size:11.5px;margin-top:1px;">Resumen mensual y reparto por socio</div>
+    </div>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
+  </div>
+
+  <div onclick="openCuadreBancas()" style="background:linear-gradient(135deg,#3a3015,#a37416);border-radius:16px;padding:15px 16px;margin-bottom:16px;display:flex;align-items:center;gap:13px;cursor:pointer;box-shadow:0 4px 16px rgba(163,116,22,.3);">
+    <div style="width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:22px;height:22px;"><path d="M3 3h18v4H3z"/><path d="M3 7v14h18V7"/><line x1="9" y1="11" x2="9" y2="21"/><line x1="15" y1="11" x2="15" y2="21"/><line x1="3" y1="14" x2="21" y2="14"/></svg>
+    </div>
+    <div style="flex:1;">
+      <div style="color:#fff;font-size:14.5px;font-weight:700;">Cuadre Mensual</div>
+      <div style="color:rgba(255,255,255,.78);font-size:11.5px;margin-top:1px;">Bancas, gastos y balance del mes</div>
     </div>
     <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
   </div>
@@ -779,6 +804,99 @@
   </div>
 
   <div id="maqTopList"></div>
+</section>
+
+<!-- CUADRE MENSUAL DE BANCAS -->
+<section class="view" id="view-cuadrebancas">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="go('dash')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Cuadre Mensual · Bancas</div><div style="font-size:12px;color:var(--muted);">Matriz por banca + oficina</div></div>
+  </div>
+
+  <div class="row2" style="margin-bottom:12px;">
+    <div class="fld" style="margin:0;"><label>Mes</label><select id="cbMesSel" onchange="renderCuadreBancas()"></select></div>
+    <div class="fld" style="margin:0;"><label>Año</label><select id="cbAnioSel" onchange="renderCuadreBancas()"></select></div>
+  </div>
+
+  <!-- Hero -->
+  <div id="cbHero"></div>
+
+  <!-- Export -->
+  <div style="display:flex;gap:6px;margin-bottom:12px;">
+    <button onclick="exportCuadreBancasImage()" style="flex:1;border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px;font-size:11.5px;font-weight:700;color:var(--navy);cursor:pointer;font-family:inherit;">📷 Imagen</button>
+    <button onclick="exportCuadreBancasPDF()" style="flex:1;border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px;font-size:11.5px;font-weight:700;color:var(--navy);cursor:pointer;font-family:inherit;">📄 PDF</button>
+    <button onclick="exportCuadreBancasWhatsApp()" style="flex:1;border:1px solid #25d366;background:#25d366;color:#fff;border-radius:10px;padding:9px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;">📱 WhatsApp</button>
+  </div>
+
+  <!-- Alerts -->
+  <div id="cbAlerts"></div>
+
+  <div id="cbExportArea">
+
+  <!-- Tabs to navigate the modules -->
+  <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
+    <button onclick="cbShowTab('matriz')" id="cbTabMatriz" class="cb-tab cb-tab-on">📊 Matriz</button>
+    <button onclick="cbShowTab('ingresos')" id="cbTabIngresos" class="cb-tab">💵 Ingresos por banca</button>
+    <button onclick="cbShowTab('gastos')" id="cbTabGastos" class="cb-tab">🧾 Gastos por banca</button>
+    <button onclick="cbShowTab('oficina')" id="cbTabOficina" class="cb-tab">🏢 Oficina</button>
+  </div>
+
+  <!-- TAB Matriz: la vista consolidada -->
+  <div id="cbSecMatriz">
+    <div class="panel" style="padding:14px 12px;margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:800;color:var(--cerulean);margin-bottom:8px;">Resumen por banca</div>
+      <div id="cbMatrizTable" style="overflow-x:auto;-webkit-overflow-scrolling:touch;"></div>
+    </div>
+    <div class="panel" style="padding:14px 12px;margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:800;color:var(--cerulean);margin-bottom:8px;">Consolidado del mes</div>
+      <div id="cbConsolidado"></div>
+    </div>
+  </div>
+
+  <!-- TAB Ingresos manuales por banca -->
+  <div id="cbSecIngresos" style="display:none;">
+    <div style="font-size:11.5px;color:var(--muted);background:#f4f6f7;border-radius:9px;padding:9px 11px;margin-bottom:12px;line-height:1.5;">
+      Captura los balances de cada banca: Bce Bancas, Pin Bet, Pase Jugada, etc. Estos son los <b>ingresos manuales</b> — Máquinas y Virtuales se calculan automáticamente.
+    </div>
+    <div class="fld" style="margin-bottom:10px;"><label>Banca</label><select id="cbIngresoBranch" onchange="renderCbIngresoEditor()"></select></div>
+    <div id="cbIngresoEditor"></div>
+  </div>
+
+  <!-- TAB Gastos manuales por banca -->
+  <div id="cbSecGastos" style="display:none;">
+    <div style="font-size:11.5px;color:var(--muted);background:#f4f6f7;border-radius:9px;padding:9px 11px;margin-bottom:12px;line-height:1.5;">
+      Captura los gastos de cada banca. Usa el botón <b>"Traer del cuadre diario"</b> para revisar e importar gastos registrados con el +.
+    </div>
+    <div class="fld" style="margin-bottom:10px;"><label>Banca</label><select id="cbGastoBranch" onchange="renderCbGastoEditor()"></select></div>
+    <button onclick="openCbImportar()" style="width:100%;border:1px solid var(--cerulean);background:#fff;color:var(--cerulean);border-radius:11px;padding:10px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:12px;">⇩ Traer gastos del cuadre diario</button>
+    <div id="cbGastoEditor"></div>
+  </div>
+
+  <!-- TAB Oficina -->
+  <div id="cbSecOficina" style="display:none;">
+    <div style="font-size:11.5px;color:var(--muted);background:#f4f6f7;border-radius:9px;padding:9px 11px;margin-bottom:12px;line-height:1.5;">
+      Gastos de la oficina central (independiente de las bancas).
+    </div>
+    <div id="cbOficinaEditor"></div>
+  </div>
+
+  </div>
+</section>
+
+<!-- CB IMPORT DIALOG (selección de gastos del cuadre diario) -->
+<section class="view" id="view-cbimport">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="openCuadreBancas()" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Traer gastos del cuadre</div><div style="font-size:12px;color:var(--muted);" id="cbImportSubtitle">—</div></div>
+  </div>
+
+  <div style="font-size:11.5px;color:var(--muted);background:#f4f6f7;border-radius:9px;padding:9px 11px;margin-bottom:12px;line-height:1.5;">
+    Marca los gastos que pertenecen al mes actual. Los no marcados se quedan solo en el cuadre diario.
+  </div>
+
+  <div id="cbImportList"></div>
+
+  <button onclick="cbImportSelected()" class="btn-primary" style="margin-top:6px;">Importar seleccionados</button>
 </section>
 
 <!-- CONFIGURAR MÁQUINAS -->
@@ -1285,9 +1403,14 @@ const DEFAULTS={
   expCats:['Local / Alquiler','Energía eléctrica','Nómina / Personal','Internet y teléfono','Mantenimiento','Suministros','Impuestos / DGII','Transporte','Publicidad','Otros gastos']
 };
 
-let state={txns:[],branches:[],incCats:[],expCats:[],officeIncCats:[],maquinas:[],lecturas:[],denoms:[],cierres:[],virtRegs:[],virtConfig:null,virtProviders:[],virtSucursalesInactivas:{},virtRenglonesInactivos:{},maqGastos:[],maqPog:[],maqCfgBanca:{}};
+let state={txns:[],branches:[],incCats:[],expCats:[],officeIncCats:[],maquinas:[],lecturas:[],denoms:[],cierres:[],virtRegs:[],virtConfig:null,virtProviders:[],virtSucursalesInactivas:{},virtRenglonesInactivos:{},maqGastos:[],maqPog:[],maqCfgBanca:{},cbGastos:[],cbIngresos:[],cbOficinaGastos:[]};
 const VIRT_EMPRESAS=['MERENGUE','VARMANEX','VG','SOLL'];
 const VIRT_SUCURSALES=['PRIME SPORT 01','PRIME SPORT 02','PRIME SPORT 03','PRIME SPORT 04','PRIME SPORT 05','PRIME SPORT 06','PRIME SPORT 07','PRIME SPORT 08','PRIME SPORT 09','PRIME SPORT 10'];
+
+// Cuadre Bancas — categorías estándar (basadas en Libro1.xlsx)
+const CB_GASTO_CATS=['Alquiler','Combustible','D. Feriados','Dieta','E. Eléctrica','Mant/Reparación','Nómina Dig','Nómina Limp','Picheos','DGII','Tel y/o Cable','Mat Limp','Agua','Mat Gastable','Central','Otros','Vacaciones','Licencia','TSS','Infotep','Liquidación','Administración'];
+const CB_INGRESO_CATS=['Bce Bancas','Pin Bet','Pase Jugada','Pago Página','Tk x Pagar','Midas'];
+const CB_OFICINA_CATS=['Alquiler','Nómina','Feriado','Liquidación','Edesur','Claro','Mat Gast','Mat Limp','Mensajero','TSS','Cel Oficina','Otros','Licencia','Aportes Médicos'];
 const VIRT_ESTRUCTURAS={MERENGUE:'merengue',VARMANEX:'varmanex',VG:'vg',SOLL:'soll'};
 const VIRT_CAMPOS=[
   {k:'tk',label:'TK (tickets)'},
@@ -1393,6 +1516,19 @@ async function loadState(){
     else state.maqCfgBanca={};
     state._maqExtrasReady = !mg.error && !mp.error && !mc.error;
   }catch(e){ console.warn('Machine extras not ready',e); state.maqGastos=[]; state.maqPog=[]; state.maqCfgBanca={}; state._maqExtrasReady=false; }
+
+  // Cuadre Bancas Mensual (resilient)
+  try{
+    const [cbg,cbi,cbo]=await Promise.all([
+      sb.from('cuadre_banca_gasto').select('*'),
+      sb.from('cuadre_banca_ingreso').select('*'),
+      sb.from('cuadre_oficina_gasto').select('*')
+    ]);
+    state.cbGastos = (!cbg.error) ? cbg.data.map(g=>({_id:g.id,anio:g.anio,mes:g.mes,sucursal:g.sucursal,categoria:g.categoria,monto:Number(g.monto)||0,origen:g.origen||'manual',refTxnId:g.ref_txn_id||null})) : [];
+    state.cbIngresos = (!cbi.error) ? cbi.data.map(i=>({_id:i.id,anio:i.anio,mes:i.mes,sucursal:i.sucursal,categoria:i.categoria,monto:Number(i.monto)||0})) : [];
+    state.cbOficinaGastos = (!cbo.error) ? cbo.data.map(o=>({_id:o.id,anio:o.anio,mes:o.mes,categoria:o.categoria,monto:Number(o.monto)||0})) : [];
+    state._cbReady = !cbg.error && !cbi.error && !cbo.error;
+  }catch(e){ console.warn('Cuadre bancas tables not ready',e); state.cbGastos=[]; state.cbIngresos=[]; state.cbOficinaGastos=[]; state._cbReady=false; }
   // Closed days (cierres) — resilient
   try{
     const c=await sb.from('cierres_dia').select('*');
@@ -2871,6 +3007,536 @@ function exportMaqGlobalWhatsApp(){
   window.open(url,'_blank');
 }
 
+// ==========================================================
+// CUADRE MENSUAL DE BANCAS
+// ==========================================================
+let cbMesCur=new Date().getMonth()+1, cbAnioCur=new Date().getFullYear();
+let _cbTab='matriz';
+
+function cbActiveBranches(){
+  return state.branches.filter(b=>!b.isOffice && b.activa!==false);
+}
+
+function openCuadreBancas(){
+  showOnlyView('view-cuadrebancas');
+  const mesSel=document.getElementById('cbMesSel');
+  mesSel.innerHTML=MONTHS.map((m,i)=>`<option value="${i+1}" ${(i+1)===cbMesCur?'selected':''}>${m}</option>`).join('');
+  const anioSel=document.getElementById('cbAnioSel');
+  anioSel.innerHTML=[2024,2025,2026,2027].map(y=>`<option value="${y}" ${y===cbAnioCur?'selected':''}>${y}</option>`).join('');
+  // Branch selectors for editors
+  const branches=cbActiveBranches().map(b=>b.name);
+  ['cbIngresoBranch','cbGastoBranch'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.innerHTML=branches.map(b=>`<option>${b}</option>`).join('');
+  });
+  cbShowTab(_cbTab);
+}
+
+function cbShowTab(t){
+  _cbTab=t;
+  ['matriz','ingresos','gastos','oficina'].forEach(k=>{
+    const sec=document.getElementById('cbSec'+k.charAt(0).toUpperCase()+k.slice(1));
+    const tab=document.getElementById('cbTab'+k.charAt(0).toUpperCase()+k.slice(1));
+    if(sec) sec.style.display = (k===t)?'block':'none';
+    if(tab) tab.className = (k===t)?'cb-tab cb-tab-on':'cb-tab';
+  });
+  renderCuadreBancas();
+}
+
+function renderCuadreBancas(){
+  cbMesCur=parseInt(document.getElementById('cbMesSel').value);
+  cbAnioCur=parseInt(document.getElementById('cbAnioSel').value);
+  if(_cbTab==='matriz'){ renderCbMatriz(); renderCbConsolidado(); }
+  else if(_cbTab==='ingresos'){ renderCbIngresoEditor(); }
+  else if(_cbTab==='gastos'){ renderCbGastoEditor(); }
+  else if(_cbTab==='oficina'){ renderCbOficinaEditor(); }
+  renderCbHero();
+  renderCbAlerts();
+}
+
+// === Cálculos del cuadre ===
+// Neto de Máquinas por banca para el mes seleccionado (automático)
+function cbMaqNetoBanca(branch){
+  // Bruto = lecturas + POG balance
+  const machinesActive=state.maquinas.filter(m=>m.branch===branch && m.activa!==false && m.tipo!=='pog');
+  const subtotal=machinesActive.reduce((sum,m)=>{
+    const lecs=state.lecturas.filter(l=>{
+      if(l.maqId!==m._id) return false;
+      const d=new Date(l.date+'T00:00:00');
+      return d.getMonth()+1===cbMesCur && d.getFullYear()===cbAnioCur;
+    });
+    return sum+lecs.reduce((s,l)=>s+(l.ingreso||0),0);
+  },0);
+  const pogRow=state.maqPog.find(p=>p.anio===cbAnioCur&&p.mes===cbMesCur&&p.sucursal===branch);
+  const pogBalance=pogRow?pogRow.balance:0;
+  const bruto=subtotal+pogBalance;
+  const gastosMaq=state.maqGastos.filter(g=>g.anio===cbAnioCur&&g.mes===cbMesCur&&g.sucursal===branch).reduce((s,g)=>s+g.monto,0);
+  const neto1=bruto-gastosMaq;
+  const digPct=(state.maqCfgBanca[branch]&&state.maqCfgBanca[branch].digitadorPct)||0.04;
+  const comision=neto1*digPct;
+  return neto1-comision;
+}
+
+// Neto de Virtuales por banca: lo que la banca produjo (en términos de Balance/Total)
+// — usamos el "total" registrado para esa banca en el mes (suma de todas las empresas/proveedores)
+function cbVirtNetoBanca(branch){
+  const regs=state.virtRegs.filter(r=>r.anio===cbAnioCur&&r.mes===cbMesCur&&r.sucursal===branch);
+  return regs.reduce((s,r)=>s+(r.total||0),0);
+}
+
+// Ingreso manual de una categoría
+function cbIngresoVal(branch, cat){
+  const row=state.cbIngresos.find(r=>r.anio===cbAnioCur&&r.mes===cbMesCur&&r.sucursal===branch&&r.categoria===cat);
+  return row?row.monto:0;
+}
+
+// Suma de gastos manuales de una banca (todas las categorías)
+function cbGastosBranchTotal(branch){
+  return state.cbGastos.filter(g=>g.anio===cbAnioCur&&g.mes===cbMesCur&&g.sucursal===branch).reduce((s,g)=>s+g.monto,0);
+}
+
+// Gasto de una categoría específica de una banca
+function cbGastoBranchCat(branch, cat){
+  return state.cbGastos.filter(g=>g.anio===cbAnioCur&&g.mes===cbMesCur&&g.sucursal===branch&&g.categoria===cat).reduce((s,g)=>s+g.monto,0);
+}
+
+// === MATRIZ TABLE ===
+function renderCbMatriz(){
+  const branches=cbActiveBranches();
+  if(!branches.length){
+    document.getElementById('cbMatrizTable').innerHTML='<div class="empty-hint" style="padding:20px;">Sin bancas activas.</div>';
+    return;
+  }
+  const html=['<table class="cb-matrix">'];
+  // Header
+  html.push('<thead><tr><th>Concepto</th>');
+  branches.forEach(b=>html.push(`<th>${b.name.replace('PRIME SPORT ','P')}</th>`));
+  html.push('<th>TOTAL</th></tr></thead>');
+
+  html.push('<tbody>');
+  // INGRESOS section
+  html.push('<tr class="cb-row-sep"><td colspan="'+(branches.length+2)+'">INGRESOS (manual)</td></tr>');
+  CB_INGRESO_CATS.forEach(cat=>{
+    let rowTotal=0;
+    let row=`<tr><td>${cat}</td>`;
+    branches.forEach(b=>{
+      const v=cbIngresoVal(b.name,cat);
+      rowTotal+=v;
+      row+=`<td>${v?fmt(v):'—'}</td>`;
+    });
+    row+=`<td><b>${rowTotal?fmt(rowTotal):'—'}</b></td></tr>`;
+    html.push(row);
+  });
+  // Automatic: Máquinas y Virtuales
+  let maqTotal=0, virtTotal=0;
+  let maqRow=`<tr><td title="Calculado del módulo Máquinas">Máquinas (auto)</td>`;
+  branches.forEach(b=>{
+    const v=cbMaqNetoBanca(b.name);
+    maqTotal+=v;
+    maqRow+=`<td style="color:#0086AD;">${v?fmt(v):'—'}</td>`;
+  });
+  maqRow+=`<td><b style="color:#0086AD;">${maqTotal?fmt(maqTotal):'—'}</b></td></tr>`;
+  html.push(maqRow);
+
+  let virtRow=`<tr><td title="Calculado del módulo Virtuales">Virtuales (auto)</td>`;
+  branches.forEach(b=>{
+    const v=cbVirtNetoBanca(b.name);
+    virtTotal+=v;
+    virtRow+=`<td style="color:#6b3fa0;">${v?fmt(v):'—'}</td>`;
+  });
+  virtRow+=`<td><b style="color:#6b3fa0;">${virtTotal?fmt(virtTotal):'—'}</b></td></tr>`;
+  html.push(virtRow);
+
+  // Total ingresos por banca
+  let totIngTotal=0;
+  let totIngRow=`<tr class="cb-row-total"><td>TOTAL INGRESOS</td>`;
+  branches.forEach(b=>{
+    let v=0;
+    CB_INGRESO_CATS.forEach(c=>{ v+=cbIngresoVal(b.name,c); });
+    v+=cbMaqNetoBanca(b.name);
+    v+=cbVirtNetoBanca(b.name);
+    totIngTotal+=v;
+    totIngRow+=`<td>${fmt(v)}</td>`;
+  });
+  totIngRow+=`<td>${fmt(totIngTotal)}</td></tr>`;
+  html.push(totIngRow);
+
+  // GASTOS section
+  html.push('<tr class="cb-row-sep"><td colspan="'+(branches.length+2)+'">GASTOS</td></tr>');
+  CB_GASTO_CATS.forEach(cat=>{
+    let rowTotal=0;
+    const cells=branches.map(b=>{
+      const v=cbGastoBranchCat(b.name,cat);
+      rowTotal+=v;
+      return v;
+    });
+    // skip categories with zero total — keeps the table clean
+    if(rowTotal===0) return;
+    let row=`<tr><td>${cat}</td>`;
+    cells.forEach(v=>{ row+=`<td>${v?fmt(v):'—'}</td>`; });
+    row+=`<td><b>${fmt(rowTotal)}</b></td></tr>`;
+    html.push(row);
+  });
+  // Total gastos
+  let totGastTotal=0;
+  let totGastRow=`<tr class="cb-row-total"><td>TOTAL GASTOS</td>`;
+  branches.forEach(b=>{
+    const v=cbGastosBranchTotal(b.name);
+    totGastTotal+=v;
+    totGastRow+=`<td>${fmt(v)}</td>`;
+  });
+  totGastRow+=`<td>${fmt(totGastTotal)}</td></tr>`;
+  html.push(totGastRow);
+
+  // BALANCE: ingresos - gastos
+  let balTotal=0;
+  let balRow=`<tr class="cb-row-balance"><td>BALANCE</td>`;
+  branches.forEach(b=>{
+    let ing=0;
+    CB_INGRESO_CATS.forEach(c=>{ ing+=cbIngresoVal(b.name,c); });
+    ing+=cbMaqNetoBanca(b.name);
+    ing+=cbVirtNetoBanca(b.name);
+    const gst=cbGastosBranchTotal(b.name);
+    const bal=ing-gst;
+    balTotal+=bal;
+    balRow+=`<td style="color:${bal<0?'#f08980':'#7ce6b3'};">${fmt(bal)}</td>`;
+  });
+  balRow+=`<td style="color:${balTotal<0?'#f08980':'#7ce6b3'};">${fmt(balTotal)}</td></tr>`;
+  html.push(balRow);
+
+  html.push('</tbody></table>');
+  document.getElementById('cbMatrizTable').innerHTML=html.join('');
+}
+
+// === CONSOLIDADO (resumen oficina + global) ===
+function renderCbConsolidado(){
+  const branches=cbActiveBranches();
+  // Total bancas (balance)
+  let totalBancas=0;
+  branches.forEach(b=>{
+    let ing=0;
+    CB_INGRESO_CATS.forEach(c=>{ ing+=cbIngresoVal(b.name,c); });
+    ing+=cbMaqNetoBanca(b.name);
+    ing+=cbVirtNetoBanca(b.name);
+    totalBancas+=(ing-cbGastosBranchTotal(b.name));
+  });
+  // Oficina gastos
+  const oficGastos=state.cbOficinaGastos.filter(o=>o.anio===cbAnioCur&&o.mes===cbMesCur).reduce((s,o)=>s+o.monto,0);
+  // BCE TOTAL
+  const bceTotal=totalBancas-oficGastos;
+  const promBanca=branches.length?totalBancas/branches.length:0;
+  document.getElementById('cbConsolidado').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px;">
+      <div style="background:#f4f6f7;border-radius:8px;padding:9px 11px;">
+        <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;">Total Bancas</div>
+        <div style="font-size:14.5px;font-weight:800;color:${totalBancas<0?'var(--red)':'var(--green)'};margin-top:2px;">RD$${fmt(totalBancas)}</div>
+      </div>
+      <div style="background:#f4f6f7;border-radius:8px;padding:9px 11px;">
+        <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;">Prom. por banca</div>
+        <div style="font-size:14.5px;font-weight:800;color:${promBanca<0?'var(--red)':'var(--ink)'};margin-top:2px;">RD$${fmt(promBanca)}</div>
+      </div>
+      <div style="background:#f4f6f7;border-radius:8px;padding:9px 11px;">
+        <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;">− Gastos Oficina</div>
+        <div style="font-size:14.5px;font-weight:800;color:var(--red);margin-top:2px;">RD$${fmt(oficGastos)}</div>
+      </div>
+      <div style="background:linear-gradient(135deg,#101820,#16242f);border-radius:8px;padding:9px 11px;color:#fff;">
+        <div style="font-size:10px;opacity:.85;font-weight:700;text-transform:uppercase;">BCE TOTAL</div>
+        <div style="font-size:15px;font-weight:800;color:${bceTotal<0?'#f08980':'#7ce6b3'};margin-top:2px;">RD$${fmt(bceTotal)}</div>
+      </div>
+    </div>`;
+}
+
+// === HERO (resumen arriba) ===
+function renderCbHero(){
+  const branches=cbActiveBranches();
+  let totalBancas=0;
+  branches.forEach(b=>{
+    let ing=0;
+    CB_INGRESO_CATS.forEach(c=>{ ing+=cbIngresoVal(b.name,c); });
+    ing+=cbMaqNetoBanca(b.name);
+    ing+=cbVirtNetoBanca(b.name);
+    totalBancas+=(ing-cbGastosBranchTotal(b.name));
+  });
+  const oficGastos=state.cbOficinaGastos.filter(o=>o.anio===cbAnioCur&&o.mes===cbMesCur).reduce((s,o)=>s+o.monto,0);
+  const bceTotal=totalBancas-oficGastos;
+  document.getElementById('cbHero').innerHTML=`
+    <div style="background:linear-gradient(135deg,#3a3015,#a37416);border-radius:15px;padding:16px;margin-bottom:14px;color:#fff;">
+      <div style="font-size:11px;color:rgba(255,255,255,.78);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">BCE Total · ${MONTHS[cbMesCur-1]} ${cbAnioCur}</div>
+      <div style="font-size:28px;font-weight:800;color:${bceTotal<0?'#f08980':'#7ce6b3'};">RD$${fmt(bceTotal)}</div>
+      <div style="font-size:11.5px;color:rgba(255,255,255,.78);margin-top:4px;">${branches.length} bancas activas · Prom RD$${fmt(branches.length?totalBancas/branches.length:0)}</div>
+    </div>`;
+}
+
+// === ALERTS ===
+function renderCbAlerts(){
+  const branches=cbActiveBranches();
+  const alerts=[];
+  branches.forEach(b=>{
+    let ing=0;
+    CB_INGRESO_CATS.forEach(c=>{ ing+=cbIngresoVal(b.name,c); });
+    ing+=cbMaqNetoBanca(b.name);
+    ing+=cbVirtNetoBanca(b.name);
+    const gst=cbGastosBranchTotal(b.name);
+    const bal=ing-gst;
+    if(bal<0) alerts.push({sev:'warn',msg:`${b.name.replace('PRIME SPORT ','P')}: Balance negativo (RD$${fmt(bal)})`});
+    if(gst>ing&&ing>0) alerts.push({sev:'info',msg:`${b.name.replace('PRIME SPORT ','P')}: Gastos superan ingresos`});
+  });
+  document.getElementById('cbAlerts').innerHTML = alerts.length ? `
+    <div class="panel" style="padding:11px;margin-bottom:14px;">
+      <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:7px;">⚠ Alertas (${alerts.length})</div>
+      ${alerts.slice(0,5).map(a=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 9px;background:${a.sev==='warn'?'#fdecea':'#fff8ea'};border-left:3px solid ${a.sev==='warn'?'#d8513e':'#f0b46a'};border-radius:6px;margin-bottom:5px;"><div style="font-size:13px;">${a.sev==='warn'?'🔻':'⚠️'}</div><div style="flex:1;font-size:11.5px;">${a.msg}</div></div>`).join('')}
+    </div>` : '';
+}
+
+// === INGRESOS editor ===
+function renderCbIngresoEditor(){
+  const branch=document.getElementById('cbIngresoBranch').value;
+  if(!branch) return;
+  const wrap=document.getElementById('cbIngresoEditor');
+  const rows=CB_INGRESO_CATS.map(cat=>{
+    const v=cbIngresoVal(branch,cat);
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f2f5f6;gap:9px;">
+      <span style="flex:1;font-size:13px;font-weight:600;">${cat}</span>
+      <div class="amount-input" style="margin:0;max-width:140px;"><span class="cur">RD$</span><input type="number" inputmode="decimal" value="${v||''}" placeholder="0" onblur="saveCbIngreso('${branch}','${cat}',this.value)" style="padding-left:36px;font-size:13px;"></div>
+    </div>`;
+  }).join('');
+  // Auto values readonly display
+  const maq=cbMaqNetoBanca(branch);
+  const virt=cbVirtNetoBanca(branch);
+  wrap.innerHTML=`<div class="panel" style="padding:14px;">
+    ${rows}
+    <div style="margin-top:10px;padding-top:10px;border-top:1px dashed #eef2f4;">
+      <div style="font-size:10.5px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:5px;">Automáticos (no editables)</div>
+      <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:12px;"><span style="color:#0086AD;">Máquinas (Neto Real)</span><span style="font-weight:700;color:#0086AD;">RD$${fmt(maq)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:12px;"><span style="color:#6b3fa0;">Virtuales (Balance Banca)</span><span style="font-weight:700;color:#6b3fa0;">RD$${fmt(virt)}</span></div>
+    </div>
+  </div>`;
+}
+
+async function saveCbIngreso(branch, cat, valStr){
+  const monto=parseFloat(valStr);
+  setSyncState('saving');
+  const existing=state.cbIngresos.find(r=>r.anio===cbAnioCur&&r.mes===cbMesCur&&r.sucursal===branch&&r.categoria===cat);
+  try{
+    if(isNaN(monto)||monto===0){
+      if(existing){
+        await sb.from('cuadre_banca_ingreso').delete().eq('id',existing._id);
+        state.cbIngresos=state.cbIngresos.filter(r=>r._id!==existing._id);
+      }
+    } else if(existing){
+      await sb.from('cuadre_banca_ingreso').update({monto}).eq('id',existing._id);
+      existing.monto=monto;
+    } else {
+      const {data,error}=await sb.from('cuadre_banca_ingreso').insert({anio:cbAnioCur,mes:cbMesCur,sucursal:branch,categoria:cat,monto,creado_por:currentUser||null}).select();
+      if(error)throw error;
+      state.cbIngresos.push({_id:data[0].id,anio:cbAnioCur,mes:cbMesCur,sucursal:branch,categoria:cat,monto});
+    }
+    setSyncState('ok');
+  }catch(e){ console.error(e); setSyncState('error'); toast('Error: '+(e.message||''),false); }
+}
+
+// === GASTOS editor (manual) ===
+function renderCbGastoEditor(){
+  const branch=document.getElementById('cbGastoBranch').value;
+  if(!branch) return;
+  const wrap=document.getElementById('cbGastoEditor');
+  const rows=CB_GASTO_CATS.map(cat=>{
+    const v=cbGastoBranchCat(branch,cat);
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f2f5f6;gap:9px;">
+      <span style="flex:1;font-size:13px;font-weight:600;">${cat}</span>
+      <div class="amount-input" style="margin:0;max-width:140px;"><span class="cur">RD$</span><input type="number" inputmode="decimal" value="${v||''}" placeholder="0" onblur="saveCbGastoCat('${branch}','${cat}',this.value)" style="padding-left:36px;font-size:13px;"></div>
+    </div>`;
+  }).join('');
+  const total=cbGastosBranchTotal(branch);
+  wrap.innerHTML=`<div class="panel" style="padding:14px;">
+    ${rows}
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0 2px;margin-top:6px;border-top:2px solid var(--navy);">
+      <span style="font-size:12.5px;font-weight:800;color:var(--muted);text-transform:uppercase;">TOTAL</span>
+      <span style="font-size:15px;font-weight:800;color:var(--red);">RD$${fmt(total)}</span>
+    </div>
+  </div>`;
+}
+
+async function saveCbGastoCat(branch, cat, valStr){
+  const monto=parseFloat(valStr);
+  setSyncState('saving');
+  // Save aggregated: 1 row per (branch,cat) without ref_txn_id (the "manual" row)
+  const existing=state.cbGastos.find(g=>g.anio===cbAnioCur&&g.mes===cbMesCur&&g.sucursal===branch&&g.categoria===cat&&!g.refTxnId);
+  try{
+    if(isNaN(monto)||monto===0){
+      if(existing){
+        await sb.from('cuadre_banca_gasto').delete().eq('id',existing._id);
+        state.cbGastos=state.cbGastos.filter(g=>g._id!==existing._id);
+      }
+    } else if(existing){
+      await sb.from('cuadre_banca_gasto').update({monto}).eq('id',existing._id);
+      existing.monto=monto;
+    } else {
+      const {data,error}=await sb.from('cuadre_banca_gasto').insert({anio:cbAnioCur,mes:cbMesCur,sucursal:branch,categoria:cat,monto,origen:'manual',creado_por:currentUser||null}).select();
+      if(error)throw error;
+      state.cbGastos.push({_id:data[0].id,anio:cbAnioCur,mes:cbMesCur,sucursal:branch,categoria:cat,monto,origen:'manual',refTxnId:null});
+    }
+    setSyncState('ok');
+  }catch(e){ console.error(e); setSyncState('error'); toast('Error: '+(e.message||''),false); }
+}
+
+// === OFICINA editor ===
+function renderCbOficinaEditor(){
+  const wrap=document.getElementById('cbOficinaEditor');
+  const rows=CB_OFICINA_CATS.map(cat=>{
+    const r=state.cbOficinaGastos.find(o=>o.anio===cbAnioCur&&o.mes===cbMesCur&&o.categoria===cat);
+    const v=r?r.monto:0;
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f2f5f6;gap:9px;">
+      <span style="flex:1;font-size:13px;font-weight:600;">${cat}</span>
+      <div class="amount-input" style="margin:0;max-width:140px;"><span class="cur">RD$</span><input type="number" inputmode="decimal" value="${v||''}" placeholder="0" onblur="saveCbOficina('${cat}',this.value)" style="padding-left:36px;font-size:13px;"></div>
+    </div>`;
+  }).join('');
+  const total=state.cbOficinaGastos.filter(o=>o.anio===cbAnioCur&&o.mes===cbMesCur).reduce((s,o)=>s+o.monto,0);
+  wrap.innerHTML=`<div class="panel" style="padding:14px;">
+    ${rows}
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0 2px;margin-top:6px;border-top:2px solid var(--navy);">
+      <span style="font-size:12.5px;font-weight:800;color:var(--muted);text-transform:uppercase;">TOTAL OFICINA</span>
+      <span style="font-size:15px;font-weight:800;color:var(--red);">RD$${fmt(total)}</span>
+    </div>
+  </div>`;
+}
+
+async function saveCbOficina(cat, valStr){
+  const monto=parseFloat(valStr);
+  setSyncState('saving');
+  const existing=state.cbOficinaGastos.find(o=>o.anio===cbAnioCur&&o.mes===cbMesCur&&o.categoria===cat);
+  try{
+    if(isNaN(monto)||monto===0){
+      if(existing){
+        await sb.from('cuadre_oficina_gasto').delete().eq('id',existing._id);
+        state.cbOficinaGastos=state.cbOficinaGastos.filter(o=>o._id!==existing._id);
+      }
+    } else if(existing){
+      await sb.from('cuadre_oficina_gasto').update({monto}).eq('id',existing._id);
+      existing.monto=monto;
+    } else {
+      const {data,error}=await sb.from('cuadre_oficina_gasto').insert({anio:cbAnioCur,mes:cbMesCur,categoria:cat,monto,creado_por:currentUser||null}).select();
+      if(error)throw error;
+      state.cbOficinaGastos.push({_id:data[0].id,anio:cbAnioCur,mes:cbMesCur,categoria:cat,monto});
+    }
+    setSyncState('ok');
+  }catch(e){ console.error(e); setSyncState('error'); toast('Error: '+(e.message||''),false); }
+}
+
+// === IMPORTAR GASTOS DEL CUADRE DIARIO ===
+let _cbImportSelected={};
+function openCbImportar(){
+  _cbImportSelected={};
+  showOnlyView('view-cbimport');
+  document.getElementById('cbImportSubtitle').textContent=`${MONTHS[cbMesCur-1]} ${cbAnioCur}`;
+  // Lista los gastos del mes
+  const expTxns=state.txns.filter(t=>{
+    if(t.type!=='expense') return false;
+    const d=new Date(t.date+'T00:00:00');
+    return d.getMonth()+1===cbMesCur && d.getFullYear()===cbAnioCur;
+  }).sort((a,b)=>a.date<b.date?-1:1);
+  if(!expTxns.length){
+    document.getElementById('cbImportList').innerHTML='<div class="empty-hint" style="padding:20px;">No hay gastos en el cuadre diario este mes.</div>';
+    return;
+  }
+  document.getElementById('cbImportList').innerHTML=expTxns.map(t=>{
+    // Skip if already imported (by ref_txn_id)
+    const already = state.cbGastos.some(g=>g.refTxnId===t._id);
+    return `<div class="panel" style="padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;gap:9px;${already?'opacity:.55;background:#f0eaf7;':''}">
+      <input type="checkbox" ${already?'disabled checked':''} ${_cbImportSelected[t._id]?'checked':''} onchange="cbImportToggle('${t._id}')" style="width:18px;height:18px;flex-shrink:0;cursor:${already?'not-allowed':'pointer'};">
+      <div style="flex:1;font-size:12px;">
+        <div style="font-weight:600;">${t.category}${t.note?' · '+t.note:''}</div>
+        <div style="color:var(--muted);font-size:10.5px;margin-top:1px;">${fmtDate(t.date)} · ${t.branch.replace('PRIME SPORT','PS')}${already?' · YA IMPORTADO':''}</div>
+      </div>
+      <div style="font-size:13px;font-weight:700;color:var(--red);">RD$${fmt(t.amount)}</div>
+    </div>`;
+  }).join('');
+}
+
+function cbImportToggle(id){
+  _cbImportSelected[id]=!_cbImportSelected[id];
+}
+
+async function cbImportSelected(){
+  const ids=Object.keys(_cbImportSelected).filter(id=>_cbImportSelected[id]);
+  if(!ids.length){ toast('No seleccionaste ningún gasto',false); return; }
+  setSyncState('saving');
+  let imported=0, skipped=0;
+  for(const id of ids){
+    const t=state.txns.find(x=>x._id===id);
+    if(!t){ skipped++; continue; }
+    // Map cuadre diario category → CB_GASTO_CATS — try direct match; if not, use 'Otros'
+    const cat = CB_GASTO_CATS.find(c=>c.toLowerCase()===(t.category||'').toLowerCase()) || 'Otros';
+    try{
+      const {data,error}=await sb.from('cuadre_banca_gasto').insert({anio:cbMesCur,mes:cbMesCur,sucursal:t.branch,categoria:cat,monto:t.amount,origen:'cuadre_diario',ref_txn_id:t._id,creado_por:currentUser||null}).select();
+      if(error){
+        // anio was wrong (typo); retry with cbAnioCur
+        const r2 = await sb.from('cuadre_banca_gasto').insert({anio:cbAnioCur,mes:cbMesCur,sucursal:t.branch,categoria:cat,monto:t.amount,origen:'cuadre_diario',ref_txn_id:t._id,creado_por:currentUser||null}).select();
+        if(r2.error) throw r2.error;
+        state.cbGastos.push({_id:r2.data[0].id,anio:cbAnioCur,mes:cbMesCur,sucursal:t.branch,categoria:cat,monto:t.amount,origen:'cuadre_diario',refTxnId:t._id});
+      } else {
+        state.cbGastos.push({_id:data[0].id,anio:cbAnioCur,mes:cbMesCur,sucursal:t.branch,categoria:cat,monto:t.amount,origen:'cuadre_diario',refTxnId:t._id});
+      }
+      imported++;
+    }catch(e){ console.error(e); skipped++; }
+  }
+  setSyncState('ok');
+  toast(`Importados: ${imported}${skipped?' · Saltados: '+skipped:''}`,true);
+  openCuadreBancas();
+  cbShowTab('gastos');
+}
+
+// === EXPORTS ===
+function exportCuadreBancasImage(){
+  const node=document.getElementById('cbExportArea');
+  if(typeof html2canvas==='undefined'){ toast('Herramienta no disponible',false); return; }
+  toast('Generando imagen...',true);
+  node.style.background='#fff'; node.style.padding='14px';
+  html2canvas(node,{backgroundColor:'#fff',scale:2}).then(canvas=>{
+    node.style.background=''; node.style.padding='';
+    const link=document.createElement('a');
+    link.download=`Cuadre_${MONTHS[cbMesCur-1]}_${cbAnioCur}.png`;
+    link.href=canvas.toDataURL('image/png');
+    link.click();
+    toast('Imagen guardada',true);
+  }).catch(e=>{ node.style.background=''; node.style.padding=''; console.error(e); toast('Error',false); });
+}
+
+function exportCuadreBancasPDF(){
+  const node=document.getElementById('cbExportArea');
+  if(!node)return;
+  const w=window.open('','_blank','width=900,height=900');
+  if(!w){ toast('Habilita pop-ups',false); return; }
+  const title=`Cuadre Mensual · ${MONTHS[cbMesCur-1]} ${cbAnioCur}`;
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${title}</title>
+    <style>body{font-family:-apple-system,sans-serif;background:#fff;margin:18px;color:#101820;}h1{font-size:17px;margin:0 0 4px;}.meta{color:#7d909e;font-size:11px;margin-bottom:14px;}.panel{border:1px solid #e1e5e8;border-radius:9px;padding:11px;margin-bottom:11px;}.panel h3{font-size:12px;margin:0 0 8px;}table{width:100%;border-collapse:collapse;font-size:10.5px;}th,td{padding:5px 7px;text-align:right;border:1px solid #eef2f4;}th:first-child,td:first-child{text-align:left;font-weight:700;}th{background:#101820;color:#fff;}@media print{@page{size:A4 landscape;margin:10mm;}body{margin:0;}}</style>
+    </head><body><h1>PRIME SPORT · ${title}</h1><div class="meta">${new Date().toLocaleString('es-DO')}</div>${node.innerHTML}<script>window.onload=()=>setTimeout(()=>window.print(),300);</`+`script></body></html>`);
+  w.document.close();
+}
+
+function exportCuadreBancasWhatsApp(){
+  const branches=cbActiveBranches();
+  const lines=[`*PRIME SPORT · Cuadre Mensual*`,`📅 ${MONTHS[cbMesCur-1]} ${cbAnioCur}`,''];
+  let totalBancas=0;
+  branches.forEach(b=>{
+    let ing=0;
+    CB_INGRESO_CATS.forEach(c=>{ ing+=cbIngresoVal(b.name,c); });
+    ing+=cbMaqNetoBanca(b.name);
+    ing+=cbVirtNetoBanca(b.name);
+    const gst=cbGastosBranchTotal(b.name);
+    const bal=ing-gst;
+    totalBancas+=bal;
+    lines.push(`${b.name.replace('PRIME SPORT ','P')}: RD$${fmt(bal)}`);
+  });
+  const oficGastos=state.cbOficinaGastos.filter(o=>o.anio===cbAnioCur&&o.mes===cbMesCur).reduce((s,o)=>s+o.monto,0);
+  lines.push('');
+  lines.push(`*Total Bancas: RD$${fmt(totalBancas)}*`);
+  lines.push(`Oficina: −RD$${fmt(oficGastos)}`);
+  lines.push(`*BCE TOTAL: RD$${fmt(totalBancas-oficGastos)}*`);
+  const url=`https://wa.me/?text=${encodeURIComponent(lines.join('\n'))}`;
+  window.open(url,'_blank');
+}
+
 // ---- machine math ----
 function denomOf(maqId){ const m=state.maquinas.find(x=>x._id===maqId); return m?m.denom:0; }
 function readingsOf(maqId){ return state.lecturas.filter(l=>l.maqId===maqId).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:(a._id<b._id?-1:1)); }
@@ -3164,9 +3830,9 @@ async function saveLectura(){
   try{
     let row={maquina_id:curMaqId,fecha:date,entrada_ac:eAc,salida_ac:sAc,cash_box:cashBox,dif_entrada:difE,dif_salida:difS,ben_monedas:benMon,ben_dinero:benDin,ingreso,sumado:sumar,reset:isReset,reset_gain:isReset?resetGain:null,creado_por:currentUser||null};
     let {data,error}=await sb.from('lecturas_maquina').insert(row).select();
-    if(error && /column.*reset/i.test(error.message||'')){
-      // Backward compat: DB doesn't have reset columns yet
-      console.warn('reset columns not in DB yet, retrying without them');
+    if(error && /reset|column|schema cache/i.test(error.message||'')){
+      // Backward compat: DB doesn't have reset columns yet — retry without them
+      console.warn('Reset columns not in DB, retrying without them. Error was:', error.message);
       delete row.reset; delete row.reset_gain;
       ({data,error}=await sb.from('lecturas_maquina').insert(row).select());
     }
