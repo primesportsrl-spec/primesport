@@ -837,6 +837,7 @@
   <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
     <button onclick="cbShowTab('matriz')" id="cbTabMatriz" class="cb-tab cb-tab-on">📊 Matriz</button>
     <button onclick="cbShowTab('ingresos')" id="cbTabIngresos" class="cb-tab">💵 Ingresos por banca</button>
+    <button onclick="cbShowTab('globales')" id="cbTabGlobales" class="cb-tab">🌐 Globales</button>
     <button onclick="cbShowTab('gastos')" id="cbTabGastos" class="cb-tab">🧾 Gastos por banca</button>
     <button onclick="cbShowTab('oficina')" id="cbTabOficina" class="cb-tab">🏢 Oficina</button>
   </div>
@@ -856,10 +857,18 @@
   <!-- TAB Ingresos manuales por banca -->
   <div id="cbSecIngresos" style="display:none;">
     <div style="font-size:11.5px;color:var(--muted);background:#f4f6f7;border-radius:9px;padding:9px 11px;margin-bottom:12px;line-height:1.5;">
-      Captura los balances de cada banca: Bce Bancas, Pin Bet, Pase Jugada, etc. Estos son los <b>ingresos manuales</b> — Máquinas y Virtuales se calculan automáticamente.
+      Captura el <b>Bce Bancas</b> de cada banca (lo que ganó operativamente). Máquinas y Virtuales se calculan automáticamente.
     </div>
     <div class="fld" style="margin-bottom:10px;"><label>Banca</label><select id="cbIngresoBranch" onchange="renderCbIngresoEditor()"></select></div>
     <div id="cbIngresoEditor"></div>
+  </div>
+
+  <!-- TAB Ingresos globales (oficina) -->
+  <div id="cbSecGlobales" style="display:none;">
+    <div style="font-size:11.5px;color:var(--muted);background:#f4f6f7;border-radius:9px;padding:9px 11px;margin-bottom:12px;line-height:1.5;">
+      Ingresos del mes que <b>no se desglosan por banca</b> (van a la oficina central): Pin Bet, Pase Jugada, Tk x Pagar, Lotedom.
+    </div>
+    <div id="cbGlobalesEditor"></div>
   </div>
 
   <!-- TAB Gastos manuales por banca -->
@@ -1409,8 +1418,12 @@ const VIRT_SUCURSALES=['PRIME SPORT 01','PRIME SPORT 02','PRIME SPORT 03','PRIME
 
 // Cuadre Bancas — categorías estándar (basadas en Libro1.xlsx)
 const CB_GASTO_CATS=['Alquiler','Combustible','D. Feriados','Dieta','E. Eléctrica','Mant/Reparación','Nómina Dig','Nómina Limp','Picheos','DGII','Tel y/o Cable','Mat Limp','Agua','Mat Gastable','Central','Otros','Vacaciones','Licencia','TSS','Infotep','Liquidación','Administración'];
-const CB_INGRESO_CATS=['Bce Bancas','Pin Bet','Pase Jugada','Pago Página','Tk x Pagar','Midas'];
-const CB_OFICINA_CATS=['Alquiler','Nómina','Feriado','Liquidación','Edesur','Claro','Mat Gast','Mat Limp','Mensajero','TSS','Cel Oficina','Otros','Licencia','Aportes Médicos'];
+// Ingresos POR BANCA (solo Bce Bancas; Máquinas y Virtuales son automáticos)
+const CB_INGRESO_CATS=['Bce Bancas'];
+// Ingresos GLOBALES de la oficina (no por banca)
+const CB_GLOBAL_INGRESO_CATS=['Pin Bet','Pase Jugada','Tk x Pagar','Lotedom'];
+// Gastos de Oficina (Pago Página se mueve aquí, es gasto de oficina)
+const CB_OFICINA_CATS=['Alquiler','Nómina','Feriado','Liquidación','Edesur','Claro','Mat Gast','Mat Limp','Mensajero','TSS','Cel Oficina','Otros','Licencia','Aportes Médicos','Pago Página'];
 const VIRT_ESTRUCTURAS={MERENGUE:'merengue',VARMANEX:'varmanex',VG:'vg',SOLL:'soll'};
 const VIRT_CAMPOS=[
   {k:'tk',label:'TK (tickets)'},
@@ -3034,7 +3047,7 @@ function openCuadreBancas(){
 
 function cbShowTab(t){
   _cbTab=t;
-  ['matriz','ingresos','gastos','oficina'].forEach(k=>{
+  ['matriz','ingresos','globales','gastos','oficina'].forEach(k=>{
     const sec=document.getElementById('cbSec'+k.charAt(0).toUpperCase()+k.slice(1));
     const tab=document.getElementById('cbTab'+k.charAt(0).toUpperCase()+k.slice(1));
     if(sec) sec.style.display = (k===t)?'block':'none';
@@ -3048,6 +3061,7 @@ function renderCuadreBancas(){
   cbAnioCur=parseInt(document.getElementById('cbAnioSel').value);
   if(_cbTab==='matriz'){ renderCbMatriz(); renderCbConsolidado(); }
   else if(_cbTab==='ingresos'){ renderCbIngresoEditor(); }
+  else if(_cbTab==='globales'){ renderCbGlobalesEditor(); }
   else if(_cbTab==='gastos'){ renderCbGastoEditor(); }
   else if(_cbTab==='oficina'){ renderCbOficinaEditor(); }
   renderCbHero();
@@ -3088,6 +3102,15 @@ function cbVirtNetoBanca(branch){
 function cbIngresoVal(branch, cat){
   const row=state.cbIngresos.find(r=>r.anio===cbAnioCur&&r.mes===cbMesCur&&r.sucursal===branch&&r.categoria===cat);
   return row?row.monto:0;
+}
+
+// Ingreso GLOBAL (no por banca) — almacenado con sucursal='__GLOBAL__'
+function cbIngresoGlobalVal(cat){
+  return cbIngresoVal('__GLOBAL__', cat);
+}
+
+function cbIngresoGlobalTotal(){
+  return CB_GLOBAL_INGRESO_CATS.reduce((s,c)=>s+cbIngresoGlobalVal(c),0);
 }
 
 // Suma de gastos manuales de una banca (todas las categorías)
@@ -3220,10 +3243,12 @@ function renderCbConsolidado(){
     ing+=cbVirtNetoBanca(b.name);
     totalBancas+=(ing-cbGastosBranchTotal(b.name));
   });
+  // Ingresos globales (Pin Bet, Pase Jugada, Tk x Pagar, Lotedom)
+  const ingresoGlobal=cbIngresoGlobalTotal();
   // Oficina gastos
   const oficGastos=state.cbOficinaGastos.filter(o=>o.anio===cbAnioCur&&o.mes===cbMesCur).reduce((s,o)=>s+o.monto,0);
-  // BCE TOTAL
-  const bceTotal=totalBancas-oficGastos;
+  // BCE TOTAL = Total bancas + Ingresos globales − Gastos oficina
+  const bceTotal=totalBancas+ingresoGlobal-oficGastos;
   const promBanca=branches.length?totalBancas/branches.length:0;
   document.getElementById('cbConsolidado').innerHTML=`
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px;">
@@ -3235,13 +3260,18 @@ function renderCbConsolidado(){
         <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;">Prom. por banca</div>
         <div style="font-size:14.5px;font-weight:800;color:${promBanca<0?'var(--red)':'var(--ink)'};margin-top:2px;">RD$${fmt(promBanca)}</div>
       </div>
-      <div style="background:#f4f6f7;border-radius:8px;padding:9px 11px;">
-        <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;">− Gastos Oficina</div>
+      <div style="background:#eef6fa;border-radius:8px;padding:9px 11px;">
+        <div style="font-size:10px;color:var(--cerulean);font-weight:700;text-transform:uppercase;">+ Ingresos globales</div>
+        <div style="font-size:14.5px;font-weight:800;color:var(--cerulean);margin-top:2px;">RD$${fmt(ingresoGlobal)}</div>
+      </div>
+      <div style="background:#fdecea;border-radius:8px;padding:9px 11px;">
+        <div style="font-size:10px;color:var(--red);font-weight:700;text-transform:uppercase;">− Gastos Oficina</div>
         <div style="font-size:14.5px;font-weight:800;color:var(--red);margin-top:2px;">RD$${fmt(oficGastos)}</div>
       </div>
-      <div style="background:linear-gradient(135deg,#101820,#16242f);border-radius:8px;padding:9px 11px;color:#fff;">
-        <div style="font-size:10px;opacity:.85;font-weight:700;text-transform:uppercase;">BCE TOTAL</div>
-        <div style="font-size:15px;font-weight:800;color:${bceTotal<0?'#f08980':'#7ce6b3'};margin-top:2px;">RD$${fmt(bceTotal)}</div>
+      <div style="background:linear-gradient(135deg,#101820,#16242f);border-radius:8px;padding:11px 13px;color:#fff;grid-column:1/-1;">
+        <div style="font-size:11px;opacity:.85;font-weight:700;text-transform:uppercase;">BCE TOTAL</div>
+        <div style="font-size:20px;font-weight:800;color:${bceTotal<0?'#f08980':'#7ce6b3'};margin-top:2px;">RD$${fmt(bceTotal)}</div>
+        <div style="font-size:10px;opacity:.7;margin-top:3px;">Total Bancas + Globales − Oficina</div>
       </div>
     </div>`;
 }
@@ -3257,8 +3287,9 @@ function renderCbHero(){
     ing+=cbVirtNetoBanca(b.name);
     totalBancas+=(ing-cbGastosBranchTotal(b.name));
   });
+  const ingresoGlobal=cbIngresoGlobalTotal();
   const oficGastos=state.cbOficinaGastos.filter(o=>o.anio===cbAnioCur&&o.mes===cbMesCur).reduce((s,o)=>s+o.monto,0);
-  const bceTotal=totalBancas-oficGastos;
+  const bceTotal=totalBancas+ingresoGlobal-oficGastos;
   document.getElementById('cbHero').innerHTML=`
     <div style="background:linear-gradient(135deg,#3a3015,#a37416);border-radius:15px;padding:16px;margin-bottom:14px;color:#fff;">
       <div style="font-size:11px;color:rgba(255,255,255,.78);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">BCE Total · ${MONTHS[cbMesCur-1]} ${cbAnioCur}</div>
@@ -3333,6 +3364,26 @@ async function saveCbIngreso(branch, cat, valStr){
     }
     setSyncState('ok');
   }catch(e){ console.error(e); setSyncState('error'); toast('Error: '+(e.message||''),false); }
+}
+
+// === GLOBALES (oficina) editor ===
+function renderCbGlobalesEditor(){
+  const wrap=document.getElementById('cbGlobalesEditor');
+  const rows=CB_GLOBAL_INGRESO_CATS.map(cat=>{
+    const v=cbIngresoGlobalVal(cat);
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f2f5f6;gap:9px;">
+      <span style="flex:1;font-size:13px;font-weight:600;">${cat}</span>
+      <div class="amount-input" style="margin:0;max-width:140px;"><span class="cur">RD$</span><input type="number" inputmode="decimal" value="${v||''}" placeholder="0" onblur="saveCbIngreso('__GLOBAL__','${cat}',this.value)" style="padding-left:36px;font-size:13px;"></div>
+    </div>`;
+  }).join('');
+  const total=cbIngresoGlobalTotal();
+  wrap.innerHTML=`<div class="panel" style="padding:14px;">
+    ${rows}
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0 2px;margin-top:6px;border-top:2px solid var(--navy);">
+      <span style="font-size:12.5px;font-weight:800;color:var(--muted);text-transform:uppercase;">TOTAL GLOBALES</span>
+      <span style="font-size:15px;font-weight:800;color:${total<0?'var(--red)':'var(--green)'};">RD$${fmt(total)}</span>
+    </div>
+  </div>`;
 }
 
 // === GASTOS editor (manual) ===
@@ -3528,11 +3579,13 @@ function exportCuadreBancasWhatsApp(){
     totalBancas+=bal;
     lines.push(`${b.name.replace('PRIME SPORT ','P')}: RD$${fmt(bal)}`);
   });
+  const ingresoGlobal=cbIngresoGlobalTotal();
   const oficGastos=state.cbOficinaGastos.filter(o=>o.anio===cbAnioCur&&o.mes===cbMesCur).reduce((s,o)=>s+o.monto,0);
   lines.push('');
   lines.push(`*Total Bancas: RD$${fmt(totalBancas)}*`);
-  lines.push(`Oficina: −RD$${fmt(oficGastos)}`);
-  lines.push(`*BCE TOTAL: RD$${fmt(totalBancas-oficGastos)}*`);
+  lines.push(`+ Globales: RD$${fmt(ingresoGlobal)}`);
+  lines.push(`− Oficina: RD$${fmt(oficGastos)}`);
+  lines.push(`*BCE TOTAL: RD$${fmt(totalBancas+ingresoGlobal-oficGastos)}*`);
   const url=`https://wa.me/?text=${encodeURIComponent(lines.join('\n'))}`;
   window.open(url,'_blank');
 }
