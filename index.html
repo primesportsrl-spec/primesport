@@ -1491,7 +1491,7 @@ function dbToTxn(r){
             subtype:r.subtipo||'', date:r.fecha, note:r.nota||'' };
   if(r.tipo==='expense'){ t.hasNcf=!!r.tiene_ncf; t.ncf=r.ncf||''; }
   if(r.tipo==='out'){ t.outKind=r.tipo_salida; t.dest=r.destino||''; t.reason=r.motivo||''; }
-  if(r.tipo==='collect'){ t.office=r.oficina; t.cuadre=Number(r.cuadre)||0; t.moved=Number(r.movido)||0; }
+  if(r.tipo==='collect'){ t.office=r.oficina; t.cuadre=Number(r.cuadre)||0; t.moved=Number(r.movido)||0; t.jornada=r.fecha_jornada||null; }
   return t;
 }
 // Map an app txn object -> DB movimiento row
@@ -1501,6 +1501,7 @@ function txnToDb(t){
            tiene_ncf:t.hasNcf||false, ncf:t.ncf||null,
            tipo_salida:t.outKind||null, destino:t.dest||null, motivo:t.reason||null,
            oficina:t.office||null, cuadre:(t.cuadre!=null?t.cuadre:null), movido:(t.moved!=null?t.moved:null),
+           fecha_jornada:t.jornada||null,
            creado_por:currentUser||null };
 }
 
@@ -1642,7 +1643,14 @@ async function syncMeta(){
 async function cloudInsertTxn(t){
   setSyncState('saving');
   try{
-    const {data,error}=await sb.from('movimientos').insert(txnToDb(t)).select();
+    let row=txnToDb(t);
+    let {data,error}=await sb.from('movimientos').insert(row).select();
+    if(error && /fecha_jornada|column|schema cache/i.test(error.message||'')){
+      // Backward compat: DB doesn't have fecha_jornada column yet — retry without it
+      console.warn('fecha_jornada not in DB yet, retrying without it');
+      delete row.fecha_jornada;
+      ({data,error}=await sb.from('movimientos').insert(row).select());
+    }
     if(error)throw error;
     // Replace the local temporary id with the real uuid from the database
     if(data&&data[0]&&data[0].id){
@@ -2487,9 +2495,13 @@ function collectAll(){
 }
 
 // Creates the collect record AND the matching fund transfer between bank and office
+// date param = jornada (the day being settled, e.g. corteDateVal which defaults to yesterday)
+// The physical registration happens today, but the money belongs to the jornada.
 function recordCollect(branch,date,cuadre,moved){
   const office=officeName();
-  const tx={ id:uid(), type:'collect', branch, office, date, cuadre, moved, note:'' };
+  // jornada = the settlement day (what's being cuadrado); date field also = jornada
+  // so all balance/month calculations attribute this money to the correct day/month.
+  const tx={ id:uid(), type:'collect', branch, office, date, jornada:date, cuadre, moved, note:'' };
   state.txns.push(tx); cloudInsertTxn(tx);
 }
 
