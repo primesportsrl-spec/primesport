@@ -434,7 +434,7 @@
         </div>
       </div>
 
-      <div class="fld"><label>Fecha</label><input type="date" id="fDateInc"></div>
+      <div class="fld"><label>Fecha <span style="font-weight:500;color:var(--muted);font-size:11px;">· jornada de la banca (por defecto ayer)</span></label><input type="date" id="fDateInc"></div>
       <div class="fld"><label>Nota (opcional)</label><input type="text" id="fNoteInc" placeholder="Detalle o referencia…"></div>
       <button class="btn-primary green" id="saveBtnInc" onclick="saveIncome()">Guardar operación</button>
     </div>
@@ -590,6 +590,7 @@
   </div>
 
   <div class="fld" style="margin-bottom:14px;">
+    <label style="font-size:11.5px;color:var(--muted);">Jornada a cuadrar (por defecto ayer — hoy se recibe lo de ayer)</label>
     <input type="date" id="corteDate" onchange="renderCorte()">
   </div>
 
@@ -1448,6 +1449,19 @@ let histDateFrom=null, histDateTo=null;  // specific date range filter (null = u
 let fundEditIdx=null;
 
 const fmt=n=>new Intl.NumberFormat('es-DO',{minimumFractionDigits:0,maximumFractionDigits:0}).format(Math.round(n));
+// Date helpers — "operaciones" default to yesterday (jornada anterior); everything else to today
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function yesterdayISO(){ const d=new Date(); d.setDate(d.getDate()-1); return d.toISOString().slice(0,10); }
+// Sort branch objects numerically by trailing number (Office last)
+function sortBranchesNum(arr){
+  return arr.slice().sort((a,b)=>{
+    if(a.isOffice) return 1;
+    if(b.isOffice) return -1;
+    const na=parseInt((a.name.match(/\d+$/)||['0'])[0]);
+    const nb=parseInt((b.name.match(/\d+$/)||['0'])[0]);
+    return na-nb;
+  });
+}
 
 /* ---------- CLOUD STORAGE (Supabase) ---------- */
 let sb=null;              // supabase client
@@ -1856,12 +1870,18 @@ function pickIncCat(name){
   document.querySelectorAll('#incCatChips .chip').forEach(ch=>ch.classList.toggle('on',ch.dataset.cat===name));
   const office=isOfficeBranch(document.getElementById('fBranchInc').value);
   const subB=document.getElementById('incSubBlock');
-  if(office){ subB.style.display='none'; return; }
+  const subSel=document.getElementById('fIncSub');
+  if(office){ subB.style.display='none'; subSel.innerHTML='<option value="">— General —</option>'; subSel.value=''; return; }
   const cat=state.incCats.find(c=>c.name===name);
   if(cat&&cat.subs&&cat.subs.length){
-    document.getElementById('fIncSub').innerHTML='<option value="">— General —</option>'+cat.subs.map(s=>`<option>${s}</option>`).join('');
+    subSel.innerHTML='<option value="">— General —</option>'+cat.subs.map(s=>`<option>${s}</option>`).join('');
     subB.style.display='block';
-  } else subB.style.display='none';
+  } else {
+    // Category has NO subtypes — clear any leftover subtype so it doesn't stick
+    subSel.innerHTML='<option value="">— General —</option>';
+    subSel.value='';
+    subB.style.display='none';
+  }
 }
 
 function renderMultiList(){
@@ -1888,8 +1908,11 @@ function resetForms(){
   setType('income'); setOutMode('withdraw');
   ['fAmountInc','fAmountExp','fAmountOut','fNoteInc','fNoteExp','fNoteOut','fNcf'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('fHasNcf').checked=false; toggleNcf();
-  const t=new Date().toISOString().slice(0,10);
-  ['fDateInc','fDateExp','fDateOut'].forEach(id=>document.getElementById(id).value=t);
+  // Operaciones (cuadre de banca) = AYER por defecto (se recibe la jornada anterior)
+  // Gastos y Salidas = HOY (se ejecutan el día actual)
+  document.getElementById('fDateInc').value=yesterdayISO();
+  document.getElementById('fDateExp').value=todayISO();
+  document.getElementById('fDateOut').value=todayISO();
   updateFundBanner('inc'); updateFundBanner('exp'); updateFundBanner('out');
   setIncMode('single');
 }
@@ -2164,7 +2187,7 @@ function renderReports(){
     let h='<div style="font-size:12.5px;color:var(--muted);margin-bottom:12px;line-height:1.5;">Saldo total acumulado de cada sucursal (fondo inicial + ingresos − gastos − salidas), considerando todo el historial.</div>';
     h+='<table class="rep-table"><thead><tr><th>Sucursal</th><th class="r">Fondo ini.</th><th class="r">Saldo actual</th></tr></thead><tbody>';
     let tF=0,tB=0;
-    state.branches.forEach(b=>{ const bal=liveFund(b.name); tF+=(b.fund||0); tB+=bal; h+=`<tr><td>${b.name.replace('PRIME SPORT ','PS ')}</td><td class="r">${fmt(b.fund||0)}</td><td class="r ${bal<0?'neg':'pos'}">${fmt(bal)}</td></tr>`; });
+    sortBranchesNum(state.branches).forEach(b=>{ const bal=liveFund(b.name); tF+=(b.fund||0); tB+=bal; h+=`<tr><td>${b.name.replace('PRIME SPORT ','PS ')}</td><td class="r">${fmt(b.fund||0)}</td><td class="r ${bal<0?'neg':'pos'}">${fmt(bal)}</td></tr>`; });
     h+=`<tr class="total-row"><td>TOTAL</td><td class="r">${fmt(tF)}</td><td class="r ${tB<0?'neg':'pos'}">${fmt(tB)}</td></tr></tbody></table>`;
     el.innerHTML=h;
   }
@@ -2226,7 +2249,7 @@ function bankPending(branch){
 function openAuditBranch(){
   showOnlyView('view-audit');
   const sel=document.getElementById('auditBranch');
-  const banks=state.branches.filter(b=>!b.isOffice);
+  const banks=sortBranchesNum(state.branches.filter(b=>!b.isOffice));
   sel.innerHTML=banks.map(b=>`<option>${b.name}</option>`).join('');
   // default: 30 days back
   const d=new Date(); d.setDate(d.getDate()-30);
@@ -2336,7 +2359,7 @@ function renderAudit(){
 }
 
 function openCorte(){
-  corteDateVal=new Date().toISOString().slice(0,10);
+  corteDateVal=yesterdayISO();
   document.getElementById('corteDate').value=corteDateVal;
   document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
   document.getElementById('view-corte').classList.add('active');
@@ -2350,7 +2373,7 @@ function renderCorte(){
   const d=new Date(corteDateVal+'T00:00:00');
   document.getElementById('corteDateLabel').textContent=`${d.getDate()} de ${MONTHS[d.getMonth()]}, ${d.getFullYear()}`;
 
-  const banks=state.branches.filter(b=>!b.isOffice&&b.activa!==false);
+  const banks=sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false));
   const el=document.getElementById('corteList');
   let anyActivity=false;
   el.innerHTML=banks.map(b=>{
@@ -2404,7 +2427,7 @@ function renderCorte(){
 }
 
 function renderCortePending(){
-  const banks=state.branches.filter(b=>!b.isOffice&&b.activa!==false);
+  const banks=sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false));
   const pend=banks.map(b=>({name:b.name,p:bankPending(b.name)})).filter(x=>Math.abs(x.p)>=1);
   const panel=document.getElementById('cortePendPanel');
   if(!pend.length){ panel.style.display='none'; return; }
@@ -2438,7 +2461,7 @@ function collectOne(branch){
 function collectAll(){
   if(isDayClosed(corteDateVal)){ toast('El corte de este día está cerrado.',false); return; }
   if(!confirm('¿Recolectar el neto completo de todas las bancas (cuadre de hoy + pendientes anteriores)? El dinero se moverá desde/hacia la Oficina.')) return;
-  const banks=state.branches.filter(b=>!b.isOffice&&b.activa!==false);
+  const banks=sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false));
   let count=0;
   banks.forEach(b=>{
     const cuadre=dayCuadre(b.name,corteDateVal);
@@ -2466,7 +2489,7 @@ async function closeCorte(){
   if(isDayClosed(corteDateVal)){ toast('Este día ya está cerrado.',false); return; }
   // compute snapshot: office balance + total pending
   const officeBal=liveFund(officeName());
-  const banks=state.branches.filter(b=>!b.isOffice&&b.activa!==false);
+  const banks=sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false));
   const pendTotal=banks.reduce((s,b)=>s+bankPending(b.name),0);
   const d=new Date(corteDateVal+'T00:00:00');
   const msg=`¿Cerrar el corte del ${d.getDate()} de ${MONTHS[d.getMonth()]}?\n\nBalance en Oficina: RD$${fmt(officeBal)}\nPendientes en bancas: RD$${fmt(pendTotal)}\n\nLos movimientos de este día quedarán bloqueados. Para reabrir necesitarás tu clave.`;
@@ -2489,7 +2512,7 @@ const CORTE_WA_NUMBER='18097134190'; // número fijo por defecto
 function buildCorteSummary(){
   const d=new Date(corteDateVal+'T00:00:00');
   const officeBal=liveFund(officeName());
-  const banks=state.branches.filter(b=>!b.isOffice&&b.activa!==false);
+  const banks=sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false));
   const pend=banks.map(b=>({name:b.name,p:bankPending(b.name)})).filter(x=>Math.abs(x.p)>=1);
   const pendTotal=banks.reduce((s,b)=>s+bankPending(b.name),0);
   let txt=`*PRIME SPORT — Cierre del ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}*\n\n`;
@@ -2838,7 +2861,7 @@ function maqGlobalRow(branch, mes, anio){
 function renderMaqGlobal(){
   maqGlobalMesCur=parseInt(document.getElementById('maqGlobalMes').value);
   maqGlobalAnioCur=parseInt(document.getElementById('maqGlobalAnio').value);
-  const branches=state.branches.filter(b=>!b.isOffice && b.activa!==false).map(b=>b.name);
+  const branches=sortBranchesNum(state.branches.filter(b=>!b.isOffice && b.activa!==false)).map(b=>b.name);
   if(!branches.length){ document.getElementById('maqGlobalTable').innerHTML='<tr><td>No hay sucursales activas</td></tr>'; return; }
 
   // Compute current month rows
@@ -3004,7 +3027,7 @@ function exportMaqGlobalPDF(){
 }
 
 function exportMaqGlobalWhatsApp(){
-  const branches=state.branches.filter(b=>!b.isOffice && b.activa!==false).map(b=>b.name);
+  const branches=sortBranchesNum(state.branches.filter(b=>!b.isOffice && b.activa!==false)).map(b=>b.name);
   const rows=branches.map(b=>maqGlobalRow(b, maqGlobalMesCur, maqGlobalAnioCur));
   const lines=[];
   lines.push(`*PRIME SPORT · Máquinas*`);
@@ -5237,6 +5260,12 @@ function renderHistoric(){
     const expRows=Object.entries(byExp).sort((a,b)=>b[1]-a[1]);
 
     const collectCount=list.filter(t=>t.type==='collect').length;
+    // Recolectado real ese día (lo que físicamente movieron los mensajeros)
+    const dMovido=list.filter(t=>t.type==='collect').reduce((s,t)=>s+t.moved,0);
+    // Cuadre operativo del día (lo que generaron las bancas ese día)
+    const dCuadreOps=dInc-dExp-dWithdraw; // sin transferencias, resultado operativo
+    // Pendiente del día = lo que generó menos lo que se recolectó
+    const dPendiente=dCuadreOps-dMovido;
 
     return `<div class="panel" style="padding:0;margin-bottom:12px;overflow:hidden;">
       <div onclick="toggleHistDay('${date}')" style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;background:linear-gradient(135deg,#f8fafb,#eef3f5);">
@@ -5247,11 +5276,27 @@ function renderHistoric(){
         </div>
       </div>
       <div class="hist-detail" id="detail_${date}" style="display:none;padding:14px 16px;border-top:1px solid #eef2f4;">
-        <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
           <div style="flex:1;background:var(--green-dim);border-radius:9px;padding:9px;text-align:center;"><div style="font-size:10px;color:#4cd6a0;font-weight:700;">INGRESOS</div><div style="font-size:14px;font-weight:800;color:#fff;margin-top:2px;">RD$${fmt(dInc)}</div></div>
           <div style="flex:1;background:var(--red-dim);border-radius:9px;padding:9px;text-align:center;"><div style="font-size:10px;color:#f08980;font-weight:700;">GASTOS</div><div style="font-size:14px;font-weight:800;color:#fff;margin-top:2px;">RD$${fmt(dExp)}</div></div>
           <div style="flex:1;background:var(--amber-dim);border-radius:9px;padding:9px;text-align:center;"><div style="font-size:10px;color:#f0b46a;font-weight:700;">SALIDAS</div><div style="font-size:14px;font-weight:800;color:#fff;margin-top:2px;">RD$${fmt(dOut)}</div></div>
         </div>
+        ${(dMovido!==0||collectCount>0)?`<div style="background:#eef6fa;border:1px solid #cfe5ef;border-radius:11px;padding:12px;margin-bottom:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--cerulean);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;">💵 Recolectado real (entró a oficina)</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;">
+            <span style="font-size:12.5px;color:var(--ink);">Movido por mensajeros</span>
+            <span style="font-size:15px;font-weight:800;color:var(--cerulean);">RD$${fmt(dMovido)}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;">
+            <span style="font-size:11.5px;color:var(--muted);">Cuadre operativo del día</span>
+            <span style="font-size:12.5px;font-weight:700;color:var(--ink);">RD$${fmt(dCuadreOps)}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-top:1px dashed #cfe5ef;margin-top:4px;padding-top:6px;">
+            <span style="font-size:11.5px;color:var(--muted);">${dPendiente>=0?'Pendiente sin recoger':'Recogido de más (adelanto)'}</span>
+            <span style="font-size:12.5px;font-weight:700;color:${Math.abs(dPendiente)<1?'var(--green)':'var(--amber)'};">RD$${fmt(Math.abs(dPendiente))}</span>
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:7px;line-height:1.4;">Neto operativo = lo que generaron las bancas. Recolectado = lo que físicamente entró a la oficina.</div>
+        </div>`:''}
         ${catRows.length?`<div style="font-size:11.5px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Ingresos por categoría</div>
         <table class="rep-table" style="margin-bottom:14px;"><tbody>${catRows.map(([k,v])=>`<tr><td>${k}</td><td class="r ${v<0?'neg':'pos'}">RD$${fmt(v)}</td></tr>`).join('')}</tbody></table>`:''}
         ${expRows.length?`<div style="font-size:11.5px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Gastos por categoría</div>
@@ -5314,7 +5359,16 @@ function printReport(){ window.print(); }
 /* ---------- SETTINGS ---------- */
 function renderSettings(){
   const ul=document.getElementById('currentUserLabel'); if(ul&&currentUser) ul.textContent=currentUser;
-  document.getElementById('branchList').innerHTML=state.branches.map((b,i)=>{
+  document.getElementById('branchList').innerHTML=state.branches
+    .map((b,i)=>({b,i}))
+    .sort((x,y)=>{
+      if(x.b.isOffice) return 1;
+      if(y.b.isOffice) return -1;
+      const nx=parseInt((x.b.name.match(/\d+$/)||['0'])[0]);
+      const ny=parseInt((y.b.name.match(/\d+$/)||['0'])[0]);
+      return nx-ny;
+    })
+    .map(({b,i})=>{
     const off=b.isOffice;
     const isActive=b.activa!==false;
     const opacity=isActive?'1':'.5';
@@ -5419,8 +5473,9 @@ async function startApp(){
     updateMonthLabel();
     renderFormOptions();
     setType('income');
-    const t=new Date().toISOString().slice(0,10);
-    ['fDateInc','fDateExp','fDateOut'].forEach(id=>document.getElementById(id).value=t);
+    document.getElementById('fDateInc').value=yesterdayISO();
+    document.getElementById('fDateExp').value=todayISO();
+    document.getElementById('fDateOut').value=todayISO();
     renderDash();
   }catch(e){
     console.error('load error',e);
