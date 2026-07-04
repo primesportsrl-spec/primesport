@@ -1755,18 +1755,18 @@ function monthTxns(){ return state.txns.filter(t=>{ const d=new Date(monthDate(t
 function renderDash(){
   const txns=monthTxns();
   const office=officeName();
-  // From the office perspective:
-  // - Regular income/expense (anywhere in the system)
-  // - Transfers TO office = ingreso (devolución, banca→oficina)
-  // - Transfers FROM office = salida (préstamo, oficina→banca)
-  // - Retiros (out withdraw) = salida normal
+  // Balance del mes = NETO REAL (contabilidad de caja):
+  // - Movido (lo que físicamente entró vía collects, contado por jornada)
+  // - menos gastos, retiros, transferencias netas
   const inc=txns.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
   const exp=txns.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
   const withdraw=txns.filter(t=>t.type==='out'&&t.outKind!=='transfer').reduce((s,t)=>s+t.amount,0);
   const transferOut=txns.filter(t=>t.type==='out'&&t.outKind==='transfer'&&t.branch===office).reduce((s,t)=>s+t.amount,0); // oficina presta
   const transferIn=txns.filter(t=>t.type==='out'&&t.outKind==='transfer'&&t.dest===office).reduce((s,t)=>s+t.amount,0);   // oficina recibe
+  const movido=txns.filter(t=>t.type==='collect').reduce((s,t)=>s+t.moved,0);
   const out=withdraw+transferOut; // salidas totales
-  const net=inc-exp-withdraw-transferOut+transferIn; // desde la oficina
+  // NETO REAL = lo que entró (movido) − gastos − salidas − transferOut + transferIn
+  const net=movido-exp-withdraw-transferOut+transferIn;
   document.getElementById('heroNet').textContent=fmt(net);
   document.getElementById('heroNet').style.color=net<0?'#f08980':'#fff';
   document.getElementById('heroInc').textContent='RD$'+fmt(inc);
