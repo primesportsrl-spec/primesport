@@ -525,6 +525,13 @@
     </button>
   </div>
 
+  <!-- category filter -->
+  <div class="fld" style="margin-bottom:12px;">
+    <select id="histCatFilter" onchange="setHistCat(this.value)" style="width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:11px;font-size:13px;font-family:inherit;background:#fff;color:var(--ink);">
+      <option value="all">Todas las categorías</option>
+    </select>
+  </div>
+
   <!-- date filter button -->
   <button onclick="toggleHistDatePanel()" id="histDateBtn" style="width:100%;border:1px solid var(--line);background:#fff;border-radius:11px;padding:11px 13px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--ink);display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;">
     <span style="display:flex;align-items:center;gap:8px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span id="histDateLabel">Todo el mes</span></span>
@@ -1451,7 +1458,7 @@ const VIRT_CAMPOS=[
 let curType='income', incMode='single', outMode='withdraw';
 let selIncCat=null;
 let curMonth=new Date().getMonth(), curYear=new Date().getFullYear(), modalYr=curYear;
-let histFilter='all', repView='branch';
+let histFilter='all', repView='branch', histCat='all';
 let histBranches=null;            // null = all branches; otherwise array of selected names
 let histSort='date-desc';         // date-desc | date-asc | amount-desc | amount-asc
 let _histBranchTmp=null;          // temp selection while panel open
@@ -1723,7 +1730,19 @@ function renderMonthGrid(){
 }
 function pickMonth(i){ curMonth=i; curYear=modalYr; updateMonthLabel(); closeMonthModal(); renderDash(); }
 function updateMonthLabel(){ document.getElementById('monthLabel').textContent=`${MONTHS_SHORT[curMonth]} ${curYear}`; }
-function monthTxns(){ return state.txns.filter(t=>{ const d=new Date(t.date+'T00:00:00'); return d.getMonth()===curMonth&&d.getFullYear()===curYear; }); }
+// Effective date of a txn for month/period attribution.
+// Collects use their jornada (the day the money was generated), falling back to
+// date−1 if no jornada is stored, then to date. Everything else uses its own date.
+function effectiveDate(t){
+  if(t.type==='collect'){
+    if(t.jornada) return t.jornada;
+    // fallback: assume jornada = day before registration
+    const d=new Date(t.date+'T00:00:00'); d.setDate(d.getDate()-1);
+    return d.toISOString().slice(0,10);
+  }
+  return t.date;
+}
+function monthTxns(){ return state.txns.filter(t=>{ const d=new Date(effectiveDate(t)+'T00:00:00'); return d.getMonth()===curMonth&&d.getFullYear()===curYear; }); }
 
 /* ---------- DASHBOARD ---------- */
 function renderDash(){
@@ -2015,13 +2034,21 @@ function sortHistTxns(txns){
   });
 }
 function renderHistory(){
-  const filters=[{k:'all',l:'Todos'},{k:'income',l:'Ingresos'},{k:'expense',l:'Gastos'},{k:'out',l:'Salidas'},{k:'collect',l:'Recolección'},{k:'ncf',l:'Con NCF'},{k:'noncf',l:'Sin NCF'}];
+  const filters=[{k:'all',l:'Todos'},{k:'income',l:'Operaciones'},{k:'expense',l:'Gastos'},{k:'out',l:'Salidas'},{k:'collect',l:'Recolección'},{k:'ncf',l:'Con NCF'},{k:'noncf',l:'Sin NCF'}];
   document.getElementById('histFilters').innerHTML=filters.map(f=>`<div class="fchip ${histFilter===f.k?'on':''}" onclick="setHistFilter('${f.k}')">${f.l}</div>`).join('');
+  // Populate category dropdown (income categories + gasto categories)
+  const catSel=document.getElementById('histCatFilter');
+  if(catSel){
+    const cats=[...state.incCats.map(c=>c.name), ...state.expCats.map(c=>c.name)];
+    const uniqueCats=[...new Set(cats)];
+    catSel.innerHTML='<option value="all">Todas las categorías</option>'+uniqueCats.map(c=>`<option value="${c}" ${histCat===c?'selected':''}>${c}</option>`).join('');
+    catSel.value=histCat;
+  }
   syncHistControls();
   // source: date range if set, otherwise current month
   let baseTxns;
   if(histDateFrom&&histDateTo){
-    baseTxns=state.txns.filter(t=>t.date>=histDateFrom&&t.date<=histDateTo);
+    baseTxns=state.txns.filter(t=>{ const ed=effectiveDate(t); return ed>=histDateFrom&&ed<=histDateTo; });
   } else {
     baseTxns=monthTxns();
   }
@@ -2032,6 +2059,8 @@ function renderHistory(){
   else if(histFilter==='collect')txns=txns.filter(t=>t.type==='collect');
   else if(histFilter==='ncf')txns=txns.filter(t=>t.type==='expense'&&t.hasNcf);
   else if(histFilter==='noncf')txns=txns.filter(t=>t.type==='expense'&&!t.hasNcf);
+  // category filter (null/all = all)
+  if(histCat!=='all') txns=txns.filter(t=>t.category===histCat);
   // branch filter (null = all)
   if(histBranches!==null) txns=txns.filter(t=>histBranches.includes(t.branch)||(t.type==='collect'&&histBranches.includes(t.office)));
 
@@ -2068,6 +2097,7 @@ function renderHistory(){
   }).join('');
 }
 function setHistFilter(k){ histFilter=k; renderHistory(); }
+function setHistCat(c){ histCat=c; renderHistory(); }
 
 // ---- branch filter + sort controls ----
 function allBranchNames(){ return state.branches.map(b=>b.name); }
@@ -5235,7 +5265,7 @@ function histRangeTxns(){
   const from=document.getElementById('histFrom').value;
   const to=document.getElementById('histTo').value;
   if(!from||!to) return [];
-  return state.txns.filter(t=>t.date>=from&&t.date<=to);
+  return state.txns.filter(t=>{ const ed=effectiveDate(t); return ed>=from&&ed<=to; });
 }
 function renderHistoric(){
   const txns=histRangeTxns();
@@ -5262,7 +5292,7 @@ function renderHistoric(){
 
   // group by day (desc)
   const byDay={};
-  txns.forEach(t=>{ (byDay[t.date]=byDay[t.date]||[]).push(t); });
+  txns.forEach(t=>{ const ed=effectiveDate(t); (byDay[ed]=byDay[ed]||[]).push(t); });
   const days=Object.keys(byDay).sort((a,b)=>b.localeCompare(a));
   const el=document.getElementById('histDayList');
   if(!days.length){ el.innerHTML='<div class="empty-hint" style="padding:36px 16px;">No hay movimientos en este rango de fechas.</div>'; return; }
