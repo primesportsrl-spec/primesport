@@ -1735,16 +1735,21 @@ function updateMonthLabel(){ document.getElementById('monthLabel').textContent=`
 // Collects use their jornada (the day the money was generated), falling back to
 // date−1 if no jornada is stored, then to date. Everything else uses its own date.
 function effectiveDate(t){
-  // MODELO CORRECTO:
-  // - OPERACIONES (income): cuentan en su JORNADA (día real de juego). La jornada la lleva
-  //   el propio collect... pero las operaciones ya se registran con fecha = jornada.
-  //   Para income usamos su fecha (que ya es la jornada por como se ingresa).
-  // - COLLECT (movido/recibido): cuenta en su FECHA REAL de recepción (cuando entró el dinero).
-  //   NO se resta día — el movido aparece el día que físicamente entró.
-  // - Gastos/Salidas: su fecha normal.
+  // DÍA A DÍA (historial diario):
+  // - COLLECT (movido/recibido): cuenta en su FECHA REAL de recepción (t.date). El movido
+  //   aparece el día que físicamente entró el dinero.
+  // - OPERACIONES / Gastos / Salidas: su fecha normal.
   return t.date;
 }
-function monthTxns(){ return state.txns.filter(t=>{ const d=new Date(effectiveDate(t)+'T00:00:00'); return d.getMonth()===curMonth&&d.getFullYear()===curYear; }); }
+// MES CONTABLE (balance mensual):
+// - COLLECT: cuenta en su JORNADA (fecha_jornada). Así lo recibido el 1/7 (jornada 30/6)
+//   suma al balance de JUNIO, no de julio.
+// - OPERACIONES / Gastos / Salidas: su fecha normal.
+function monthDate(t){
+  if(t.type==='collect' && t.jornada) return t.jornada;
+  return t.date;
+}
+function monthTxns(){ return state.txns.filter(t=>{ const d=new Date(monthDate(t)+'T00:00:00'); return d.getMonth()===curMonth&&d.getFullYear()===curYear; }); }
 
 /* ---------- DASHBOARD ---------- */
 function renderDash(){
