@@ -1735,15 +1735,21 @@ function updateMonthLabel(){ document.getElementById('monthLabel').textContent=`
 // Collects use their jornada (the day the money was generated), falling back to
 // date−1 if no jornada is stored, then to date. Everything else uses its own date.
 function effectiveDate(t){
-  if(t.type==='collect'){
-    if(t.jornada) return t.jornada;
-    // fallback: assume jornada = day before registration
-    const d=new Date(t.date+'T00:00:00'); d.setDate(d.getDate()-1);
-    return d.toISOString().slice(0,10);
-  }
+  // DÍA A DÍA (historial diario):
+  // - COLLECT (movido/recibido): cuenta en su FECHA REAL de recepción (t.date). El movido
+  //   aparece el día que físicamente entró el dinero.
+  // - OPERACIONES / Gastos / Salidas: su fecha normal.
   return t.date;
 }
-function monthTxns(){ return state.txns.filter(t=>{ const d=new Date(effectiveDate(t)+'T00:00:00'); return d.getMonth()===curMonth&&d.getFullYear()===curYear; }); }
+// MES CONTABLE (balance mensual):
+// - COLLECT: cuenta en su JORNADA (fecha_jornada). Así lo recibido el 1/7 (jornada 30/6)
+//   suma al balance de JUNIO, no de julio.
+// - OPERACIONES / Gastos / Salidas: su fecha normal.
+function monthDate(t){
+  if(t.type==='collect' && t.jornada) return t.jornada;
+  return t.date;
+}
+function monthTxns(){ return state.txns.filter(t=>{ const d=new Date(monthDate(t)+'T00:00:00'); return d.getMonth()===curMonth&&d.getFullYear()===curYear; }); }
 
 /* ---------- DASHBOARD ---------- */
 function renderDash(){
@@ -2276,9 +2282,11 @@ function dayCuadre(branch,date){
   return c;
 }
 
-// How much was already collected/delivered for a bank on a date (sum of 'moved')
+// How much was already collected/delivered for a bank on a given jornada (sum of 'moved')
+// Matches by jornada (the settlement day) so the Corte shows what was collected for that day,
+// even though the collect's registration date is when the money physically entered.
 function dayCollected(branch,date){
-  return state.txns.filter(t=>t.type==='collect'&&t.branch===branch&&t.date===date).reduce((s,t)=>s+t.moved,0);
+  return state.txns.filter(t=>t.type==='collect'&&t.branch===branch&&(t.jornada===date||(!t.jornada&&t.date===date))).reduce((s,t)=>s+t.moved,0);
 }
 
 // Total pending (carried) for a bank across ALL history = sum of (cuadre - collected) per day,
@@ -2533,10 +2541,13 @@ function collectAll(){
   renderCorte();
 }
 
-// Creates the collect record AND the matching fund transfer between bank and office
+// Creates the collect record. The collect (money received) counts on its REAL reception
+// date (today), because that's when the cash physically entered the office.
+// The `jornada` field stores which day's operations were being settled (the corte date).
 function recordCollect(branch,date,cuadre,moved){
   const office=officeName();
-  const tx={ id:uid(), type:'collect', branch, office, date, jornada:date, cuadre, moved, note:'' };
+  // date param = corteDateVal (jornada being settled). Registration date = today (when money entered).
+  const tx={ id:uid(), type:'collect', branch, office, date:todayISO(), jornada:date, cuadre, moved, note:'' };
   state.txns.push(tx); cloudInsertTxn(tx);
 }
 
