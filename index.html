@@ -353,6 +353,17 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
   </div>
 
+  <div onclick="openCierreMes()" style="background:linear-gradient(135deg,#1a2e1f,#2d6a4f);border-radius:16px;padding:15px 16px;margin-bottom:16px;display:flex;align-items:center;gap:13px;cursor:pointer;box-shadow:0 4px 16px rgba(45,106,79,.3);">
+    <div style="width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:22px;height:22px;"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    </div>
+    <div style="flex:1;">
+      <div style="color:#fff;font-size:14.5px;font-weight:700;">Cierre de Mes</div>
+      <div style="color:rgba(255,255,255,.78);font-size:11.5px;margin-top:1px;">Cerrar mes y arrastrar saldo</div>
+    </div>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
+  </div>
+
   <div class="stat-grid">
     <div class="stat">
       <div class="ic blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-5"/></svg></div>
@@ -930,6 +941,60 @@
   <button onclick="cbImportSelected()" class="btn-primary" style="margin-top:6px;">Importar seleccionados</button>
 </section>
 
+<!-- CIERRE DE MES (Fase 3) -->
+<section class="view" id="view-cierremes">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="go('dash')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Cierre de Mes</div><div style="font-size:12px;color:var(--muted);">Cerrar el mes y decidir el saldo</div></div>
+  </div>
+
+  <div class="row2" style="margin-bottom:14px;">
+    <div class="fld" style="margin:0;"><label>Mes</label><select id="cmMesSel" onchange="renderCierreMes()"></select></div>
+    <div class="fld" style="margin:0;"><label>Año</label><select id="cmAnioSel" onchange="renderCierreMes()"></select></div>
+  </div>
+
+  <div id="cmResumen"></div>
+
+  <div id="cmYaCerrado" style="display:none;"></div>
+
+  <div id="cmAcciones">
+    <div class="panel" style="padding:16px;margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:800;color:var(--cerulean);margin-bottom:10px;">¿Qué hacer con el saldo del mes?</div>
+
+      <div style="margin-bottom:14px;">
+        <label style="display:block;font-size:12.5px;font-weight:700;color:var(--ink);margin-bottom:7px;">Saldo a considerar</label>
+        <select id="cmSaldoTipo" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;font-size:13px;font-family:inherit;background:#fff;">
+          <option value="pendiente">Pendiente en bancas</option>
+          <option value="oficina">Balance de oficina</option>
+          <option value="ambos">Ambos</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label style="display:block;font-size:12.5px;font-weight:700;color:var(--ink);margin-bottom:7px;">Modo de cierre</label>
+        <div style="display:flex;gap:8px;">
+          <label style="flex:1;display:flex;align-items:center;gap:7px;padding:11px;border:1px solid var(--line);border-radius:10px;cursor:pointer;font-size:12.5px;">
+            <input type="radio" name="cmModo" value="arrastrar" checked style="width:16px;height:16px;"> Arrastrar al mes siguiente
+          </label>
+          <label style="flex:1;display:flex;align-items:center;gap:7px;padding:11px;border:1px solid var(--line);border-radius:10px;cursor:pointer;font-size:12.5px;">
+            <input type="radio" name="cmModo" value="cero" style="width:16px;height:16px;"> Cerrar en 0
+          </label>
+        </div>
+      </div>
+
+      <div class="fld" style="margin-bottom:14px;"><label>Nota (opcional)</label><input type="text" id="cmNota" placeholder="Observación del cierre…"></div>
+
+      <button onclick="ejecutarCierreMes()" class="btn-primary" style="width:100%;padding:14px;">🔒 Cerrar mes</button>
+    </div>
+  </div>
+
+  <!-- Historial de cierres -->
+  <div class="panel" style="padding:14px;margin-bottom:14px;">
+    <div style="font-size:13px;font-weight:800;color:var(--cerulean);margin-bottom:10px;">Historial de cierres</div>
+    <div id="cmHistorial"></div>
+  </div>
+</section>
+
 <!-- CONFIGURAR MÁQUINAS -->
 <section class="view" id="view-maqconfig">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
@@ -1434,7 +1499,7 @@ const DEFAULTS={
   expCats:['Local / Alquiler','Energía eléctrica','Nómina / Personal','Internet y teléfono','Mantenimiento','Suministros','Impuestos / DGII','Transporte','Publicidad','Otros gastos']
 };
 
-let state={txns:[],branches:[],incCats:[],expCats:[],officeIncCats:[],maquinas:[],lecturas:[],denoms:[],cierres:[],virtRegs:[],virtConfig:null,virtProviders:[],virtSucursalesInactivas:{},virtRenglonesInactivos:{},maqGastos:[],maqPog:[],maqCfgBanca:{},cbGastos:[],cbIngresos:[],cbOficinaGastos:[]};
+let state={txns:[],branches:[],incCats:[],expCats:[],officeIncCats:[],maquinas:[],lecturas:[],denoms:[],cierres:[],cierresMes:[],virtRegs:[],virtConfig:null,virtProviders:[],virtSucursalesInactivas:{},virtRenglonesInactivos:{},maqGastos:[],maqPog:[],maqCfgBanca:{},cbGastos:[],cbIngresos:[],cbOficinaGastos:[]};
 const VIRT_EMPRESAS=['MERENGUE','VARMANEX','VG','SOLL'];
 const VIRT_SUCURSALES=['PRIME SPORT 01','PRIME SPORT 02','PRIME SPORT 03','PRIME SPORT 04','PRIME SPORT 05','PRIME SPORT 06','PRIME SPORT 07','PRIME SPORT 08','PRIME SPORT 09','PRIME SPORT 10'];
 
@@ -1585,6 +1650,14 @@ async function loadState(){
     if(!c.error){ state.cierres=c.data.map(x=>x.fecha); state._cierresReady=true; }
     else { state.cierres=[]; state._cierresReady=false; }
   }catch(e){ state.cierres=[]; state._cierresReady=false; }
+  // Cierres de mes (Fase 3) — resilient
+  try{
+    const cm=await sb.from('cierres_mes').select('*');
+    if(!cm.error){
+      state.cierresMes=cm.data.map(x=>({_id:x.id,anio:x.anio,mes:x.mes,modo:x.modo,saldoTipo:x.saldo_tipo,pendienteBancas:Number(x.pendiente_bancas)||0,balanceOficina:Number(x.balance_oficina)||0,saldoArrastrado:Number(x.saldo_arrastrado)||0,nota:x.nota,cerradoPor:x.cerrado_por,creado:x.creado}));
+      state._cierresMesReady=true;
+    } else { state.cierresMes=[]; state._cierresMesReady=false; }
+  }catch(e){ state.cierresMes=[]; state._cierresMesReady=false; }
   // Virtuales — resilient
   try{
     const [vr,vc,vp,vsuc,vren]=await Promise.all([
@@ -1755,18 +1828,18 @@ function monthTxns(){ return state.txns.filter(t=>{ const d=new Date(monthDate(t
 function renderDash(){
   const txns=monthTxns();
   const office=officeName();
-  // From the office perspective:
-  // - Regular income/expense (anywhere in the system)
-  // - Transfers TO office = ingreso (devolución, banca→oficina)
-  // - Transfers FROM office = salida (préstamo, oficina→banca)
-  // - Retiros (out withdraw) = salida normal
+  // Balance del mes = NETO REAL (contabilidad de caja):
+  // - Movido (lo que físicamente entró vía collects, contado por jornada)
+  // - menos gastos, retiros, transferencias netas
   const inc=txns.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
   const exp=txns.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
   const withdraw=txns.filter(t=>t.type==='out'&&t.outKind!=='transfer').reduce((s,t)=>s+t.amount,0);
   const transferOut=txns.filter(t=>t.type==='out'&&t.outKind==='transfer'&&t.branch===office).reduce((s,t)=>s+t.amount,0); // oficina presta
   const transferIn=txns.filter(t=>t.type==='out'&&t.outKind==='transfer'&&t.dest===office).reduce((s,t)=>s+t.amount,0);   // oficina recibe
+  const movido=txns.filter(t=>t.type==='collect').reduce((s,t)=>s+t.moved,0);
   const out=withdraw+transferOut; // salidas totales
-  const net=inc-exp-withdraw-transferOut+transferIn; // desde la oficina
+  // NETO REAL = lo que entró (movido) − gastos − salidas − transferOut + transferIn
+  const net=movido-exp-withdraw-transferOut+transferIn;
   document.getElementById('heroNet').textContent=fmt(net);
   document.getElementById('heroNet').style.color=net<0?'#f08980':'#fff';
   document.getElementById('heroInc').textContent='RD$'+fmt(inc);
@@ -3757,6 +3830,144 @@ function exportCuadreBancasWhatsApp(){
   lines.push(`*BCE TOTAL: RD$${fmt(totalBancas+ingresoGlobal-oficGastos)}*`);
   const url=`https://wa.me/?text=${encodeURIComponent(lines.join('\n'))}`;
   window.open(url,'_blank');
+}
+
+// ==========================================================
+// CIERRE DE MES (Fase 3)
+// ==========================================================
+let cmMesCur=new Date().getMonth()+1, cmAnioCur=new Date().getFullYear();
+
+function openCierreMes(){
+  showOnlyView('view-cierremes');
+  const mesSel=document.getElementById('cmMesSel');
+  mesSel.innerHTML=MONTHS.map((m,i)=>`<option value="${i+1}" ${(i+1)===cmMesCur?'selected':''}>${m}</option>`).join('');
+  const anioSel=document.getElementById('cmAnioSel');
+  anioSel.innerHTML=[2024,2025,2026,2027].map(y=>`<option value="${y}" ${y===cmAnioCur?'selected':''}>${y}</option>`).join('');
+  renderCierreMes();
+}
+
+// Balance del mes por jornada (neto real de caja)
+function cmMonthTxns(anio,mes){
+  return state.txns.filter(t=>{ const d=new Date(monthDate(t)+'T00:00:00'); return d.getMonth()===(mes-1)&&d.getFullYear()===anio; });
+}
+function cmBalance(anio,mes){
+  const txns=cmMonthTxns(anio,mes);
+  const office=officeName();
+  const exp=txns.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  const withdraw=txns.filter(t=>t.type==='out'&&t.outKind!=='transfer').reduce((s,t)=>s+t.amount,0);
+  const tOut=txns.filter(t=>t.type==='out'&&t.outKind==='transfer'&&t.branch===office).reduce((s,t)=>s+t.amount,0);
+  const tIn=txns.filter(t=>t.type==='out'&&t.outKind==='transfer'&&t.dest===office).reduce((s,t)=>s+t.amount,0);
+  const movido=txns.filter(t=>t.type==='collect').reduce((s,t)=>s+t.moved,0);
+  const inc=txns.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const netoReal=movido-exp-withdraw-tOut+tIn;
+  // Pendiente en bancas = generado − movido (del mes, por jornada)
+  const pendiente=inc-movido;
+  return {netoReal, pendiente, movido, inc, exp, salidas:withdraw+tOut};
+}
+
+function renderCierreMes(){
+  cmMesCur=parseInt(document.getElementById('cmMesSel').value);
+  cmAnioCur=parseInt(document.getElementById('cmAnioSel').value);
+  const bal=cmBalance(cmAnioCur,cmMesCur);
+  // Arrastre recibido del mes anterior (si hubo cierre con arrastrar)
+  const prevMes=cmMesCur===1?12:cmMesCur-1;
+  const prevAnio=cmMesCur===1?cmAnioCur-1:cmAnioCur;
+  const prevCierre=state.cierresMes.find(c=>c.anio===prevAnio&&c.mes===prevMes);
+  const arrastre=prevCierre&&prevCierre.modo==='arrastrar'?prevCierre.saldoArrastrado:0;
+
+  document.getElementById('cmResumen').innerHTML=`
+    <div style="background:linear-gradient(135deg,#101820,#16242f);border-radius:15px;padding:16px;margin-bottom:14px;color:#fff;">
+      <div style="font-size:11px;color:rgba(255,255,255,.78);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">Balance del mes · ${MONTHS[cmMesCur-1]} ${cmAnioCur}</div>
+      <div style="font-size:26px;font-weight:800;color:${bal.netoReal<0?'#f08980':'#7ce6b3'};">RD$${fmt(bal.netoReal)}</div>
+      <div style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap;">
+        <div><div style="font-size:9.5px;color:rgba(255,255,255,.6);text-transform:uppercase;">Movido</div><div style="font-size:13px;font-weight:700;">RD$${fmt(bal.movido)}</div></div>
+        <div><div style="font-size:9.5px;color:rgba(255,255,255,.6);text-transform:uppercase;">Pendiente bancas</div><div style="font-size:13px;font-weight:700;color:#f0b46a;">RD$${fmt(bal.pendiente)}</div></div>
+        ${arrastre?`<div><div style="font-size:9.5px;color:rgba(255,255,255,.6);text-transform:uppercase;">Arrastre mes ant.</div><div style="font-size:13px;font-weight:700;color:#7ce6b3;">RD$${fmt(arrastre)}</div></div>`:''}
+      </div>
+    </div>`;
+
+  // ¿Ya cerrado?
+  const cierre=state.cierresMes.find(c=>c.anio===cmAnioCur&&c.mes===cmMesCur);
+  const yaDiv=document.getElementById('cmYaCerrado');
+  const accDiv=document.getElementById('cmAcciones');
+  if(cierre){
+    accDiv.style.display='none';
+    yaDiv.style.display='block';
+    yaDiv.innerHTML=`<div class="panel" style="padding:16px;margin-bottom:14px;border-left:4px solid var(--green);">
+      <div style="font-size:13px;font-weight:800;color:var(--green);margin-bottom:6px;">✓ Mes cerrado</div>
+      <div style="font-size:12.5px;color:var(--ink);line-height:1.6;">
+        Modo: <b>${cierre.modo==='arrastrar'?'Arrastrar saldo':'Cerrar en 0'}</b><br>
+        Saldo considerado: <b>${cierre.saldoTipo==='pendiente'?'Pendiente en bancas':cierre.saldoTipo==='oficina'?'Balance oficina':'Ambos'}</b><br>
+        ${cierre.modo==='arrastrar'?`Saldo arrastrado: <b>RD$${fmt(cierre.saldoArrastrado)}</b><br>`:''}
+        ${cierre.nota?`Nota: ${cierre.nota}<br>`:''}
+        <span style="color:var(--muted);font-size:11px;">Cerrado ${cierre.creado?new Date(cierre.creado).toLocaleString('es-DO'):''}${cierre.cerradoPor?' · '+cierre.cerradoPor:''}</span>
+      </div>
+      <button onclick="reabrirCierreMes()" style="margin-top:12px;width:100%;border:1px solid var(--red);background:#fff;color:var(--red);border-radius:10px;padding:11px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">Reabrir mes</button>
+    </div>`;
+  } else {
+    accDiv.style.display='block';
+    yaDiv.style.display='none';
+  }
+  renderCmHistorial();
+}
+
+function renderCmHistorial(){
+  const wrap=document.getElementById('cmHistorial');
+  const list=state.cierresMes.slice().sort((a,b)=>(b.anio-a.anio)||(b.mes-a.mes));
+  if(!list.length){ wrap.innerHTML='<div class="empty-hint" style="padding:14px;">Aún no hay cierres registrados.</div>'; return; }
+  wrap.innerHTML=list.map(c=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f2f5f6;">
+      <div>
+        <div style="font-size:13px;font-weight:700;">${MONTHS[c.mes-1]} ${c.anio}</div>
+        <div style="font-size:11px;color:var(--muted);">${c.modo==='arrastrar'?'Arrastró saldo':'Cerró en 0'}${c.cerradoPor?' · '+c.cerradoPor:''}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:13.5px;font-weight:800;color:${c.saldoArrastrado<0?'var(--red)':'var(--green)'};">RD$${fmt(c.saldoArrastrado)}</div>
+        <div style="font-size:10px;color:var(--muted);">${c.modo==='arrastrar'?'arrastrado':'—'}</div>
+      </div>
+    </div>`).join('');
+}
+
+async function ejecutarCierreMes(){
+  if(!state._cierresMesReady){ toast('Falta activar el cierre de mes en la base de datos (SQL).',false); return; }
+  const bal=cmBalance(cmAnioCur,cmMesCur);
+  const saldoTipo=document.getElementById('cmSaldoTipo').value;
+  const modo=document.querySelector('input[name="cmModo"]:checked').value;
+  const nota=document.getElementById('cmNota').value.trim();
+  // Saldo a arrastrar según tipo elegido
+  let saldoArrastrado=0;
+  if(modo==='arrastrar'){
+    if(saldoTipo==='pendiente') saldoArrastrado=bal.pendiente;
+    else if(saldoTipo==='oficina') saldoArrastrado=bal.netoReal;
+    else saldoArrastrado=bal.pendiente+bal.netoReal;
+  }
+  const modoTxt=modo==='arrastrar'?`arrastrar RD$${fmt(saldoArrastrado)} al mes siguiente`:'cerrar en 0';
+  if(!confirm(`¿Cerrar ${MONTHS[cmMesCur-1]} ${cmAnioCur}?\n\nAcción: ${modoTxt}\n\nEsto quedará registrado en el historial.`)) return;
+  setSyncState('saving');
+  try{
+    const row={anio:cmAnioCur,mes:cmMesCur,modo,saldo_tipo:saldoTipo,pendiente_bancas:bal.pendiente,balance_oficina:bal.netoReal,saldo_arrastrado:saldoArrastrado,nota:nota||null,cerrado_por:currentUser||null};
+    const {data,error}=await sb.from('cierres_mes').insert(row).select();
+    if(error)throw error;
+    state.cierresMes.push({_id:data[0].id,anio:cmAnioCur,mes:cmMesCur,modo,saldoTipo,pendienteBancas:bal.pendiente,balanceOficina:bal.netoReal,saldoArrastrado,nota,cerradoPor:currentUser||null,creado:new Date().toISOString()});
+    setSyncState('ok');
+    toast(`${MONTHS[cmMesCur-1]} cerrado`,true);
+    renderCierreMes();
+  }catch(e){ console.error(e); setSyncState('error'); toast('Error al cerrar: '+(e.message||''),false); }
+}
+
+async function reabrirCierreMes(){
+  const cierre=state.cierresMes.find(c=>c.anio===cmAnioCur&&c.mes===cmMesCur);
+  if(!cierre) return;
+  if(!confirm(`¿Reabrir ${MONTHS[cmMesCur-1]} ${cmAnioCur}? Se borrará el registro de cierre.`)) return;
+  setSyncState('saving');
+  try{
+    const {error}=await sb.from('cierres_mes').delete().eq('id',cierre._id);
+    if(error)throw error;
+    state.cierresMes=state.cierresMes.filter(c=>c._id!==cierre._id);
+    setSyncState('ok');
+    toast('Mes reabierto',true);
+    renderCierreMes();
+  }catch(e){ console.error(e); setSyncState('error'); toast('Error: '+(e.message||''),false); }
 }
 
 // ---- machine math ----
