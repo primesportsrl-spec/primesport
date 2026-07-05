@@ -2521,7 +2521,8 @@ function openCorte(){
   renderCorte();
 }
 
-// Envía por WhatsApp al mensajero la lista de bancas con el cuadre del día a recoger
+// Envía por WhatsApp al mensajero la lista de bancas con el PENDIENTE TOTAL a recoger
+// (cuadre del día + lo arrastrado de días anteriores)
 function enviarRutaMensajero(){
   const num=(state.config&&state.config.mensajero_num)||'';
   if(!num){
@@ -2535,14 +2536,15 @@ function enviarRutaMensajero(){
   const lines=[`*PRIME SPORT · Ruta de recolección*`,`📅 Jornada: ${fechaTxt}`,''];
   let total=0, anyEntrega=false, anyEnvio=false;
   banks.forEach(b=>{
-    const cuadre=dayCuadre(b.name,corteDateVal);
-    if(Math.abs(cuadre)<1) return; // omite bancas en 0
+    // Pendiente TOTAL: cuadre del día + arrastrado de días anteriores (lo que la banca debe)
+    const pend=bankPending(b.name);
+    if(Math.abs(pend)<1) return; // omite bancas sin nada pendiente
     const bancaTxt=b.name.replace('PRIME SPORT','PS');
-    if(cuadre>0){ lines.push(`🔵 ${bancaTxt}: recoger RD$${fmt(cuadre)}`); anyEntrega=true; }
-    else { lines.push(`🔴 ${bancaTxt}: llevar RD$${fmt(Math.abs(cuadre))}`); anyEnvio=true; }
-    total+=cuadre;
+    if(pend>0){ lines.push(`🔵 ${bancaTxt}: recoger RD$${fmt(pend)}`); anyEntrega=true; }
+    else { lines.push(`🔴 ${bancaTxt}: llevar RD$${fmt(Math.abs(pend))}`); anyEnvio=true; }
+    total+=pend;
   });
-  if(!anyEntrega&&!anyEnvio){ toast('No hay bancas con cuadre este día',false); return; }
+  if(!anyEntrega&&!anyEnvio){ toast('No hay bancas con pendiente',false); return; }
   lines.push('');
   lines.push(`*Neto total: RD$${fmt(total)}*`);
   if(anyEnvio) lines.push('');
