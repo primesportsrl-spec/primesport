@@ -604,8 +604,13 @@
 <section class="view" id="view-corte">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
     <button onclick="go('dash')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
-    <div><div style="font-size:17px;font-weight:800;">Corte Diario</div><div style="font-size:12px;color:var(--muted);" id="corteDateLabel">—</div></div>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Corte Diario</div><div style="font-size:12px;color:var(--muted);" id="corteDateLabel">—</div></div>
   </div>
+
+  <button onclick="enviarRutaMensajero()" style="width:100%;border:1px solid #25d366;background:#25d366;color:#fff;border-radius:12px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:8px;">
+    <svg viewBox="0 0 24 24" fill="currentColor" style="width:18px;height:18px;"><path d="M12 2a10 10 0 00-8.5 15.3L2 22l4.9-1.4A10 10 0 1012 2zm0 18a8 8 0 01-4.1-1.1l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1112 20z"/></svg>
+    Enviar ruta al mensajero
+  </button>
 
   <div class="fld" style="margin-bottom:14px;">
     <label style="font-size:11.5px;color:var(--muted);">Jornada a cuadrar (por defecto ayer — hoy se recibe lo de ayer)</label>
@@ -1378,6 +1383,15 @@
     </div>
   </div>
 
+  <div class="section-label" style="margin-top:6px;">Mensajero</div>
+  <div class="set-list" style="padding:12px 14px;">
+    <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;">Número de WhatsApp del mensajero</label>
+    <div style="display:flex;gap:8px;">
+      <input type="tel" id="mensajeroNum" placeholder="Ej: 18095551234" style="flex:1;padding:11px;border:1px solid var(--line);border-radius:10px;font-size:13px;font-family:inherit;" onblur="saveMensajeroNum()">
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5;">Con código de país sin +, sin espacios ni guiones. Ejemplo RD: 1809... Se usa para enviar la ruta de recolección por WhatsApp.</div>
+  </div>
+
   <div class="section-label" style="margin-top:6px;">Sucursales y fondos</div>
   <div class="set-list editable-list" id="branchList"></div>
   <div class="set-list" style="margin-top:-8px;">
@@ -1499,7 +1513,7 @@ const DEFAULTS={
   expCats:['Local / Alquiler','Energía eléctrica','Nómina / Personal','Internet y teléfono','Mantenimiento','Suministros','Impuestos / DGII','Transporte','Publicidad','Otros gastos']
 };
 
-let state={txns:[],branches:[],incCats:[],expCats:[],officeIncCats:[],maquinas:[],lecturas:[],denoms:[],cierres:[],cierresMes:[],virtRegs:[],virtConfig:null,virtProviders:[],virtSucursalesInactivas:{},virtRenglonesInactivos:{},maqGastos:[],maqPog:[],maqCfgBanca:{},cbGastos:[],cbIngresos:[],cbOficinaGastos:[]};
+let state={txns:[],branches:[],incCats:[],expCats:[],officeIncCats:[],maquinas:[],lecturas:[],denoms:[],cierres:[],cierresMes:[],config:{},virtRegs:[],virtConfig:null,virtProviders:[],virtSucursalesInactivas:{},virtRenglonesInactivos:{},maqGastos:[],maqPog:[],maqCfgBanca:{},cbGastos:[],cbIngresos:[],cbOficinaGastos:[]};
 const VIRT_EMPRESAS=['MERENGUE','VARMANEX','VG','SOLL'];
 const VIRT_SUCURSALES=['PRIME SPORT 01','PRIME SPORT 02','PRIME SPORT 03','PRIME SPORT 04','PRIME SPORT 05','PRIME SPORT 06','PRIME SPORT 07','PRIME SPORT 08','PRIME SPORT 09','PRIME SPORT 10'];
 
@@ -1644,6 +1658,15 @@ async function loadState(){
     state.cbOficinaGastos = (!cbo.error) ? cbo.data.map(o=>({_id:o.id,anio:o.anio,mes:o.mes,categoria:o.categoria,monto:Number(o.monto)||0})) : [];
     state._cbReady = !cbg.error && !cbi.error && !cbo.error;
   }catch(e){ console.warn('Cuadre bancas tables not ready',e); state.cbGastos=[]; state.cbIngresos=[]; state.cbOficinaGastos=[]; state._cbReady=false; }
+  // App config (mensajero number, etc.) — resilient
+  try{
+    const cfg=await sb.from('app_config').select('*');
+    if(!cfg.error){
+      state.config={};
+      cfg.data.forEach(r=>{ state.config[r.clave]=r.valor; });
+      state._configReady=true;
+    } else { state.config={}; state._configReady=false; }
+  }catch(e){ state.config={}; state._configReady=false; }
   // Closed days (cierres) — resilient
   try{
     const c=await sb.from('cierres_dia').select('*');
@@ -2496,6 +2519,36 @@ function openCorte(){
   document.querySelectorAll('nav.tabbar button').forEach(b=>b.classList.remove('active'));
   window.scrollTo(0,0);
   renderCorte();
+}
+
+// Envía por WhatsApp al mensajero la lista de bancas con el cuadre del día a recoger
+function enviarRutaMensajero(){
+  const num=(state.config&&state.config.mensajero_num)||'';
+  if(!num){
+    toast('Primero guarda el número del mensajero en Ajustes',false);
+    setTimeout(()=>go('settings'),900);
+    return;
+  }
+  const d=new Date(corteDateVal+'T00:00:00');
+  const fechaTxt=`${d.getDate()} ${MONTHS_SHORT[d.getMonth()]} ${d.getFullYear()}`;
+  const banks=sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false));
+  const lines=[`*PRIME SPORT · Ruta de recolección*`,`📅 Jornada: ${fechaTxt}`,''];
+  let total=0, anyEntrega=false, anyEnvio=false;
+  banks.forEach(b=>{
+    const cuadre=dayCuadre(b.name,corteDateVal);
+    if(Math.abs(cuadre)<1) return; // omite bancas en 0
+    const bancaTxt=b.name.replace('PRIME SPORT','PS');
+    if(cuadre>0){ lines.push(`🔵 ${bancaTxt}: recoger RD$${fmt(cuadre)}`); anyEntrega=true; }
+    else { lines.push(`🔴 ${bancaTxt}: llevar RD$${fmt(Math.abs(cuadre))}`); anyEnvio=true; }
+    total+=cuadre;
+  });
+  if(!anyEntrega&&!anyEnvio){ toast('No hay bancas con cuadre este día',false); return; }
+  lines.push('');
+  lines.push(`*Neto total: RD$${fmt(total)}*`);
+  if(anyEnvio) lines.push('');
+  if(anyEnvio) lines.push('🔵 recoger · 🔴 llevar dinero a la banca');
+  const url=`https://wa.me/${num}?text=${encodeURIComponent(lines.join('\n'))}`;
+  window.open(url,'_blank');
 }
 
 function renderCorte(){
@@ -5658,6 +5711,7 @@ function printReport(){ window.print(); }
 /* ---------- SETTINGS ---------- */
 function renderSettings(){
   const ul=document.getElementById('currentUserLabel'); if(ul&&currentUser) ul.textContent=currentUser;
+  const mn=document.getElementById('mensajeroNum'); if(mn) mn.value=(state.config&&state.config.mensajero_num)||'';
   document.getElementById('branchList').innerHTML=state.branches
     .map((b,i)=>({b,i}))
     .sort((x,y)=>{
@@ -5684,7 +5738,19 @@ function renderSettings(){
   ).join('');
 }
 function addBranch(){ const v=document.getElementById('newBranch').value.trim(); if(!v)return; state.branches.push({name:v,fund:0}); document.getElementById('newBranch').value=''; saveState(); renderSettings(); toast('Sucursal agregada',true); }
-function delBranch(i){ if(!confirm(`¿Eliminar "${state.branches[i].name}"? Los movimientos existentes se conservan.`))return; cloudDeleteBranch(state.branches[i]._id); state.branches.splice(i,1); saveState(); renderSettings(); }
+
+async function saveConfig(clave,valor){
+  if(!state.config) state.config={};
+  state.config[clave]=valor;
+  try{
+    await sb.from('app_config').upsert({clave,valor,actualizado:new Date().toISOString()});
+  }catch(e){ console.warn('config save failed',e); }
+}
+function saveMensajeroNum(){
+  const raw=document.getElementById('mensajeroNum').value.trim().replace(/[^0-9]/g,'');
+  saveConfig('mensajero_num',raw);
+  if(raw) toast('Número del mensajero guardado',true);
+}function delBranch(i){ if(!confirm(`¿Eliminar "${state.branches[i].name}"? Los movimientos existentes se conservan.`))return; cloudDeleteBranch(state.branches[i]._id); state.branches.splice(i,1); saveState(); renderSettings(); }
 async function toggleBranchActive(i){
   const b=state.branches[i];
   if(!b||b.isOffice)return;
