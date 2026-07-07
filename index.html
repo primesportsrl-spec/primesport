@@ -364,6 +364,17 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
   </div>
 
+  <div onclick="openDesglose()" style="background:linear-gradient(135deg,#2a2440,#5a4a8a);border-radius:16px;padding:15px 16px;margin-bottom:16px;display:flex;align-items:center;gap:13px;cursor:pointer;box-shadow:0 4px 16px rgba(90,74,138,.3);">
+    <div style="width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:22px;height:22px;"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+    </div>
+    <div style="flex:1;">
+      <div style="color:#fff;font-size:14.5px;font-weight:700;">Desglose de Efectivo</div>
+      <div style="color:rgba(255,255,255,.78);font-size:11.5px;margin-top:1px;">Contar billetes y monedas recibidos</div>
+    </div>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
+  </div>
+
   <div class="stat-grid">
     <div class="stat">
       <div class="ic blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-5"/></svg></div>
@@ -607,9 +618,14 @@
     <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Corte Diario</div><div style="font-size:12px;color:var(--muted);" id="corteDateLabel">—</div></div>
   </div>
 
-  <button onclick="enviarRutaMensajero()" style="width:100%;border:1px solid #25d366;background:#25d366;color:#fff;border-radius:12px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:8px;">
+  <button onclick="enviarRutaMensajero()" style="width:100%;border:1px solid #25d366;background:#25d366;color:#fff;border-radius:12px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;">
     <svg viewBox="0 0 24 24" fill="currentColor" style="width:18px;height:18px;"><path d="M12 2a10 10 0 00-8.5 15.3L2 22l4.9-1.4A10 10 0 1012 2zm0 18a8 8 0 01-4.1-1.1l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1112 20z"/></svg>
     Enviar ruta al mensajero
+  </button>
+
+  <button onclick="openDesglose(corteDateVal)" style="width:100%;border:1px solid #5a4a8a;background:#fff;color:#5a4a8a;border-radius:12px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:8px;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
+    Desglose de efectivo
   </button>
 
   <div class="fld" style="margin-bottom:14px;">
@@ -944,6 +960,36 @@
   <div id="cbImportList"></div>
 
   <button onclick="cbImportSelected()" class="btn-primary" style="margin-top:6px;">Importar seleccionados</button>
+</section>
+
+<!-- DESGLOSE DE EFECTIVO -->
+<section class="view" id="view-desglose">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="go('dash')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Desglose de Efectivo</div><div style="font-size:12px;color:var(--muted);">Contar billetes y monedas</div></div>
+  </div>
+
+  <div class="fld" style="margin-bottom:12px;">
+    <label style="font-size:11.5px;color:var(--muted);">Jornada / fecha del conteo</label>
+    <input type="date" id="dgFecha" onchange="renderDesglose()">
+  </div>
+
+  <div id="dgResumen"></div>
+
+  <div class="panel" style="padding:16px;margin-bottom:14px;">
+    <div style="font-size:13px;font-weight:800;color:var(--cerulean);margin-bottom:12px;">Conteo de efectivo</div>
+    <div id="dgDenoms"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0 2px;margin-top:8px;border-top:2px solid var(--navy);">
+      <span style="font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;">Total contado</span>
+      <span style="font-size:18px;font-weight:800;color:var(--ink);" id="dgTotalContado">RD$0</span>
+    </div>
+  </div>
+
+  <div id="dgComparacion"></div>
+
+  <div class="fld" style="margin-bottom:12px;"><label>Nota (opcional)</label><input type="text" id="dgNota" placeholder="Observación del conteo…"></div>
+
+  <button onclick="guardarDesglose()" class="btn-primary" style="width:100%;padding:14px;margin-bottom:14px;">💾 Guardar desglose</button>
 </section>
 
 <!-- CIERRE DE MES (Fase 3) -->
@@ -1513,7 +1559,7 @@ const DEFAULTS={
   expCats:['Local / Alquiler','Energía eléctrica','Nómina / Personal','Internet y teléfono','Mantenimiento','Suministros','Impuestos / DGII','Transporte','Publicidad','Otros gastos']
 };
 
-let state={txns:[],branches:[],incCats:[],expCats:[],officeIncCats:[],maquinas:[],lecturas:[],denoms:[],cierres:[],cierresMes:[],config:{},virtRegs:[],virtConfig:null,virtProviders:[],virtSucursalesInactivas:{},virtRenglonesInactivos:{},maqGastos:[],maqPog:[],maqCfgBanca:{},cbGastos:[],cbIngresos:[],cbOficinaGastos:[]};
+let state={txns:[],branches:[],incCats:[],expCats:[],officeIncCats:[],maquinas:[],lecturas:[],denoms:[],cierres:[],cierresMes:[],config:{},desgloses:[],virtRegs:[],virtConfig:null,virtProviders:[],virtSucursalesInactivas:{},virtRenglonesInactivos:{},maqGastos:[],maqPog:[],maqCfgBanca:{},cbGastos:[],cbIngresos:[],cbOficinaGastos:[]};
 const VIRT_EMPRESAS=['MERENGUE','VARMANEX','VG','SOLL'];
 const VIRT_SUCURSALES=['PRIME SPORT 01','PRIME SPORT 02','PRIME SPORT 03','PRIME SPORT 04','PRIME SPORT 05','PRIME SPORT 06','PRIME SPORT 07','PRIME SPORT 08','PRIME SPORT 09','PRIME SPORT 10'];
 
@@ -1667,6 +1713,14 @@ async function loadState(){
       state._configReady=true;
     } else { state.config={}; state._configReady=false; }
   }catch(e){ state.config={}; state._configReady=false; }
+  // Desglose de efectivo — resilient
+  try{
+    const dg=await sb.from('desglose_efectivo').select('*');
+    if(!dg.error){
+      state.desgloses=dg.data.map(x=>({_id:x.id,fecha:x.fecha,denoms:x.denominaciones||{},totalContado:Number(x.total_contado)||0,totalEsperado:Number(x.total_esperado)||0,diferencia:Number(x.diferencia)||0,nota:x.nota,creadoPor:x.creado_por,creado:x.creado}));
+      state._desglosesReady=true;
+    } else { state.desgloses=[]; state._desglosesReady=false; }
+  }catch(e){ state.desgloses=[]; state._desglosesReady=false; }
   // Closed days (cierres) — resilient
   try{
     const c=await sb.from('cierres_dia').select('*');
@@ -3885,6 +3939,104 @@ function exportCuadreBancasWhatsApp(){
   lines.push(`*BCE TOTAL: RD$${fmt(totalBancas+ingresoGlobal-oficGastos)}*`);
   const url=`https://wa.me/?text=${encodeURIComponent(lines.join('\n'))}`;
   window.open(url,'_blank');
+}
+
+// ==========================================================
+// DESGLOSE DE EFECTIVO
+// ==========================================================
+const DENOMS_DR=[2000,1000,500,200,100,50,25,10,5,1];
+let dgFechaCur=null;
+
+function openDesglose(fecha){
+  showOnlyView('view-desglose');
+  dgFechaCur = fecha || corteDateVal || yesterdayISO();
+  document.getElementById('dgFecha').value=dgFechaCur;
+  document.getElementById('dgNota').value='';
+  renderDesglose();
+}
+
+function renderDesglose(){
+  dgFechaCur=document.getElementById('dgFecha').value;
+  // Load existing desglose for this date, if any
+  const existing=state.desgloses.find(d=>d.fecha===dgFechaCur);
+  const denoms=existing?existing.denoms:{};
+  // Render denomination inputs
+  const rows=DENOMS_DR.map(den=>{
+    const cant=denoms[den]||'';
+    const isMoneda=den<=25;
+    return `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f2f5f6;">
+      <span style="width:70px;font-size:13.5px;font-weight:700;color:${isMoneda?'#a37416':'var(--ink)'};">RD$${fmt(den)}</span>
+      <span style="font-size:11px;color:var(--muted);width:44px;">${isMoneda?'moneda':'billete'}</span>
+      <span style="font-size:13px;color:var(--muted);">×</span>
+      <input type="number" inputmode="numeric" id="dg_${den}" value="${cant}" placeholder="0" oninput="calcDesglose()" style="flex:1;max-width:90px;padding:9px;border:1px solid var(--line);border-radius:8px;font-size:14px;text-align:center;font-family:inherit;">
+      <span style="flex:1;text-align:right;font-size:13px;font-weight:700;color:var(--ink);" id="dgsub_${den}">RD$0</span>
+    </div>`;
+  }).join('');
+  document.getElementById('dgDenoms').innerHTML=rows;
+  if(existing&&existing.nota) document.getElementById('dgNota').value=existing.nota;
+  // Resumen: fecha ya guardada?
+  const resDiv=document.getElementById('dgResumen');
+  if(existing){
+    resDiv.innerHTML=`<div style="background:#eef6fa;border:1px solid #cfe5ef;border-radius:11px;padding:11px 13px;margin-bottom:14px;font-size:12px;color:var(--cerulean);">
+      ℹ️ Ya hay un desglose guardado para esta fecha. Puedes editarlo y volver a guardar.
+    </div>`;
+  } else { resDiv.innerHTML=''; }
+  calcDesglose();
+}
+
+function calcDesglose(){
+  let total=0;
+  DENOMS_DR.forEach(den=>{
+    const el=document.getElementById('dg_'+den);
+    const cant=el?parseInt(el.value)||0:0;
+    const sub=cant*den;
+    total+=sub;
+    const subEl=document.getElementById('dgsub_'+den);
+    if(subEl) subEl.textContent='RD$'+fmt(sub);
+  });
+  document.getElementById('dgTotalContado').textContent='RD$'+fmt(total);
+  // Comparación con lo recolectado (movido) del corte de esa fecha
+  const esperado=state.txns.filter(t=>t.type==='collect'&&(t.jornada===dgFechaCur||(!t.jornada&&t.date===dgFechaCur))).reduce((s,t)=>s+t.moved,0);
+  const dif=total-esperado;
+  const compDiv=document.getElementById('dgComparacion');
+  let color, label, icon;
+  if(Math.abs(dif)<1){ color='var(--green)'; label='Cuadra exacto'; icon='✅'; }
+  else if(dif>0){ color='#d9822b'; label='Sobra efectivo'; icon='⚠️'; }
+  else { color='var(--red)'; label='Falta efectivo'; icon='🔻'; }
+  compDiv.innerHTML=`<div class="panel" style="padding:14px;margin-bottom:14px;">
+    <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;"><span style="color:var(--muted);">Total recolectado (esperado)</span><span style="font-weight:700;color:var(--ink);">RD$${fmt(esperado)}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;"><span style="color:var(--muted);">Total contado</span><span style="font-weight:700;color:var(--ink);">RD$${fmt(total)}</span></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0 2px;margin-top:5px;border-top:1px dashed var(--line);">
+      <span style="font-size:13px;font-weight:800;color:${color};">${icon} ${label}</span>
+      <span style="font-size:16px;font-weight:800;color:${color};">RD$${fmt(Math.abs(dif))}</span>
+    </div>
+  </div>`;
+}
+
+async function guardarDesglose(){
+  if(!state._desglosesReady){ toast('Falta activar el desglose en la base de datos (SQL).',false); return; }
+  const denoms={};
+  DENOMS_DR.forEach(den=>{
+    const el=document.getElementById('dg_'+den);
+    const cant=el?parseInt(el.value)||0:0;
+    if(cant>0) denoms[den]=cant;
+  });
+  let total=0; Object.keys(denoms).forEach(den=>{ total+=denoms[den]*parseInt(den); });
+  const esperado=state.txns.filter(t=>t.type==='collect'&&(t.jornada===dgFechaCur||(!t.jornada&&t.date===dgFechaCur))).reduce((s,t)=>s+t.moved,0);
+  const dif=total-esperado;
+  const nota=document.getElementById('dgNota').value.trim();
+  setSyncState('saving');
+  try{
+    const row={fecha:dgFechaCur,denominaciones:denoms,total_contado:total,total_esperado:esperado,diferencia:dif,nota:nota||null,creado_por:currentUser||null};
+    const {data,error}=await sb.from('desglose_efectivo').upsert(row,{onConflict:'fecha'}).select();
+    if(error)throw error;
+    // Update local state
+    const idx=state.desgloses.findIndex(d=>d.fecha===dgFechaCur);
+    const obj={_id:data[0].id,fecha:dgFechaCur,denoms,totalContado:total,totalEsperado:esperado,diferencia:dif,nota,creadoPor:currentUser||null,creado:new Date().toISOString()};
+    if(idx>=0) state.desgloses[idx]=obj; else state.desgloses.push(obj);
+    setSyncState('ok');
+    toast('Desglose guardado',true);
+  }catch(e){ console.error(e); setSyncState('error'); toast('Error al guardar: '+(e.message||''),false); }
 }
 
 // ==========================================================
