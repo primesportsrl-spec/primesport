@@ -1645,7 +1645,7 @@ async function loadState(){
     sb.from('categorias_ingreso').select('*'),
     sb.from('categorias_gasto').select('*'),
     sb.from('tipos_aporte').select('*'),
-    sb.from('movimientos').select('*')
+    sb.from('movimientos').select('*').order('fecha',{ascending:true}).range(0,49999)
   ]);
   if(suc.error||ci.error||cg.error||ta.error||mov.error){
     throw (suc.error||ci.error||cg.error||ta.error||mov.error);
