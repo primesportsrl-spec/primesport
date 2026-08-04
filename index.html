@@ -623,9 +623,14 @@
     Enviar ruta al mensajero
   </button>
 
-  <button onclick="openDesglose(corteDateVal)" style="width:100%;border:1px solid #5a4a8a;background:#fff;color:#5a4a8a;border-radius:12px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:8px;">
+  <button onclick="openDesglose(corteDateVal)" style="width:100%;border:1px solid #5a4a8a;background:#fff;color:#5a4a8a;border-radius:12px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
     Desglose de efectivo
+  </button>
+
+  <button onclick="enviarResumenTotales()" style="width:100%;border:1px solid var(--navy);background:#fff;color:var(--navy);border-radius:12px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:8px;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="8"/><rect x="12" y="6" width="3" height="12"/><rect x="17" y="13" width="3" height="5"/></svg>
+    Enviar resumen (a mí)
   </button>
 
   <div class="fld" style="margin-bottom:14px;">
@@ -1436,6 +1441,11 @@
       <input type="tel" id="mensajeroNum" placeholder="Ej: 18095551234" style="flex:1;padding:11px;border:1px solid var(--line);border-radius:10px;font-size:13px;font-family:inherit;" onblur="saveMensajeroNum()">
     </div>
     <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5;">Con código de país sin +, sin espacios ni guiones. Ejemplo RD: 1809... Se usa para enviar la ruta de recolección por WhatsApp.</div>
+    <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin:14px 0 6px;">Mi número de WhatsApp (resumen del día)</label>
+    <div style="display:flex;gap:8px;">
+      <input type="tel" id="adminNum" placeholder="Ej: 18095551234" style="flex:1;padding:11px;border:1px solid var(--line);border-radius:10px;font-size:13px;font-family:inherit;" onblur="saveAdminNum()">
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5;">Aquí te llega el resumen de totales (Deportiva, Máquinas, virtuales) por banca y general.</div>
   </div>
 
   <div class="section-label" style="margin-top:6px;">Sucursales y fondos</div>
@@ -2620,6 +2630,48 @@ function enviarRutaMensajero(){
   lines.push(`*Neto total: RD$${fmt(total)}*`);
   if(anyEnvio) lines.push('');
   if(anyEnvio) lines.push('🔵 recoger · 🔴 llevar dinero a la banca');
+  const url=`https://wa.me/${num}?text=${encodeURIComponent(lines.join('\n'))}`;
+  window.open(url,'_blank');
+}
+
+// Envía a MI número el resumen de totales por categoría (Deportiva, Máquinas, virtuales)
+// por banca y general, de la jornada del corte.
+function enviarResumenTotales(){
+  const num=(state.config&&state.config.admin_num)||'';
+  if(!num){
+    toast('Primero guarda tu número en Ajustes',false);
+    setTimeout(()=>go('settings'),900);
+    return;
+  }
+  const d=new Date(corteDateVal+'T00:00:00');
+  const fechaTxt=`${d.getDate()} ${MONTHS_SHORT[d.getMonth()]} ${d.getFullYear()}`;
+  // Operaciones (income) de la jornada del corte (por su fecha = jornada)
+  const ops=state.txns.filter(t=>t.type==='income'&&t.date===corteDateVal);
+  // Etiqueta de categoría para agrupar: Deportiva, Máquinas, y cada virtual por subtipo
+  const catLabel=(t)=>{
+    if(t.category==='Virtuales') return 'Virtual '+(t.subtype||'?');
+    if(t.category==='Máquinas') return 'Máquinas';
+    if(t.category==='Deportiva') return 'Deportiva';
+    return t.category||'Otro';
+  };
+  const banks=sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false));
+  const lines=[`*PRIME SPORT · Resumen del día*`,`📅 Jornada: ${fechaTxt}`,''];
+  const totalGeneral={};
+  let hayDatos=false;
+  banks.forEach(b=>{
+    const bOps=ops.filter(t=>t.branch===b.name);
+    if(!bOps.length) return;
+    const porCat={};
+    bOps.forEach(t=>{ const k=catLabel(t); porCat[k]=(porCat[k]||0)+t.amount; totalGeneral[k]=(totalGeneral[k]||0)+t.amount; });
+    const bancaTxt=b.name.replace('PRIME SPORT','PS');
+    lines.push(`*${bancaTxt}*`);
+    Object.keys(porCat).sort().forEach(k=>{ lines.push(`  ${k}: RD$${fmt(porCat[k])}`); });
+    hayDatos=true;
+  });
+  if(!hayDatos){ toast('No hay operaciones en esta jornada',false); return; }
+  lines.push('');
+  lines.push(`*TOTALES GENERALES*`);
+  Object.keys(totalGeneral).sort().forEach(k=>{ lines.push(`${k}: RD$${fmt(totalGeneral[k])}`); });
   const url=`https://wa.me/${num}?text=${encodeURIComponent(lines.join('\n'))}`;
   window.open(url,'_blank');
 }
@@ -5883,6 +5935,7 @@ function printReport(){ window.print(); }
 function renderSettings(){
   const ul=document.getElementById('currentUserLabel'); if(ul&&currentUser) ul.textContent=currentUser;
   const mn=document.getElementById('mensajeroNum'); if(mn) mn.value=(state.config&&state.config.mensajero_num)||'';
+  const an=document.getElementById('adminNum'); if(an) an.value=(state.config&&state.config.admin_num)||'';
   document.getElementById('branchList').innerHTML=state.branches
     .map((b,i)=>({b,i}))
     .sort((x,y)=>{
@@ -5921,6 +5974,11 @@ function saveMensajeroNum(){
   const raw=document.getElementById('mensajeroNum').value.trim().replace(/[^0-9]/g,'');
   saveConfig('mensajero_num',raw);
   if(raw) toast('Número del mensajero guardado',true);
+}
+function saveAdminNum(){
+  const raw=document.getElementById('adminNum').value.trim().replace(/[^0-9]/g,'');
+  saveConfig('admin_num',raw);
+  if(raw) toast('Tu número guardado',true);
 }function delBranch(i){ if(!confirm(`¿Eliminar "${state.branches[i].name}"? Los movimientos existentes se conservan.`))return; cloudDeleteBranch(state.branches[i]._id); state.branches.splice(i,1); saveState(); renderSettings(); }
 async function toggleBranchActive(i){
   const b=state.branches[i];
