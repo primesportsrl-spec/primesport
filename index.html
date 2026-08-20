@@ -1360,6 +1360,18 @@
     <div style="font-size:14px;color:var(--ink);">PRIME SPORT Control es tu sistema integral de <b>caja, cuadre, virtuales y reportes</b>. Aquí está la guía rápida de cada módulo, en orden de uso diario.</div>
   </div>
 
+  <div class="panel" style="background:linear-gradient(135deg,#eef4fb,#dde9f6);border-color:#c3d8ee;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><svg viewBox="0 0 24 24" fill="none" stroke="var(--cerulean)" stroke-width="2" style="width:22px;height:22px;flex-shrink:0;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg><h3 style="font-size:15px;font-weight:700;color:var(--cerulean);">Quién hace qué</h3></div>
+    <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">
+    <b>Empleado (uso diario):</b><br>
+    1. Registra las <b>operaciones</b> de cada banca con el botón +.<br>
+    2. En el <b>Corte Diario</b>, anota lo que el mensajero recogió de cada banca.<br>
+    3. Envía la <b>ruta al mensajero</b> por WhatsApp.<br>
+    4. Cuenta el efectivo en <b>Desglose</b>.<br><br>
+    <b>Admin (tú):</b><br>
+    • Todo lo anterior, más: <b>Cierre de Mes</b>, <b>reportes</b>, <b>virtuales</b>, <b>ajustes</b> (bancas, categorías, números de WhatsApp), y el <b>resumen de totales</b> que te llega solo a ti.</div>
+  </div>
+
   <div class="panel">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><div style="width:30px;height:30px;border-radius:9px;background:var(--green-dim);color:#4cd6a0;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">1</div><h3 style="font-size:15px;font-weight:700;">Registrar movimientos (Botón +)</h3></div>
     <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">Toca el botón azul <b>+</b> abajo en el centro. Elige el tipo:<br><br>
@@ -1371,11 +1383,11 @@
 
   <div class="panel">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><div style="width:30px;height:30px;border-radius:9px;background:var(--cerulean-dim);color:var(--cerulean-bright);display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">2</div><h3 style="font-size:15px;font-weight:700;">Corte Diario</h3></div>
-    <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">Desde <b>Inicio</b>, toca la fecha arriba o "Corte Diario". Muestra el <b>cuadre operativo</b> de cada banca (ingresos − gastos − retiros del día), <b>el neto del día</b>, y los <b>pendientes arrastrados</b> de días anteriores.<br><br>
-    • <b>"⚡ Recolectar todo"</b>: mueve el cuadre completo de todas las bancas a la Oficina.<br>
-    • <b>Banca por banca</b>: escribe lo que el mensajero recogió de verdad. Si entrega menos, queda pendiente.<br>
-    • <b>"🔍 Auditar banca"</b>: ve el rastro completo de una banca día por día — útil para encontrar el origen de un descuadre.<br>
-    • <b>"🔒 Cerrar corte"</b>: bloquea el día con tu clave maestra. Envía resumen por WhatsApp.<br><br>
+    <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">Desde <b>Inicio</b>, toca la fecha arriba o "Corte Diario". Por defecto abre en <b>la jornada de ayer</b> (hoy se recibe lo de ayer). Muestra el <b>cuadre operativo</b> de cada banca, <b>el neto del día</b>, y los <b>pendientes arrastrados</b> de días anteriores.<br><br>
+    • <b>Banca por banca</b>: escribe lo que el mensajero recogió de verdad. Si entrega menos, queda pendiente. Pide <b>confirmación</b> antes de registrar (evita registros dobles).<br>
+    • <b>📱 Enviar ruta al mensajero</b>: abre WhatsApp con la lista de lo que cada banca debe entregar (🔵 recoger) o recibir (🔴 llevar), incluyendo lo arrastrado. Se manda al número del mensajero guardado en Ajustes.<br>
+    • <b>📊 Enviar resumen (a mí)</b>: te manda a TU número el desglose por banca y los totales generales por renglón (Deportiva, Máquinas, cada virtual).<br>
+    • <b>💵 Desglose de efectivo</b>: cuenta los billetes y monedas recibidos y compáralo con lo recolectado.<br><br>
     <b>Importante:</b> las transferencias (préstamos/devoluciones) son flujo de caja, <b>no afectan el pendiente operativo</b>. Solo el mensajero (collect) lo afecta.</div>
   </div>
 
@@ -1407,9 +1419,29 @@
   <div class="panel">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><div style="width:30px;height:30px;border-radius:9px;background:#3a3015;color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">6</div><h3 style="font-size:15px;font-weight:700;">Ajustes</h3></div>
     <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">
+    • <b>Números de WhatsApp</b>: el del <b>mensajero</b> (para la ruta de recolección) y el <b>tuyo</b> (para el resumen de totales del día).<br>
     • <b>Sucursales y fondos</b>: agrega bancas, define el fondo inicial de cada una (toca el monto azul), y <b>activa/desactiva</b> con el switch. Una sucursal inactiva no aparece en los formularios ni en el corte, pero conserva su historial.<br>
     • <b>Categorías</b>: edita las categorías de ingresos (con subtipos) y gastos.<br>
     • <b>Aportes</b>: define los tipos de aporte que tú o tus socios hacen a la oficina.</div>
+  </div>
+
+  <div class="panel">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><div style="width:30px;height:30px;border-radius:9px;background:#1a2e1f;color:#4cd6a0;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">7</div><h3 style="font-size:15px;font-weight:700;">Cierre de Mes</h3></div>
+    <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">Desde <b>Inicio</b>, tarjeta verde <b>"Cierre de Mes"</b>. Al terminar el mes, cierras el período y decides qué hacer con el saldo:<br><br>
+    • <b>Saldo a considerar</b>: pendiente en bancas, balance de oficina, o ambos.<br>
+    • <b>Modo</b>: <b>arrastrar</b> el saldo al mes siguiente, o <b>cerrar en 0</b>.<br>
+    • El saldo arrastrado aparece automáticamente en el mes siguiente.<br>
+    • Queda un <b>historial de cierres</b> y puedes <b>reabrir</b> un mes si necesitas corregir.<br><br>
+    <b>Por qué importa:</b> lo recibido a inicios de un mes que pertenece a jornadas del mes anterior cuenta en el mes correcto. El cierre te da el corte limpio sin tener que filtrar fechas a mano.</div>
+  </div>
+
+  <div class="panel" style="background:linear-gradient(135deg,#fef6e8,#fdedd4);border-color:#f0d9a8;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><svg viewBox="0 0 24 24" fill="none" stroke="#b8860b" stroke-width="2" style="width:22px;height:22px;flex-shrink:0;"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg><h3 style="font-size:15px;font-weight:700;color:#8a5a00;">Cómo funcionan las fechas (importante)</h3></div>
+    <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">
+    • <b>Operaciones</b>: se registran con fecha de <b>ayer</b> por defecto (la jornada que jugó la banca).<br>
+    • <b>Recolección (movido)</b>: cuenta el día que <b>físicamente entró</b> el dinero.<br>
+    • En el <b>día a día</b>, el movido aparece el día que entró. En el <b>balance del mes</b>, cuenta según la jornada.<br><br>
+    Regla simple: <b>hoy se recibe lo de ayer</b>. Por eso el corte abre en ayer, y verás "jornada de ayer ✓" en verde para confirmar que estás cuadrando el día correcto.</div>
   </div>
 
   <div class="panel" style="background:linear-gradient(135deg,#e8f7ef,#d4f0e0);border-color:#bce3c9;">
@@ -1605,6 +1637,12 @@ const fmt=n=>new Intl.NumberFormat('es-DO',{minimumFractionDigits:0,maximumFract
 function todayISO(){ return new Date().toISOString().slice(0,10); }
 function yesterdayISO(){ const d=new Date(); d.setDate(d.getDate()-1); return d.toISOString().slice(0,10); }
 function dayBefore(iso){ const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()-1); return d.toISOString().slice(0,10); }
+// Normaliza el nombre de banca: "PRIME SPORT 01" -> "PRIME SPORT 1" (quita cero inicial del número)
+// Evita descuadres cuando un registro se guarda con formato distinto al de la banca.
+function normBranchName(name){
+  if(!name) return name;
+  return name.replace(/(PRIME SPORT )0+(\d)/,'$1$2');
+}
 // Sort branch objects numerically by trailing number (Office last)
 function sortBranchesNum(arr){
   return arr.slice().sort((a,b)=>{
@@ -3454,8 +3492,28 @@ function cbMaqNetoBanca(branch){
 // Neto de Virtuales por banca: lo que la banca produjo (en términos de Balance/Total)
 // — usamos el "total" registrado para esa banca en el mes (suma de todas las empresas/proveedores)
 function cbVirtNetoBanca(branch){
+  // MI PARTE (socio principal "Alberto") de los virtuales de esta banca en el mes del cuadre.
+  // Aplica las mismas fórmulas de reparto del módulo de Virtuales, banca por banca.
   const regs=state.virtRegs.filter(r=>r.anio===cbAnioCur&&r.mes===cbMesCur&&r.sucursal===branch);
-  return regs.reduce((s,r)=>s+(r.total||0),0);
+  if(!regs.length) return 0;
+  let miParte=0;
+  // Agrupar por empresa + proveedor (cada proveedor tiene sus propios %)
+  const groups={};
+  regs.forEach(r=>{ const k=r.empresa+'|'+(r.proveedorId||''); (groups[k]=groups[k]||[]).push(r); });
+  Object.values(groups).forEach(er=>{
+    const prov=state.virtProviders.find(p=>p._id===er[0].proveedorId);
+    if(!prov) return;
+    const balanceTotal=er.reduce((s,r)=>s+r.balance,0);
+    const comisionTotal=er.reduce((s,r)=>s+r.comision,0);
+    const totalNeto=er.reduce((s,r)=>s+r.total,0);
+    const bonosTotal=er.reduce((s,r)=>s+r.bonos,0);
+    const d=virtDistributeProvider(prov,balanceTotal,comisionTotal,totalNeto,bonosTotal);
+    if(!d) return;
+    // Sumar lo que le toca al socio principal (socio1 del proveedor)
+    const mio=d.socios.find(s=>s.nombre===prov.socio1);
+    if(mio) miParte+=mio.monto;
+  });
+  return Math.round(miParte);
 }
 
 // Ingreso manual de una categoría
@@ -5702,8 +5760,9 @@ async function saveVirtRegistro(){
   let saved=0;
   try{
     const activeSucs=activeVirtSucursales();
-    for(const suc of activeSucs){
-      const id=suc.replace(/[^0-9]/g,'');
+    for(const sucRaw of activeSucs){
+      const suc=normBranchName(sucRaw);   // normaliza "01"->"1" para que cuadre con las bancas
+      const id=sucRaw.replace(/[^0-9]/g,'');
       const g=k=>{ const el=document.getElementById(`vr_${k}_${id}`); if(!el)return 0; const v=parseFloat(el.value); return isNaN(v)?0:v; };
       const tk=g('tk'),venta=g('venta'),balance=g('balance'),bonos=g('bonos'),comision=g('comision'),faltantes=g('faltantes');
       const hasData=(tk||venta||balance||bonos||comision||faltantes);
