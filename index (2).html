@@ -936,7 +936,8 @@
       Captura los gastos de cada banca. Usa el botón <b>"Traer del cuadre diario"</b> para revisar e importar gastos registrados con el +.
     </div>
     <div class="fld" style="margin-bottom:10px;"><label>Banca</label><select id="cbGastoBranch" onchange="renderCbGastoEditor()"></select></div>
-    <button onclick="openCbImportar()" style="width:100%;border:1px solid var(--cerulean);background:#fff;color:var(--cerulean);border-radius:11px;padding:10px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:12px;">⇩ Traer gastos del cuadre diario</button>
+    <button onclick="openCbImportar()" style="width:100%;border:1px solid var(--cerulean);background:#fff;color:var(--cerulean);border-radius:11px;padding:10px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:8px;">⇩ Traer gastos del cuadre diario</button>
+    <button onclick="cbProrratearOficina()" style="width:100%;border:1px solid #dcc4a0;background:#fffaf2;color:#8a6224;border-radius:11px;padding:10px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:12px;">➗ Prorratear gastos de oficina entre las bancas</button>
     <div id="cbGastoEditor"></div>
   </div>
 
@@ -958,23 +959,23 @@
     <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Traer gastos del cuadre</div><div style="font-size:12px;color:var(--muted);" id="cbImportSubtitle">—</div></div>
   </div>
 
-  <div style="font-size:11.5px;color:var(--muted);background:#f4f6f7;border-radius:9px;padding:9px 11px;margin-bottom:12px;line-height:1.5;">
-    Revisa los gastos por banca. Marca los que van al cuadre mensual y ajusta la categoría destino si hace falta. Los no marcados se quedan solo en el cuadre diario.
+  <div style="font-size:11.5px;color:var(--muted);background:#f4f6f7;border-radius:9px;padding:9px 11px;margin-bottom:10px;line-height:1.5;">
+    Marca los gastos que quieres llevar al cuadre mensual. En cada uno eliges <b>a dónde va</b> (una banca o la Oficina) y el <b>renglón</b>. Los no marcados se quedan solo en el cuadre diario.
   </div>
 
-  <div style="display:flex;gap:8px;margin-bottom:12px;">
+  <div style="display:flex;gap:8px;margin-bottom:10px;">
     <button onclick="cbImportSelectAll(true)" style="flex:1;border:1px solid var(--cerulean);background:#fff;color:var(--cerulean);border-radius:10px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">✓ Seleccionar todos</button>
-    <button onclick="cbImportSelectAll(false)" style="flex:1;border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:10px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">✕ Ninguno</button>
+    <button onclick="cbImportSelectAll(false)" style="flex:1;border:1px solid #dde3e6;background:#fff;color:var(--muted);border-radius:10px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Ninguno</button>
   </div>
 
   <div id="cbImportList"></div>
 
-  <div style="position:sticky;bottom:0;background:#fff;border-top:2px solid var(--navy);padding:12px 0;margin-top:8px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-      <span style="font-size:13px;font-weight:700;color:var(--muted);"><span id="cbImportCount">0</span> gastos · Total</span>
-      <span style="font-size:17px;font-weight:800;color:var(--red);" id="cbImportTotal">RD$0</span>
+  <div style="position:sticky;bottom:0;background:#fff;border-top:1px solid #eef2f4;padding:10px 0 4px;margin-top:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <span style="font-size:12.5px;font-weight:700;color:var(--muted);" id="cbImportCount">0 gastos marcados</span>
+      <span style="font-size:16px;font-weight:800;color:var(--red);" id="cbImportTotal">RD$0</span>
     </div>
-    <button onclick="cbImportSelected()" class="btn-primary" style="width:100%;padding:13px;">Importar seleccionados</button>
+    <button onclick="cbImportSelected()" class="btn-primary" style="margin:0;">Importar seleccionados</button>
   </div>
 </section>
 
@@ -1528,7 +1529,7 @@
       <div class="si-act" style="color:var(--amber);" onclick="doLogout()">Salir</div>
     </div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;">PRIME SPORT · v3.0 nube · Santo Domingo, RD</div>
+  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;">PRIME SPORT · v3.3 nube · Santo Domingo, RD</div>
 </section>
 
 <!-- NAV -->
@@ -1614,7 +1615,7 @@ const DEFAULTS={
 
 let state={txns:[],branches:[],incCats:[],expCats:[],officeIncCats:[],maquinas:[],lecturas:[],denoms:[],cierres:[],cierresMes:[],config:{},desgloses:[],virtRegs:[],virtConfig:null,virtProviders:[],virtSucursalesInactivas:{},virtRenglonesInactivos:{},maqGastos:[],maqPog:[],maqCfgBanca:{},cbGastos:[],cbIngresos:[],cbOficinaGastos:[]};
 const VIRT_EMPRESAS=['MERENGUE','VARMANEX','VG','SOLL'];
-const VIRT_SUCURSALES=['PRIME SPORT 1','PRIME SPORT 2','PRIME SPORT 3','PRIME SPORT 4','PRIME SPORT 5','PRIME SPORT 6','PRIME SPORT 7','PRIME SPORT 8','PRIME SPORT 9','PRIME SPORT 10'];
+const VIRT_SUCURSALES=['PRIME SPORT 01','PRIME SPORT 02','PRIME SPORT 03','PRIME SPORT 04','PRIME SPORT 05','PRIME SPORT 06','PRIME SPORT 07','PRIME SPORT 08','PRIME SPORT 09','PRIME SPORT 10'];
 
 // Cuadre Bancas — categorías estándar (basadas en Libro1.xlsx)
 const CB_GASTO_CATS=['Alquiler','Combustible','D. Feriados','Dieta','E. Eléctrica','Mant/Reparación','Nómina Dig','Nómina Limp','Picheos','DGII','Tel y/o Cable','Mat Limp','Agua','Mat Gastable','Central','Otros','Vacaciones','Licencia','TSS','Infotep','Liquidación','Administración'];
@@ -1777,7 +1778,7 @@ async function loadState(){
     ]);
     state.cbGastos = (!cbg.error) ? cbg.data.map(g=>({_id:g.id,anio:g.anio,mes:g.mes,sucursal:g.sucursal,categoria:g.categoria,monto:Number(g.monto)||0,origen:g.origen||'manual',refTxnId:g.ref_txn_id||null})) : [];
     state.cbIngresos = (!cbi.error) ? cbi.data.map(i=>({_id:i.id,anio:i.anio,mes:i.mes,sucursal:i.sucursal,categoria:i.categoria,monto:Number(i.monto)||0})) : [];
-    state.cbOficinaGastos = (!cbo.error) ? cbo.data.map(o=>({_id:o.id,anio:o.anio,mes:o.mes,categoria:o.categoria,monto:Number(o.monto)||0,refTxnId:o.ref_txn_id||null})) : [];
+    state.cbOficinaGastos = (!cbo.error) ? cbo.data.map(o=>({_id:o.id,anio:o.anio,mes:o.mes,categoria:o.categoria,monto:Number(o.monto)||0,origen:o.origen||'manual',refTxnId:o.ref_txn_id||null,sucursal:o.sucursal||null})) : [];
     state._cbReady = !cbg.error && !cbi.error && !cbo.error;
   }catch(e){ console.warn('Cuadre bancas tables not ready',e); state.cbGastos=[]; state.cbIngresos=[]; state.cbOficinaGastos=[]; state._cbReady=false; }
   // App config (mensajero number, etc.) — resilient
@@ -3551,6 +3552,19 @@ function cbGastosBranchTotal(branch){
 function cbGastoBranchCat(branch, cat){
   return state.cbGastos.filter(g=>g.anio===cbAnioCur&&g.mes===cbMesCur&&g.sucursal===branch&&g.categoria===cat).reduce((s,g)=>s+g.monto,0);
 }
+// Solo la fila manual (la que se edita en el formulario)
+function cbGastoManualCat(branch, cat){
+  const r=state.cbGastos.find(g=>g.anio===cbAnioCur&&g.mes===cbMesCur&&g.sucursal===branch&&g.categoria===cat&&!g.refTxnId);
+  return r?r.monto:0;
+}
+// Filas traídas del cuadre diario o prorrateadas
+function cbGastoImportCat(branch, cat){
+  return state.cbGastos.filter(g=>g.anio===cbAnioCur&&g.mes===cbMesCur&&g.sucursal===branch&&g.categoria===cat&&g.refTxnId).reduce((s,g)=>s+g.monto,0);
+}
+// Solo lo prorrateado de la oficina
+function cbGastoProrrateoCat(branch, cat){
+  return state.cbGastos.filter(g=>g.anio===cbAnioCur&&g.mes===cbMesCur&&g.sucursal===branch&&g.categoria===cat&&g.origen==='prorrateo').reduce((s,g)=>s+g.monto,0);
+}
 
 // === MATRIZ TABLE ===
 function renderCbMatriz(){
@@ -3563,11 +3577,16 @@ function renderCbMatriz(){
   // Header
   html.push('<thead><tr><th>Concepto</th>');
   branches.forEach(b=>html.push(`<th>${b.name.replace('PRIME SPORT ','P')}</th>`));
+  html.push('<th title="Gastos de la oficina central — informativo, no entra en el TOTAL">🏢 OFC</th>');
   html.push('<th>TOTAL</th></tr></thead>');
+
+  const ofcCat=(cat)=>state.cbOficinaGastos.filter(o=>o.anio===cbAnioCur&&o.mes===cbMesCur&&o.categoria===cat).reduce((s,o)=>s+o.monto,0);
+  const ofcTotal=state.cbOficinaGastos.filter(o=>o.anio===cbAnioCur&&o.mes===cbMesCur).reduce((s,o)=>s+o.monto,0);
+  const ofcCell=(v)=>`<td style="color:#8a6224;font-style:italic;background:#fffaf2;">${v?fmt(v):'—'}</td>`;
 
   html.push('<tbody>');
   // INGRESOS section
-  html.push('<tr class="cb-row-sep"><td colspan="'+(branches.length+2)+'">INGRESOS (manual)</td></tr>');
+  html.push('<tr class="cb-row-sep"><td colspan="'+(branches.length+3)+'">INGRESOS (manual)</td></tr>');
   CB_INGRESO_CATS.forEach(cat=>{
     let rowTotal=0;
     let row=`<tr><td>${cat}</td>`;
@@ -3576,6 +3595,7 @@ function renderCbMatriz(){
       rowTotal+=v;
       row+=`<td>${v?fmt(v):'—'}</td>`;
     });
+    row+=ofcCell(0);
     row+=`<td><b>${rowTotal?fmt(rowTotal):'—'}</b></td></tr>`;
     html.push(row);
   });
@@ -3587,6 +3607,7 @@ function renderCbMatriz(){
     maqTotal+=v;
     maqRow+=`<td style="color:#0086AD;">${v?fmt(v):'—'}</td>`;
   });
+  maqRow+=ofcCell(0);
   maqRow+=`<td><b style="color:#0086AD;">${maqTotal?fmt(maqTotal):'—'}</b></td></tr>`;
   html.push(maqRow);
 
@@ -3596,6 +3617,7 @@ function renderCbMatriz(){
     virtTotal+=v;
     virtRow+=`<td style="color:#6b3fa0;">${v?fmt(v):'—'}</td>`;
   });
+  virtRow+=ofcCell(0);
   virtRow+=`<td><b style="color:#6b3fa0;">${virtTotal?fmt(virtTotal):'—'}</b></td></tr>`;
   html.push(virtRow);
 
@@ -3610,11 +3632,12 @@ function renderCbMatriz(){
     totIngTotal+=v;
     totIngRow+=`<td>${fmt(v)}</td>`;
   });
+  totIngRow+=ofcCell(0);
   totIngRow+=`<td>${fmt(totIngTotal)}</td></tr>`;
   html.push(totIngRow);
 
   // GASTOS section
-  html.push('<tr class="cb-row-sep"><td colspan="'+(branches.length+2)+'">GASTOS</td></tr>');
+  html.push('<tr class="cb-row-sep"><td colspan="'+(branches.length+3)+'">GASTOS</td></tr>');
   CB_GASTO_CATS.forEach(cat=>{
     let rowTotal=0;
     const cells=branches.map(b=>{
@@ -3622,11 +3645,23 @@ function renderCbMatriz(){
       rowTotal+=v;
       return v;
     });
+    const ofc=ofcCat(cat);
     // skip categories with zero total — keeps the table clean
-    if(rowTotal===0) return;
+    if(rowTotal===0 && ofc===0) return;
     let row=`<tr><td>${cat}</td>`;
     cells.forEach(v=>{ row+=`<td>${v?fmt(v):'—'}</td>`; });
-    row+=`<td><b>${fmt(rowTotal)}</b></td></tr>`;
+    row+=ofcCell(ofc);
+    row+=`<td><b>${rowTotal?fmt(rowTotal):'—'}</b></td></tr>`;
+    html.push(row);
+  });
+  // Renglones que solo existen en la oficina (no están en la lista de bancas)
+  CB_OFICINA_CATS.filter(c=>!CB_GASTO_CATS.includes(c)).forEach(cat=>{
+    const ofc=ofcCat(cat);
+    if(!ofc) return;
+    let row=`<tr><td style="color:#8a6224;">${cat} <span style="font-size:9px;">(solo oficina)</span></td>`;
+    branches.forEach(()=>{ row+='<td>—</td>'; });
+    row+=ofcCell(ofc);
+    row+='<td><b>—</b></td></tr>';
     html.push(row);
   });
   // Total gastos
@@ -3637,6 +3672,7 @@ function renderCbMatriz(){
     totGastTotal+=v;
     totGastRow+=`<td>${fmt(v)}</td>`;
   });
+  totGastRow+=ofcCell(ofcTotal);
   totGastRow+=`<td>${fmt(totGastTotal)}</td></tr>`;
   html.push(totGastRow);
 
@@ -3653,10 +3689,12 @@ function renderCbMatriz(){
     balTotal+=bal;
     balRow+=`<td style="color:${bal<0?'#f08980':'#7ce6b3'};">${fmt(bal)}</td>`;
   });
+  balRow+=`<td style="color:#f5cd8a;font-style:italic;">(${fmt(ofcTotal)})</td>`;
   balRow+=`<td style="color:${balTotal<0?'#f08980':'#7ce6b3'};">${fmt(balTotal)}</td></tr>`;
   html.push(balRow);
 
   html.push('</tbody></table>');
+  html.push('<div style="font-size:10.5px;color:var(--muted);margin-top:8px;line-height:1.5;background:#fffaf2;border-radius:8px;padding:8px 10px;"><b style="color:#8a6224;">🏢 OFC</b> es la oficina central, <b>solo informativa</b>: no se suma al TOTAL ni al balance de las bancas. Para repartirla entre las sucursales usa el botón <b>➗ Prorratear</b> en la pestaña de Gastos.</div>');
   document.getElementById('cbMatrizTable').innerHTML=html.join('');
 }
 
@@ -3852,10 +3890,20 @@ function renderCbGastoEditor(){
   if(!branch) return;
   const wrap=document.getElementById('cbGastoEditor');
   const rows=CB_GASTO_CATS.map(cat=>{
-    const v=cbGastoBranchCat(branch,cat);
+    const man=cbGastoManualCat(branch,cat);
+    const imp=cbGastoImportCat(branch,cat);
+    const pro=cbGastoProrrateoCat(branch,cat);
+    const traido=imp-pro;
+    const tot=man+imp;
+    const marks=[];
+    if(traido) marks.push(`RD$${fmt(traido)} traído del cuadre diario`);
+    if(pro) marks.push(`RD$${fmt(pro)} prorrateado de la oficina`);
+    if(man&&marks.length) marks.push(`RD$${fmt(man)} tuyo`);
+    const chip = pro?'➗ PRORRATEADO':(imp?'⇩ IMPORTADO':'');
     return `<div style="margin-bottom:14px;">
-      <label style="display:block;font-size:12.5px;font-weight:700;color:var(--ink);margin-bottom:6px;">${cat}</label>
-      <div class="amount-input" style="margin:0;"><span class="cur">RD$</span><input type="number" inputmode="decimal" id="cbGC_${cat.replace(/[\s\/]+/g,'_')}" value="${v||''}" placeholder="0" style="font-size:15px;padding:13px 13px 13px 46px;"></div>
+      <label style="display:block;font-size:12.5px;font-weight:700;color:var(--ink);margin-bottom:6px;">${cat}${chip?` <span style="font-size:10px;color:var(--cerulean);font-weight:800;">${chip}</span>`:''}</label>
+      <div class="amount-input" style="margin:0;"><span class="cur">RD$</span><input type="number" inputmode="decimal" id="cbGC_${cat.replace(/[\s\/]+/g,'_')}" value="${tot||''}" placeholder="0" style="font-size:15px;padding:13px 13px 13px 46px;${imp?'border-color:var(--cerulean);':''}"></div>
+      ${marks.length?`<div style="font-size:10.5px;color:var(--cerulean);font-weight:700;margin-top:5px;">Incluye ${marks.join(' + ')}</div>`:''}
     </div>`;
   }).join('');
   const total=cbGastosBranchTotal(branch);
@@ -3866,7 +3914,8 @@ function renderCbGastoEditor(){
       <span style="font-size:16px;font-weight:800;color:var(--red);">RD$${fmt(total)}</span>
     </div>
     <button onclick="guardarCbGastos('${branch}')" class="btn-primary" style="width:100%;margin:0;padding:14px;">💾 Guardar gastos de ${branch.replace('PRIME SPORT','PS')}</button>
-  </div>`;
+  </div>
+  ${renderCbImportadosPanel()}`;
 }
 
 async function guardarCbGastos(branch){
@@ -3884,7 +3933,10 @@ async function guardarCbGastos(branch){
 }
 
 async function saveCbGastoCat(branch, cat, valStr){
-  const monto=parseFloat(valStr);
+  const imp=cbGastoImportCat(branch,cat);
+  const total=parseFloat(valStr);
+  // El campo muestra el total (manual + importado). Solo guardamos la parte manual.
+  const monto = isNaN(total) ? NaN : Math.round(Math.max(0,total-imp)*100)/100;
   setSyncState('saving');
   // Save aggregated: 1 row per (branch,cat) without ref_txn_id (the "manual" row)
   const existing=state.cbGastos.find(g=>g.anio===cbAnioCur&&g.mes===cbMesCur&&g.sucursal===branch&&g.categoria===cat&&!g.refTxnId);
@@ -3910,11 +3962,14 @@ async function saveCbGastoCat(branch, cat, valStr){
 function renderCbOficinaEditor(){
   const wrap=document.getElementById('cbOficinaEditor');
   const rows=CB_OFICINA_CATS.map(cat=>{
-    const r=state.cbOficinaGastos.find(o=>o.anio===cbAnioCur&&o.mes===cbMesCur&&o.categoria===cat);
-    const v=r?r.monto:0;
+    const r=state.cbOficinaGastos.find(o=>o.anio===cbAnioCur&&o.mes===cbMesCur&&o.categoria===cat&&!o.refTxnId);
+    const man=r?r.monto:0;
+    const imp=state.cbOficinaGastos.filter(o=>o.anio===cbAnioCur&&o.mes===cbMesCur&&o.categoria===cat&&o.refTxnId).reduce((s,o)=>s+o.monto,0);
+    const tot=man+imp;
     return `<div style="margin-bottom:14px;">
-      <label style="display:block;font-size:12.5px;font-weight:700;color:var(--ink);margin-bottom:6px;">${cat}</label>
-      <div class="amount-input" style="margin:0;"><span class="cur">RD$</span><input type="number" inputmode="decimal" id="cbO_${cat.replace(/[\s\/]+/g,'_')}" value="${v||''}" placeholder="0" style="font-size:15px;padding:13px 13px 13px 46px;"></div>
+      <label style="display:block;font-size:12.5px;font-weight:700;color:var(--ink);margin-bottom:6px;">${cat}${imp?' <span style="font-size:10px;color:var(--cerulean);font-weight:800;">⇩ IMPORTADO</span>':''}</label>
+      <div class="amount-input" style="margin:0;"><span class="cur">RD$</span><input type="number" inputmode="decimal" id="cbO_${cat.replace(/[\s\/]+/g,'_')}" value="${tot||''}" placeholder="0" style="font-size:15px;padding:13px 13px 13px 46px;${imp?'border-color:var(--cerulean);':''}"></div>
+      ${imp?`<div style="font-size:10.5px;color:var(--cerulean);font-weight:700;margin-top:5px;">Incluye RD$${fmt(imp)} traído del cuadre diario${man?` + RD$${fmt(man)} tuyo`:''}</div>`:''}
     </div>`;
   }).join('');
   const total=state.cbOficinaGastos.filter(o=>o.anio===cbAnioCur&&o.mes===cbMesCur).reduce((s,o)=>s+o.monto,0);
@@ -3926,11 +3981,7 @@ function renderCbOficinaEditor(){
     </div>
     <button onclick="guardarCbOficina()" class="btn-primary" style="width:100%;margin:0;padding:14px;">💾 Guardar gastos de Oficina</button>
   </div>
-  <div class="panel" style="padding:16px;margin-bottom:10px;background:linear-gradient(135deg,#eef4fb,#e2ecf7);border-color:#c3d8ee;">
-    <div style="font-size:13px;font-weight:800;color:var(--cerulean);margin-bottom:6px;">Prorratear entre bancas</div>
-    <div style="font-size:11.5px;color:var(--muted);line-height:1.5;margin-bottom:12px;">Divide el total de gastos de oficina (RD$${fmt(total)}) en partes iguales entre las bancas activas y lo coloca en el renglón <b>"Administración"</b> de cada una. Si ya prorrateaste este mes, recalcula sin duplicar.</div>
-    <button onclick="prorratearOficina()" style="width:100%;border:1px solid var(--cerulean);background:var(--cerulean);color:#fff;border-radius:11px;padding:13px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">⚖️ Prorratear gastos de oficina</button>
-  </div>`;
+  ${renderCbImportadosPanel()}`;
 }
 
 async function guardarCbOficina(){
@@ -3947,9 +3998,11 @@ async function guardarCbOficina(){
 }
 
 async function saveCbOficina(cat, valStr){
-  const monto=parseFloat(valStr);
+  const imp=state.cbOficinaGastos.filter(o=>o.anio===cbAnioCur&&o.mes===cbMesCur&&o.categoria===cat&&o.refTxnId).reduce((s,o)=>s+o.monto,0);
+  const total=parseFloat(valStr);
+  const monto = isNaN(total) ? NaN : Math.round(Math.max(0,total-imp)*100)/100;
   setSyncState('saving');
-  const existing=state.cbOficinaGastos.find(o=>o.anio===cbAnioCur&&o.mes===cbMesCur&&o.categoria===cat);
+  const existing=state.cbOficinaGastos.find(o=>o.anio===cbAnioCur&&o.mes===cbMesCur&&o.categoria===cat&&!o.refTxnId);
   try{
     if(isNaN(monto)||monto===0){
       if(existing){
@@ -3960,211 +4013,334 @@ async function saveCbOficina(cat, valStr){
       await sb.from('cuadre_oficina_gasto').update({monto}).eq('id',existing._id);
       existing.monto=monto;
     } else {
-      const {data,error}=await sb.from('cuadre_oficina_gasto').insert({anio:cbAnioCur,mes:cbMesCur,categoria:cat,monto,creado_por:currentUser||null}).select();
+      const {data,error}=await sb.from('cuadre_oficina_gasto').insert({anio:cbAnioCur,mes:cbMesCur,categoria:cat,monto,origen:'manual',creado_por:currentUser||null}).select();
       if(error)throw error;
-      state.cbOficinaGastos.push({_id:data[0].id,anio:cbAnioCur,mes:cbMesCur,categoria:cat,monto});
+      state.cbOficinaGastos.push({_id:data[0].id,anio:cbAnioCur,mes:cbMesCur,categoria:cat,monto,origen:'manual',refTxnId:null,sucursal:null});
     }
     setSyncState('ok');
   }catch(e){ console.error(e); setSyncState('error'); toast('Error: '+(e.message||''),false); }
 }
 
-// Prorratea el total de gastos de oficina en partes iguales entre las bancas activas,
-// colocándolo en el renglón "Administración" de cada banca. No duplica: borra el prorrateo anterior.
-async function prorratearOficina(){
-  const totalOficina=state.cbOficinaGastos.filter(o=>o.anio===cbAnioCur&&o.mes===cbMesCur).reduce((s,o)=>s+o.monto,0);
-  if(totalOficina===0){ toast('No hay gastos de oficina para prorratear',false); return; }
-  const banks=cbActiveBranches();
-  if(!banks.length){ toast('No hay bancas activas',false); return; }
-  const parte=Math.round((totalOficina/banks.length)*100)/100;
-  if(!confirm(`¿Prorratear RD$${fmt(totalOficina)} entre ${banks.length} bancas?\n\nCada una recibirá RD$${fmt(parte)} en su renglón "Administración".\n\nSi ya prorrateaste este mes, se recalcula (no duplica).`)) return;
-  setSyncState('saving');
-  try{
-    // 1) Borrar prorrateo anterior (gastos de banca con origen 'prorrateo' este mes)
-    const prev=state.cbGastos.filter(g=>g.anio===cbAnioCur&&g.mes===cbMesCur&&g.origen==='prorrateo');
-    for(const g of prev){
-      await sb.from('cuadre_banca_gasto').delete().eq('id',g._id);
-    }
-    state.cbGastos=state.cbGastos.filter(g=>!(g.anio===cbAnioCur&&g.mes===cbMesCur&&g.origen==='prorrateo'));
-    // 2) Insertar la parte en "Administración" de cada banca
-    let count=0;
-    for(const b of banks){
-      const {data,error}=await sb.from('cuadre_banca_gasto').insert({anio:cbAnioCur,mes:cbMesCur,sucursal:b.name,categoria:'Administración',monto:parte,origen:'prorrateo',creado_por:currentUser||null}).select();
-      if(error) throw error;
-      state.cbGastos.push({_id:data[0].id,anio:cbAnioCur,mes:cbMesCur,sucursal:b.name,categoria:'Administración',monto:parte,origen:'prorrateo'});
-      count++;
-    }
-    setSyncState('ok');
-    toast(`Prorrateado en ${count} bancas · RD$${fmt(parte)} c/u`,true);
-    renderCbConsolidado();
-    renderCbHero();
-    cbShowTab('gastos');
-  }catch(e){ console.error(e); setSyncState('error'); toast('Error al prorratear: '+(e.message||''),false); }
+// === IMPORTAR GASTOS DEL CUADRE DIARIO ===
+const CB_DEST_OFICINA='__OFICINA__';
+let _cbImportSel={};   // txnId -> true/false
+let _cbImportDest={};  // txnId -> nombre de banca o CB_DEST_OFICINA
+let _cbImportCat={};   // txnId -> renglón elegido
+
+function cbImportAlready(id){
+  return state.cbGastos.some(g=>g.refTxnId===id) || state.cbOficinaGastos.some(o=>o.refTxnId===id);
 }
-let _cbImportSelected={};
-let _cbImportCat={};
-let _cbImportDest={};
-function openCbImportar(){
-  _cbImportSelected={};
-  _cbImportCat={};  // override de categoría destino por txn id
-  showOnlyView('view-cbimport');
-  document.getElementById('cbImportSubtitle').textContent=`${MONTHS[cbMesCur-1]} ${cbAnioCur}`;
-  const expTxns=state.txns.filter(t=>{
+function cbImportCatsFor(dest){
+  return dest===CB_DEST_OFICINA ? CB_OFICINA_CATS : CB_GASTO_CATS;
+}
+function cbImportGuessCat(dest, rawCat){
+  const list=cbImportCatsFor(dest);
+  const raw=(rawCat||'').toLowerCase().trim();
+  return list.find(c=>c.toLowerCase()===raw) || list.find(c=>raw&&c.toLowerCase().startsWith(raw.slice(0,4))) || 'Otros';
+}
+function cbImportIsOfficeBranch(name){
+  const b=state.branches.find(x=>x.name===name);
+  return !!(b&&b.isOffice);
+}
+
+function cbImportTxns(){
+  return state.txns.filter(t=>{
     if(t.type!=='expense') return false;
     const d=new Date(t.date+'T00:00:00');
     return d.getMonth()+1===cbMesCur && d.getFullYear()===cbAnioCur;
-  }).sort((a,b)=>a.date<b.date?-1:1);
-  if(!expTxns.length){
-    document.getElementById('cbImportList').innerHTML='<div class="empty-hint" style="padding:20px;">No hay gastos en el cuadre diario este mes.</div>';
-    cbImportUpdateTotal();
-    return;
+  }).sort((a,b)=>{
+    if(a.branch!==b.branch) return a.branch<b.branch?-1:1;
+    return a.date<b.date?-1:1;
+  });
+}
+
+function openCbImportar(){
+  _cbImportSel={}; _cbImportDest={}; _cbImportCat={};
+  showOnlyView('view-cbimport');
+  document.getElementById('cbImportSubtitle').textContent=`${MONTHS[cbMesCur-1]} ${cbAnioCur}`;
+  // Valores por defecto: destino = donde se registró (Oficina si es la oficina), renglón = mapeo automático
+  cbImportTxns().forEach(t=>{
+    const dest = cbImportIsOfficeBranch(t.branch) ? CB_DEST_OFICINA : t.branch;
+    _cbImportDest[t.id]=dest;
+    _cbImportCat[t.id]=cbImportGuessCat(dest,t.category);
+  });
+  renderCbImportList();
+}
+
+function renderCbImportList(){
+  const wrap=document.getElementById('cbImportList');
+  const txns=cbImportTxns();
+  if(!txns.length){
+    wrap.innerHTML='<div class="empty-hint" style="padding:20px;">No hay gastos en el cuadre diario este mes.</div>';
+    cbImportUpdateBar(); return;
   }
-  // Agrupar por banca
-  const byBranch={};
-  expTxns.forEach(t=>{ (byBranch[t.branch]=byBranch[t.branch]||[]).push(t); });
-  const branchNames=sortBranchesNum(Object.keys(byBranch));
-  // Opciones de categoría destino
-  const catOptions=CB_GASTO_CATS.map(c=>`<option value="${c}">${c}</option>`).join('');
-  let html='';
-  branchNames.forEach(bn=>{
-    const list=byBranch[bn];
-    const bancaTxt=bn.replace('PRIME SPORT','PS');
-    const bid='cbimpb_'+bn.replace(/[^a-zA-Z0-9]/g,'_');
-    // subtotal de no-importados
-    const subtotal=list.reduce((s,t)=> s + (state.cbGastos.some(g=>g.refTxnId===t._id)?0:t.amount), 0);
-    html+=`<div style="margin-bottom:14px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:linear-gradient(135deg,#1a2536,#22303f);border-radius:9px 9px 0 0;">
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;color:#fff;font-size:13px;font-weight:700;">
-          <input type="checkbox" onchange="cbImportToggleBranch('${bn.replace(/'/g,"")}',this.checked)" style="width:17px;height:17px;cursor:pointer;">
-          ${bancaTxt}
-        </label>
-        <span style="color:#8fa9bd;font-size:11px;">${list.length} gasto${list.length!==1?'s':''} · RD$${fmt(subtotal)}</span>
-      </div>`;
-    list.forEach(t=>{
-      const already = state.cbGastos.some(g=>g.refTxnId===t._id) || state.cbOficinaGastos.some(g=>g.refTxnId===t._id);
-      const autoCat = CB_GASTO_CATS.find(c=>c.toLowerCase()===(t.category||'').toLowerCase()) || 'Otros';
-      _cbImportCat[t._id]=autoCat;
-      _cbImportDest[t._id]=bn;  // destino por defecto: la banca donde se registró
-      // opciones de destino: cada banca activa + Oficina
-      const destOpts=cbActiveBranches().map(b=>`<option value="${b.name}" ${b.name===bn?'selected':''}>${b.name.replace('PRIME SPORT','PS')}</option>`).join('')
-        + `<option value="__OFICINA__">🏢 Oficina</option>`;
-      html+=`<div class="cbimp-row" data-branch="${bn}" style="padding:10px 12px;border:1px solid var(--line);border-top:none;${already?'opacity:.55;background:#f0eaf7;':'background:#fff;'}">
-        <div style="display:flex;align-items:center;gap:9px;">
-          <input type="checkbox" class="cbimp-check" data-id="${t._id}" data-amount="${t.amount}" ${already?'disabled checked':''} onchange="cbImportToggle('${t._id}')" style="width:18px;height:18px;flex-shrink:0;cursor:${already?'not-allowed':'pointer'};">
-          <div style="flex:1;font-size:12px;min-width:0;">
+  const bancas=cbActiveBranches().map(b=>b.name);
+  // Agrupar por la banca donde se registró el gasto
+  const groups={};
+  txns.forEach(t=>{ (groups[t.branch]=groups[t.branch]||[]).push(t); });
+
+  wrap.innerHTML=Object.keys(groups).sort((a,b)=>{
+    const na=parseInt((a.match(/\d+$/)||['999'])[0]), nb=parseInt((b.match(/\d+$/)||['999'])[0]);
+    return na-nb;
+  }).map(branch=>{
+    const items=groups[branch];
+    const pend=items.filter(t=>!cbImportAlready(t.id));
+    const allSel=pend.length&&pend.every(t=>_cbImportSel[t.id]);
+    const subtotal=items.filter(t=>_cbImportSel[t.id]).reduce((s,t)=>s+t.amount,0);
+    const rows=items.map(t=>{
+      const already=cbImportAlready(t.id);
+      const dest=_cbImportDest[t.id]||branch;
+      const cats=cbImportCatsFor(dest);
+      const cat=_cbImportCat[t.id]||'Otros';
+      const destOpts=[...bancas.map(b=>`<option value="${b}" ${dest===b?'selected':''}>${b.replace('PRIME SPORT','PS')}</option>`),
+                      `<option value="${CB_DEST_OFICINA}" ${dest===CB_DEST_OFICINA?'selected':''}>🏢 Oficina</option>`].join('');
+      const catOpts=cats.map(c=>`<option value="${c}" ${cat===c?'selected':''}>${c}</option>`).join('');
+      return `<div style="padding:10px 12px;border-top:1px solid #eef2f4;${already?'opacity:.55;background:#f7f5fa;':''}">
+        <div style="display:flex;align-items:flex-start;gap:9px;">
+          <input type="checkbox" ${already?'disabled checked':''} ${_cbImportSel[t.id]?'checked':''} onchange="cbImportToggle('${t.id}')" style="width:18px;height:18px;flex-shrink:0;margin-top:2px;cursor:${already?'not-allowed':'pointer'};">
+          <div style="flex:1;min-width:0;font-size:12px;">
             <div style="font-weight:600;">${t.category||'Gasto'}${t.note?' · '+t.note:''}</div>
-            <div style="color:var(--muted);font-size:10.5px;margin-top:1px;">${fmtDate(t.date)}${already?' · <span style="color:#8a5cbf;font-weight:700;">YA IMPORTADO</span>':''}</div>
+            <div style="color:var(--muted);font-size:10.5px;margin-top:1px;">${fmtDate(t.date)}${already?' · <b style="color:var(--cerulean);">YA IMPORTADO</b>':''}</div>
           </div>
           <div style="font-size:13px;font-weight:700;color:var(--red);white-space:nowrap;">RD$${fmt(t.amount)}</div>
         </div>
-        <div style="display:flex;gap:6px;margin-top:7px;margin-left:27px;flex-wrap:wrap;">
-          <div style="display:flex;align-items:center;gap:4px;">
-            <span style="font-size:10px;color:var(--muted);">Destino:</span>
-            <select onchange="cbImportSetDest('${t._id}',this.value)" ${already?'disabled':''} style="font-size:10.5px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;font-family:inherit;background:#fff;color:var(--ink);">
-              ${destOpts}
-            </select>
+        ${already?'':`<div style="display:flex;gap:7px;margin-top:8px;padding-left:27px;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:3px;">Va a</div>
+            <select onchange="cbImportSetDest('${t.id}',this.value)" style="width:100%;font-size:11.5px;padding:7px 8px;border:1px solid #dde3e6;border-radius:8px;font-family:inherit;background:#fff;">${destOpts}</select>
           </div>
-          <div style="display:flex;align-items:center;gap:4px;">
-            <span style="font-size:10px;color:var(--muted);">Renglón:</span>
-            <select id="cbimpcat_${t._id}" onchange="cbImportSetCat('${t._id}',this.value)" ${already?'disabled':''} style="font-size:10.5px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;font-family:inherit;background:#fff;color:var(--ink);max-width:130px;">
-              ${CB_GASTO_CATS.map(c=>`<option value="${c}" ${c===autoCat?'selected':''}>${c}</option>`).join('')}
-            </select>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:3px;">Renglón</div>
+            <select onchange="cbImportSetCat('${t.id}',this.value)" style="width:100%;font-size:11.5px;padding:7px 8px;border:1px solid #dde3e6;border-radius:8px;font-family:inherit;background:#fff;">${catOpts}</select>
           </div>
-        </div>
+        </div>`}
       </div>`;
-    });
-    html+=`</div>`;
-  });
-  document.getElementById('cbImportList').innerHTML=html;
-  cbImportUpdateTotal();
+    }).join('');
+    return `<div class="panel" style="padding:0;margin-bottom:10px;overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:9px;padding:10px 12px;background:#f4f6f7;">
+        <input type="checkbox" ${pend.length?'':'disabled'} ${allSel?'checked':''} onchange="cbImportBranchToggle('${branch.replace(/'/g,"\\'")}',this.checked)" style="width:17px;height:17px;cursor:pointer;">
+        <div style="flex:1;font-size:13px;font-weight:800;">${cbImportIsOfficeBranch(branch)?'🏢 ':''}${branch.replace('PRIME SPORT','PS')}</div>
+        <div style="font-size:11px;color:var(--muted);font-weight:700;">${items.length} gasto${items.length===1?'':'s'}${subtotal?' · RD$'+fmt(subtotal):''}</div>
+      </div>
+      ${rows}
+    </div>`;
+  }).join('');
+  cbImportUpdateBar();
 }
 
-function cbImportSetCat(id,cat){ _cbImportCat[id]=cat; }
-function cbImportSetDest(id,dest){
-  _cbImportDest[id]=dest;
-  // Cambiar las categorías del renglón según destino: Oficina usa CB_OFICINA_CATS, banca usa CB_GASTO_CATS
-  const cats = dest==='__OFICINA__' ? CB_OFICINA_CATS : CB_GASTO_CATS;
-  const sel=document.getElementById('cbimpcat_'+id);
-  if(sel){
-    const cur=_cbImportCat[id];
-    const keep = cats.includes(cur) ? cur : (cats.includes('Otros')?'Otros':cats[0]);
-    sel.innerHTML=cats.map(c=>`<option value="${c}" ${c===keep?'selected':''}>${c}</option>`).join('');
-    _cbImportCat[id]=keep;
-  }
-}
-
-function cbImportToggleBranch(branch,checked){
-  document.querySelectorAll(`.cbimp-check`).forEach(chk=>{
-    if(chk.disabled) return;
-    const row=chk.closest('.cbimp-row');
-    if(row && row.dataset.branch===branch){
-      chk.checked=checked;
-      _cbImportSelected[chk.dataset.id]=checked;
-    }
-  });
-  cbImportUpdateTotal();
-}
-
-function cbImportSelectAll(checked){
-  document.querySelectorAll('.cbimp-check').forEach(chk=>{
-    if(chk.disabled) return;
-    chk.checked=checked;
-    _cbImportSelected[chk.dataset.id]=checked;
-  });
-  cbImportUpdateTotal();
-}
-
-function cbImportUpdateTotal(){
-  let count=0, total=0;
-  Object.keys(_cbImportSelected).forEach(id=>{
-    if(_cbImportSelected[id]){
-      const chk=document.querySelector(`.cbimp-check[data-id="${id}"]`);
-      if(chk && !chk.disabled){ count++; total+=parseFloat(chk.dataset.amount)||0; }
-    }
-  });
-  const cEl=document.getElementById('cbImportCount'), tEl=document.getElementById('cbImportTotal');
-  if(cEl) cEl.textContent=count;
-  if(tEl) tEl.textContent='RD$'+fmt(total);
+function cbImportUpdateBar(){
+  const ids=Object.keys(_cbImportSel).filter(id=>_cbImportSel[id]);
+  const total=ids.reduce((s,id)=>{ const t=state.txns.find(x=>x.id===id); return s+(t?t.amount:0); },0);
+  const c=document.getElementById('cbImportCount'), tt=document.getElementById('cbImportTotal');
+  if(c) c.textContent=`${ids.length} gasto${ids.length===1?'':'s'} marcado${ids.length===1?'':'s'}`;
+  if(tt) tt.textContent='RD$'+fmt(total);
 }
 
 function cbImportToggle(id){
-  _cbImportSelected[id]=!_cbImportSelected[id];
-  cbImportUpdateTotal();
+  _cbImportSel[id]=!_cbImportSel[id];
+  renderCbImportList();
+}
+function cbImportSetDest(id,val){
+  _cbImportDest[id]=val;
+  const t=state.txns.find(x=>x.id===id);
+  _cbImportCat[id]=cbImportGuessCat(val, t?t.category:'');
+  renderCbImportList();
+}
+function cbImportSetCat(id,val){
+  _cbImportCat[id]=val;
+}
+function cbImportSelectAll(on){
+  cbImportTxns().forEach(t=>{ if(!cbImportAlready(t.id)) _cbImportSel[t.id]=!!on; });
+  renderCbImportList();
+}
+function cbImportBranchToggle(branch,on){
+  cbImportTxns().filter(t=>t.branch===branch).forEach(t=>{ if(!cbImportAlready(t.id)) _cbImportSel[t.id]=!!on; });
+  renderCbImportList();
 }
 
 async function cbImportSelected(){
-  const ids=Object.keys(_cbImportSelected).filter(id=>_cbImportSelected[id]);
+  const ids=Object.keys(_cbImportSel).filter(id=>_cbImportSel[id]&&!cbImportAlready(id));
   if(!ids.length){ toast('No seleccionaste ningún gasto',false); return; }
   setSyncState('saving');
-  let imported=0, skipped=0;
+  let okCount=0, failCount=0, lastErr='';
   for(const id of ids){
-    const t=state.txns.find(x=>x._id===id);
-    if(!t){ skipped++; continue; }
-    const dest = _cbImportDest[t._id] || t.branch;
-    const esOficina = dest==='__OFICINA__';
-    // Categoría destino: la que el usuario eligió, o mapeo automático
-    const catList = esOficina ? CB_OFICINA_CATS : CB_GASTO_CATS;
-    const cat = (_cbImportCat && _cbImportCat[t._id] && catList.includes(_cbImportCat[t._id]))
-      ? _cbImportCat[t._id]
-      : (catList.find(c=>c.toLowerCase()===(t.category||'').toLowerCase()) || 'Otros');
+    const t=state.txns.find(x=>x.id===id);
+    if(!t){ failCount++; lastErr='Movimiento no encontrado'; continue; }
+    const dest=_cbImportDest[id]||t.branch;
+    const cat=_cbImportCat[id]||cbImportGuessCat(dest,t.category);
     try{
-      if(esOficina){
-        // Va a Oficina -> cuadre_oficina_gasto
-        const {data,error}=await sb.from('cuadre_oficina_gasto').insert({anio:cbAnioCur,mes:cbMesCur,categoria:cat,monto:t.amount,origen:'cuadre_diario',ref_txn_id:t._id,creado_por:currentUser||null}).select();
+      if(dest===CB_DEST_OFICINA){
+        const {data,error}=await sb.from('cuadre_oficina_gasto').insert({
+          anio:cbAnioCur, mes:cbMesCur, categoria:cat, monto:t.amount,
+          origen:'cuadre_diario', ref_txn_id:id, sucursal:t.branch, creado_por:currentUser||null
+        }).select();
         if(error) throw error;
-        state.cbOficinaGastos.push({_id:data[0].id,anio:cbAnioCur,mes:cbMesCur,categoria:cat,monto:t.amount,refTxnId:t._id});
+        state.cbOficinaGastos.push({_id:data[0].id,anio:cbAnioCur,mes:cbMesCur,categoria:cat,monto:t.amount,origen:'cuadre_diario',refTxnId:id,sucursal:t.branch});
       } else {
-        // Va a una banca -> cuadre_banca_gasto
-        const {data,error}=await sb.from('cuadre_banca_gasto').insert({anio:cbAnioCur,mes:cbMesCur,sucursal:dest,categoria:cat,monto:t.amount,origen:'cuadre_diario',ref_txn_id:t._id,creado_por:currentUser||null}).select();
+        const {data,error}=await sb.from('cuadre_banca_gasto').insert({
+          anio:cbAnioCur, mes:cbMesCur, sucursal:dest, categoria:cat, monto:t.amount,
+          origen:'cuadre_diario', ref_txn_id:id, creado_por:currentUser||null
+        }).select();
         if(error) throw error;
-        state.cbGastos.push({_id:data[0].id,anio:cbAnioCur,mes:cbMesCur,sucursal:dest,categoria:cat,monto:t.amount,origen:'cuadre_diario',refTxnId:t._id});
+        state.cbGastos.push({_id:data[0].id,anio:cbAnioCur,mes:cbMesCur,sucursal:dest,categoria:cat,monto:t.amount,origen:'cuadre_diario',refTxnId:id});
       }
-      imported++;
-    }catch(e){ console.error(e); skipped++; }
+      _cbImportSel[id]=false;
+      okCount++;
+    }catch(e){ console.error(e); failCount++; lastErr=e.message||String(e); }
   }
-  setSyncState('ok');
-  toast(`Importados: ${imported}${skipped?' · Saltados: '+skipped:''}`,true);
+  setSyncState(failCount?'error':'ok');
+  if(failCount) toast(`Importados: ${okCount} · Fallaron: ${failCount} — ${lastErr}`,false);
+  else toast(`Importados: ${okCount} gasto${okCount===1?'':'s'}`,true);
   openCuadreBancas();
   cbShowTab('gastos');
+}
+
+// === PANEL: gastos ya traídos del cuadre diario (corregir destino/renglón o quitarlos) ===
+function cbImportedLines(){
+  const lines=[];
+  state.cbGastos.filter(g=>g.anio===cbAnioCur&&g.mes===cbMesCur&&g.refTxnId&&g.origen==='cuadre_diario')
+    .forEach(g=>lines.push({rowId:g._id,tabla:'banca',dest:g.sucursal,cat:g.categoria,monto:g.monto,txnId:g.refTxnId}));
+  state.cbOficinaGastos.filter(o=>o.anio===cbAnioCur&&o.mes===cbMesCur&&o.refTxnId&&o.origen==='cuadre_diario')
+    .forEach(o=>lines.push({rowId:o._id,tabla:'oficina',dest:CB_DEST_OFICINA,cat:o.categoria,monto:o.monto,txnId:o.refTxnId,origBranch:o.sucursal}));
+  return lines;
+}
+
+function renderCbImportadosPanel(){
+  const lines=cbImportedLines();
+  if(!lines.length) return '';
+  const bancas=cbActiveBranches().map(b=>b.name);
+  const rows=lines.map(l=>{
+    const t=state.txns.find(x=>x.id===l.txnId);
+    const desc=t?`${fmtDate(t.date)} · ${t.category||'Gasto'}${t.note?' · '+t.note:''}`:'Movimiento del cuadre diario';
+    const origen=t?t.branch.replace('PRIME SPORT','PS'):(l.origBranch||'');
+    const cats=cbImportCatsFor(l.dest);
+    const destOpts=[...bancas.map(b=>`<option value="${b}" ${l.dest===b?'selected':''}>${b.replace('PRIME SPORT','PS')}</option>`),
+                    `<option value="${CB_DEST_OFICINA}" ${l.dest===CB_DEST_OFICINA?'selected':''}>🏢 Oficina</option>`].join('');
+    const catOpts=cats.map(c=>`<option value="${c}" ${l.cat===c?'selected':''}>${c}</option>`).join('');
+    return `<div style="padding:10px 12px;border-top:1px solid #eef2f4;">
+      <div style="display:flex;align-items:flex-start;gap:8px;">
+        <div style="flex:1;min-width:0;font-size:11.5px;">
+          <div style="font-weight:600;">${desc}</div>
+          <div style="color:var(--muted);font-size:10px;margin-top:1px;">se pagó por ${origen}</div>
+        </div>
+        <div style="font-size:12.5px;font-weight:700;color:var(--red);white-space:nowrap;">RD$${fmt(l.monto)}</div>
+        <button onclick="cbImportedDelete('${l.tabla}','${l.rowId}')" title="Quitar del cuadre mensual" style="border:none;background:#fdeeee;color:#c0392b;border-radius:8px;width:28px;height:28px;font-size:13px;cursor:pointer;flex-shrink:0;">🗑</button>
+      </div>
+      <div style="display:flex;gap:7px;margin-top:8px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:3px;">Va a</div>
+          <select onchange="cbImportedMove('${l.tabla}','${l.rowId}',this.value,null)" style="width:100%;font-size:11.5px;padding:7px 8px;border:1px solid #dde3e6;border-radius:8px;font-family:inherit;background:#fff;">${destOpts}</select>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:3px;">Renglón</div>
+          <select onchange="cbImportedMove('${l.tabla}','${l.rowId}',null,this.value)" style="width:100%;font-size:11.5px;padding:7px 8px;border:1px solid #dde3e6;border-radius:8px;font-family:inherit;background:#fff;">${catOpts}</select>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  const tot=lines.reduce((s,l)=>s+l.monto,0);
+  return `<div class="panel" style="padding:0;overflow:hidden;margin-bottom:10px;">
+    <div style="padding:11px 12px;background:#eef7fa;">
+      <div style="font-size:13px;font-weight:800;color:var(--cerulean);">⇩ Traídos del cuadre diario · ${MONTHS[cbMesCur-1]}</div>
+      <div style="font-size:10.5px;color:var(--muted);margin-top:2px;">${lines.length} gasto${lines.length===1?'':'s'} · RD$${fmt(tot)} — aquí puedes cambiar a dónde va y en qué renglón, o quitarlo.</div>
+    </div>
+    ${rows}
+  </div>`;
+}
+
+async function cbImportedMove(tabla, rowId, newDest, newCat){
+  const lines=cbImportedLines();
+  const l=lines.find(x=>x.rowId===rowId);
+  if(!l) return;
+  const dest = newDest!==null ? newDest : l.dest;
+  let cat = newCat!==null ? newCat : l.cat;
+  // Si cambia el destino, el renglón debe existir en la lista del nuevo destino
+  if(newDest!==null && !cbImportCatsFor(dest).includes(cat)){
+    const t=state.txns.find(x=>x.id===l.txnId);
+    cat=cbImportGuessCat(dest, t?t.category:'');
+  }
+  const destTabla = dest===CB_DEST_OFICINA ? 'oficina' : 'banca';
+  setSyncState('saving');
+  try{
+    if(destTabla===tabla && destTabla==='banca'){
+      await sb.from('cuadre_banca_gasto').update({sucursal:dest,categoria:cat}).eq('id',rowId);
+      const g=state.cbGastos.find(x=>x._id===rowId); if(g){ g.sucursal=dest; g.categoria=cat; }
+    } else if(destTabla===tabla && destTabla==='oficina'){
+      await sb.from('cuadre_oficina_gasto').update({categoria:cat}).eq('id',rowId);
+      const o=state.cbOficinaGastos.find(x=>x._id===rowId); if(o){ o.categoria=cat; }
+    } else {
+      // Cambia de tabla: borrar de una e insertar en la otra
+      const t=state.txns.find(x=>x.id===l.txnId);
+      if(tabla==='banca'){
+        await sb.from('cuadre_banca_gasto').delete().eq('id',rowId);
+        state.cbGastos=state.cbGastos.filter(x=>x._id!==rowId);
+        const {data,error}=await sb.from('cuadre_oficina_gasto').insert({anio:cbAnioCur,mes:cbMesCur,categoria:cat,monto:l.monto,origen:'cuadre_diario',ref_txn_id:l.txnId,sucursal:t?t.branch:null,creado_por:currentUser||null}).select();
+        if(error) throw error;
+        state.cbOficinaGastos.push({_id:data[0].id,anio:cbAnioCur,mes:cbMesCur,categoria:cat,monto:l.monto,origen:'cuadre_diario',refTxnId:l.txnId,sucursal:t?t.branch:null});
+      } else {
+        await sb.from('cuadre_oficina_gasto').delete().eq('id',rowId);
+        state.cbOficinaGastos=state.cbOficinaGastos.filter(x=>x._id!==rowId);
+        const {data,error}=await sb.from('cuadre_banca_gasto').insert({anio:cbAnioCur,mes:cbMesCur,sucursal:dest,categoria:cat,monto:l.monto,origen:'cuadre_diario',ref_txn_id:l.txnId,creado_por:currentUser||null}).select();
+        if(error) throw error;
+        state.cbGastos.push({_id:data[0].id,anio:cbAnioCur,mes:cbMesCur,sucursal:dest,categoria:cat,monto:l.monto,origen:'cuadre_diario',refTxnId:l.txnId});
+      }
+    }
+    setSyncState('ok');
+    toast(`Movido a ${dest===CB_DEST_OFICINA?'Oficina':dest.replace('PRIME SPORT','PS')} · ${cat}`,true);
+    renderCuadreBancas();
+  }catch(e){ console.error(e); setSyncState('error'); toast('Error: '+(e.message||''),false); }
+}
+
+async function cbImportedDelete(tabla, rowId){
+  if(!confirm('¿Quitar este gasto del cuadre mensual?\n\nEl movimiento sigue en el cuadre diario y lo podrás volver a importar.')) return;
+  setSyncState('saving');
+  try{
+    if(tabla==='banca'){
+      await sb.from('cuadre_banca_gasto').delete().eq('id',rowId);
+      state.cbGastos=state.cbGastos.filter(x=>x._id!==rowId);
+    } else {
+      await sb.from('cuadre_oficina_gasto').delete().eq('id',rowId);
+      state.cbOficinaGastos=state.cbOficinaGastos.filter(x=>x._id!==rowId);
+    }
+    setSyncState('ok');
+    toast('Gasto quitado del cuadre mensual',true);
+    renderCuadreBancas();
+  }catch(e){ console.error(e); setSyncState('error'); toast('Error: '+(e.message||''),false); }
+}
+
+// === PRORRATEAR GASTOS DE OFICINA ENTRE LAS BANCAS ===
+async function cbProrratearOficina(){
+  const bancas=cbActiveBranches().map(b=>b.name);
+  if(!bancas.length){ toast('No hay bancas activas',false); return; }
+  const totalOf=state.cbOficinaGastos.filter(o=>o.anio===cbAnioCur&&o.mes===cbMesCur).reduce((s,o)=>s+o.monto,0);
+  if(!totalOf){ toast('No hay gastos de oficina en este mes',false); return; }
+  const parte=Math.round((totalOf/bancas.length)*100)/100;
+  const previo=bancas.reduce((s,b)=>s+cbGastoBranchCat(b,'Administración'),0);
+  const manualPrev=bancas.reduce((s,b)=>s+cbGastoManualCat(b,'Administración'),0);
+  let msg=`Repartir RD$${fmt(totalOf)} de gastos de oficina entre ${bancas.length} bancas.\n\nCada banca QUEDA en RD$${fmt(parte)} en el renglón "Administración".`;
+  if(previo) msg+=`\n\n⚠️ Administración tiene ahora RD$${fmt(previo)} en total${manualPrev?` (RD$${fmt(manualPrev)} escritos a mano)`:''}.\nEse renglón se REEMPLAZA completo — no se suma encima.`;
+  msg+=`\n\n¿Continuar?`;
+  if(!confirm(msg)) return;
+  setSyncState('saving');
+  try{
+    // Reemplaza el renglón completo: borra el prorrateo anterior Y lo escrito a mano en Administración
+    const prev=state.cbGastos.filter(g=>g.anio===cbAnioCur&&g.mes===cbMesCur&&g.categoria==='Administración'&&(g.origen==='prorrateo'||!g.refTxnId));
+    for(const p of prev){ await sb.from('cuadre_banca_gasto').delete().eq('id',p._id); }
+    const delIds=prev.map(p=>p._id);
+    state.cbGastos=state.cbGastos.filter(g=>!delIds.includes(g._id));
+    for(const b of bancas){
+      const ref=(crypto&&crypto.randomUUID)?crypto.randomUUID():uid();
+      const {data,error}=await sb.from('cuadre_banca_gasto').insert({
+        anio:cbAnioCur, mes:cbMesCur, sucursal:b, categoria:'Administración', monto:parte,
+        origen:'prorrateo', ref_txn_id:ref, creado_por:currentUser||null
+      }).select();
+      if(error) throw error;
+      state.cbGastos.push({_id:data[0].id,anio:cbAnioCur,mes:cbMesCur,sucursal:b,categoria:'Administración',monto:parte,origen:'prorrateo',refTxnId:ref});
+    }
+    setSyncState('ok');
+    toast(`Administración = RD$${fmt(parte)} en cada una de las ${bancas.length} bancas`,true);
+    renderCuadreBancas();
+  }catch(e){ console.error(e); setSyncState('error'); toast('Error al prorratear: '+(e.message||''),false); }
 }
 
 // === EXPORTS ===
