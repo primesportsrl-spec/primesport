@@ -273,14 +273,21 @@
       <!-- PASO 3: vincular el autenticador (primera vez) -->
       <div id="loginStepEnroll" style="display:none;">
         <div style="color:#fff;font-size:17px;font-weight:700;margin-bottom:4px;">Activa tu llave de seguridad</div>
-        <div style="color:#7d909e;font-size:12.5px;margin-bottom:16px;">Instala <b>Google Authenticator</b> y escanea este código. Solo se hace una vez.</div>
-        <div id="enrollQr" style="background:#fff;border-radius:12px;padding:10px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;min-height:180px;"></div>
+        <div style="color:#7d909e;font-size:12.5px;margin-bottom:12px;">Instala <b>Google Authenticator</b> y escanea este código.</div>
+        <div style="background:#3a3016;border:1px solid #8a6d2a;border-radius:10px;padding:11px 12px;color:#e8c877;font-size:12px;line-height:1.5;margin-bottom:14px;">
+          <b>Importante:</b> si ya tenías una cuenta <b>AdmBca</b> guardada en Authenticator, <b>bórrala primero</b>. Este código reemplaza cualquier anterior y los códigos viejos ya no sirven.
+        </div>
+        <div id="enrollQr" style="background:#fff;border-radius:12px;padding:14px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;min-height:210px;"></div>
+        <a id="enrollLink" href="#" style="display:none;box-sizing:border-box;width:100%;text-align:center;border:1px solid #2f6f86;background:#12303c;color:#7fd4ef;border-radius:11px;padding:13px;font-size:13.5px;font-weight:700;text-decoration:none;margin-bottom:16px;">Abrir en Google Authenticator</a>
         <div style="color:#7d909e;font-size:11.5px;margin-bottom:6px;">¿No puedes escanear? Escribe esta clave a mano:</div>
-        <div id="enrollSecret" style="background:#0e1620;border:1px solid #283947;border-radius:9px;padding:10px;color:#9fb1bd;font-size:12px;font-family:monospace;word-break:break-all;text-align:center;margin-bottom:18px;"></div>
+        <div id="enrollSecret" style="background:#0e1620;border:1px solid #283947;border-radius:9px;padding:12px;color:#cfe3ee;font-size:15px;letter-spacing:2px;font-family:monospace;word-break:break-all;text-align:center;margin-bottom:8px;"></div>
+        <button id="copyKeyBtn" onclick="copiarClaveTotp()" style="width:100%;border:1px solid #283947;background:#0e1620;color:#9fb1bd;border-radius:9px;padding:10px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:10px;">Copiar clave</button>
+        <div id="horaAviso" style="display:none;background:#3d211e;border:1px solid #d3564b;color:#f08980;font-size:12px;line-height:1.5;padding:10px 12px;border-radius:9px;margin-bottom:14px;"></div>
         <label style="display:block;color:#9fb1bd;font-size:12px;font-weight:600;margin-bottom:6px;">Escribe el código que aparece en la app</label>
         <input type="text" id="enrollCode" inputmode="numeric" maxlength="6" placeholder="000000" style="width:100%;border:1.5px solid #283947;border-radius:11px;padding:15px 14px;font-size:26px;letter-spacing:9px;text-align:center;background:#0e1620;color:#fff;font-family:inherit;margin-bottom:20px;" onkeydown="if(event.key==='Enter')doConfirmEnroll()">
         <button id="enrollBtn" onclick="doConfirmEnroll()" style="width:100%;border:none;border-radius:12px;padding:15px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#0086AD,#16a8d4);box-shadow:0 4px 14px rgba(0,134,173,.4);">Activar y entrar</button>
-        <button onclick="resetLogin()" style="width:100%;border:none;background:none;color:#7d909e;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;padding:14px 0 0;">Cancelar</button>
+        <button onclick="startEnroll()" style="width:100%;border:none;background:none;color:#7fd4ef;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;padding:14px 0 0;">Generar un código nuevo</button>
+        <button onclick="resetLogin()" style="width:100%;border:none;background:none;color:#7d909e;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;padding:10px 0 0;">Cancelar</button>
       </div>
 
       <div id="loginError" style="display:none;background:#3d211e;border:1px solid #d3564b;color:#f08980;font-size:12.5px;padding:10px 12px;border-radius:9px;margin-top:14px;"></div>
@@ -330,7 +337,9 @@
     </div>
   </div>
 
-  <div style="display:flex;gap:11px;margin-bottom:16px;">
+  <div data-grupo="dia">
+  <div class="grp-title" style="font-size:11.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin:4px 2px 10px;">Día a día</div>
+<div style="display:flex;gap:11px;margin-bottom:16px;">
     <div onclick="openCorte()" style="flex:1;background:linear-gradient(135deg,var(--cerulean),var(--cerulean-bright));border-radius:16px;padding:15px 14px;cursor:pointer;box-shadow:0 4px 16px rgba(0,134,173,.3);">
       <div style="width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;margin-bottom:9px;">
         <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:21px;height:21px;"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
@@ -346,52 +355,8 @@
       <div style="color:var(--muted-light);font-size:11px;margin-top:1px;">Resumen por día</div>
     </div>
   </div>
-
-  <div onclick="openMaquinas()" style="background:linear-gradient(135deg,#3a2a52,#4a2f6b);border-radius:16px;padding:15px 16px;margin-bottom:16px;display:flex;align-items:center;gap:13px;cursor:pointer;box-shadow:0 4px 16px rgba(74,47,107,.3);">
-    <div style="width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:22px;height:22px;"><rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="9" r="3"/><line x1="9" y1="16" x2="15" y2="16"/></svg>
-    </div>
-    <div style="flex:1;">
-      <div style="color:#fff;font-size:14.5px;font-weight:700;">Máquinas</div>
-      <div style="color:rgba(255,255,255,.78);font-size:11.5px;margin-top:1px;">Ruletas y lecturas de contadores</div>
-    </div>
-    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
-  </div>
-
-  <div onclick="openVirtuales()" style="background:linear-gradient(135deg,#0b3d4d,#0086AD);border-radius:16px;padding:15px 16px;margin-bottom:12px;display:flex;align-items:center;gap:13px;cursor:pointer;box-shadow:0 4px 16px rgba(0,134,173,.3);">
-    <div style="width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:22px;height:22px;"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-    </div>
-    <div style="flex:1;">
-      <div style="color:#fff;font-size:14.5px;font-weight:700;">Virtuales</div>
-      <div style="color:rgba(255,255,255,.78);font-size:11.5px;margin-top:1px;">Resumen mensual y reparto por socio</div>
-    </div>
-    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
-  </div>
-
-  <div onclick="openCuadreBancas()" style="background:linear-gradient(135deg,#3a3015,#a37416);border-radius:16px;padding:15px 16px;margin-bottom:16px;display:flex;align-items:center;gap:13px;cursor:pointer;box-shadow:0 4px 16px rgba(163,116,22,.3);">
-    <div style="width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:22px;height:22px;"><path d="M3 3h18v4H3z"/><path d="M3 7v14h18V7"/><line x1="9" y1="11" x2="9" y2="21"/><line x1="15" y1="11" x2="15" y2="21"/><line x1="3" y1="14" x2="21" y2="14"/></svg>
-    </div>
-    <div style="flex:1;">
-      <div style="color:#fff;font-size:14.5px;font-weight:700;">Cuadre Mensual</div>
-      <div style="color:rgba(255,255,255,.78);font-size:11.5px;margin-top:1px;">Bancas, gastos y balance del mes</div>
-    </div>
-    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
-  </div>
-
-  <div onclick="openCierreMes()" style="background:linear-gradient(135deg,#1a2e1f,#2d6a4f);border-radius:16px;padding:15px 16px;margin-bottom:16px;display:flex;align-items:center;gap:13px;cursor:pointer;box-shadow:0 4px 16px rgba(45,106,79,.3);">
-    <div style="width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:22px;height:22px;"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-    </div>
-    <div style="flex:1;">
-      <div style="color:#fff;font-size:14.5px;font-weight:700;">Cierre de Mes</div>
-      <div style="color:rgba(255,255,255,.78);font-size:11.5px;margin-top:1px;">Cerrar mes y arrastrar saldo</div>
-    </div>
-    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
-  </div>
-
-  <div onclick="openDesglose()" style="background:linear-gradient(135deg,#2a2440,#5a4a8a);border-radius:16px;padding:15px 16px;margin-bottom:16px;display:flex;align-items:center;gap:13px;cursor:pointer;box-shadow:0 4px 16px rgba(90,74,138,.3);">
+  <div data-mod="desglose">
+<div onclick="openDesglose()" style="background:linear-gradient(135deg,#2a2440,#5a4a8a);border-radius:16px;padding:15px 16px;margin-bottom:16px;display:flex;align-items:center;gap:13px;cursor:pointer;box-shadow:0 4px 16px rgba(90,74,138,.3);">
     <div style="width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
       <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:22px;height:22px;"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
     </div>
@@ -401,8 +366,62 @@
     </div>
     <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
   </div>
+  </div>
+</div>
 
-  <div class="stat-grid">
+<div data-grupo="mes">
+  <div class="grp-title" style="font-size:11.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin:4px 2px 10px;">Cierre mensual</div>
+<div data-mod="cuadre">
+<div onclick="openCuadreBancas()" style="background:linear-gradient(135deg,#3a3015,#a37416);border-radius:16px;padding:15px 16px;margin-bottom:16px;display:flex;align-items:center;gap:13px;cursor:pointer;box-shadow:0 4px 16px rgba(163,116,22,.3);">
+    <div style="width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:22px;height:22px;"><path d="M3 3h18v4H3z"/><path d="M3 7v14h18V7"/><line x1="9" y1="11" x2="9" y2="21"/><line x1="15" y1="11" x2="15" y2="21"/><line x1="3" y1="14" x2="21" y2="14"/></svg>
+    </div>
+    <div style="flex:1;">
+      <div style="color:#fff;font-size:14.5px;font-weight:700;">Cuadre Mensual</div>
+      <div style="color:rgba(255,255,255,.78);font-size:11.5px;margin-top:1px;">Bancas, gastos y balance del mes</div>
+    </div>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
+  </div>
+  </div>
+<div data-mod="maquinas">
+<div onclick="openMaquinas()" style="background:linear-gradient(135deg,#3a2a52,#4a2f6b);border-radius:16px;padding:15px 16px;margin-bottom:16px;display:flex;align-items:center;gap:13px;cursor:pointer;box-shadow:0 4px 16px rgba(74,47,107,.3);">
+    <div style="width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:22px;height:22px;"><rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="9" r="3"/><line x1="9" y1="16" x2="15" y2="16"/></svg>
+    </div>
+    <div style="flex:1;">
+      <div style="color:#fff;font-size:14.5px;font-weight:700;">Máquinas</div>
+      <div style="color:rgba(255,255,255,.78);font-size:11.5px;margin-top:1px;">Ruletas y lecturas de contadores</div>
+    </div>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
+  </div>
+  </div>
+<div data-mod="virtuales">
+<div onclick="openVirtuales()" style="background:linear-gradient(135deg,#0b3d4d,#0086AD);border-radius:16px;padding:15px 16px;margin-bottom:12px;display:flex;align-items:center;gap:13px;cursor:pointer;box-shadow:0 4px 16px rgba(0,134,173,.3);">
+    <div style="width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:22px;height:22px;"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+    </div>
+    <div style="flex:1;">
+      <div style="color:#fff;font-size:14.5px;font-weight:700;">Virtuales</div>
+      <div style="color:rgba(255,255,255,.78);font-size:11.5px;margin-top:1px;">Resumen mensual y reparto por socio</div>
+    </div>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
+  </div>
+  </div>
+<div data-mod="cierremes">
+<div onclick="openCierreMes()" style="background:linear-gradient(135deg,#1a2e1f,#2d6a4f);border-radius:16px;padding:15px 16px;margin-bottom:16px;display:flex;align-items:center;gap:13px;cursor:pointer;box-shadow:0 4px 16px rgba(45,106,79,.3);">
+    <div style="width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:22px;height:22px;"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    </div>
+    <div style="flex:1;">
+      <div style="color:#fff;font-size:14.5px;font-weight:700;">Cierre de Mes</div>
+      <div style="color:rgba(255,255,255,.78);font-size:11.5px;margin-top:1px;">Cerrar mes y arrastrar saldo</div>
+    </div>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
+  </div>
+  </div>
+</div>
+
+<div class="stat-grid">
     <div class="stat">
       <div class="ic blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-5"/></svg></div>
       <div class="t">Sucursales activas</div><div class="v" id="statBranches">0</div>
@@ -1396,7 +1415,7 @@
   </div>
 
   <div class="panel" style="line-height:1.6;">
-    <div style="font-size:14px;color:var(--ink);">AdmBca es el sistema de administración de bancas del consorcio <b class="js-consorcio">—</b>. Cubre <b>caja, cuadre, virtuales y reportes</b>. Aquí está la guía rápida de cada módulo, en orden de uso diario.</div>
+    <div style="font-size:14px;color:var(--ink);">AdmBca es el sistema de administración de bancas del consorcio <b class="js-consorcio">—</b>. Cubre <b>caja, cuadre, virtuales y reportes</b>. Aquí está la guía rápida de cada módulo, en orden de uso diario.<br><br>El inicio está organizado en dos bloques: <b>Día a día</b> (corte diario, histórico y desglose de efectivo) y <b>Cierre mensual</b> (cuadre, máquinas, virtuales y cierre de mes, en ese orden). Solo verás los módulos que tu usuario tenga permitidos.</div>
   </div>
 
   <div class="panel" style="background:linear-gradient(135deg,#fdf4ec,#f8e6d5);border-color:#e8c7a5;">
@@ -1411,7 +1430,11 @@
     <b>De ahí en adelante:</b> correo, contraseña y el código del momento.<br><br>
     <b>Importante:</b> al cerrar la página la sesión se cierra sola. Al volver hay que entrar de nuevo con los tres datos. Esto protege la información si dejas el equipo abierto.<br><br>
     Si el código te da error, casi siempre es la <b>hora del teléfono</b>: actívala en automático y vuelve a probar.<br><br>
-    Cada consorcio es <b>totalmente independiente</b>. Tu usuario solo ve la información de <b class="js-consorcio">—</b>; ninguna banca, gasto o cuadre de otro consorcio aparece ni se mezcla en los reportes.
+    Cada consorcio es <b>totalmente independiente</b>. Tu usuario solo ve la información de <b class="js-consorcio">—</b>; ninguna banca, gasto o cuadre de otro consorcio aparece ni se mezcla en los reportes.<br><br>
+    <b>Usuarios y permisos</b> (solo administradores)<br>
+    En <b>Ajustes &rsaquo; Usuarios y permisos</b> defines quién entra y qué puede hacer. Para cada persona eliges, módulo por módulo, entre <b>Sin acceso</b>, <b>Solo ver</b> y <b>Ver y editar</b>. Lo que quede sin acceso ni siquiera aparece en su pantalla de inicio.<br><br>
+    Para agregar a alguien: primero crea su cuenta en Supabase con su correo y una clave temporal, y luego escribe ese correo en <b>Vincular</b>. Cada persona activa su propio Google Authenticator la primera vez que entra.<br><br>
+    <b>Bloquear</b> le corta el acceso de inmediato sin borrar nada, útil si alguien deja de trabajar contigo. <b>Quitar</b> lo desvincula del consorcio. En ambos casos la cuenta sigue existiendo, pero deja de ver información.
     </div>
   </div>
 
@@ -1510,6 +1533,26 @@
 </section>
 
 <!-- AJUSTES -->
+<section class="view" id="view-usuarios">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+    <button onclick="go('settings')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">&lsaquo;</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Usuarios y permisos</div><div style="font-size:12px;color:var(--muted);">Consorcio <span class="js-consorcio">—</span></div></div>
+  </div>
+
+  <div class="panel" style="margin-bottom:14px;">
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px;">Agregar usuario</div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:10px;">
+      Primero crea la cuenta en Supabase (Authentication &rsaquo; Users &rsaquo; Add user) con su correo y una clave temporal, marcando <b>Auto Confirm User</b>. Luego escribe aquí ese mismo correo para vincularlo a este consorcio.
+    </div>
+    <div style="display:flex;gap:8px;">
+      <input type="email" id="nuevoUsuEmail" placeholder="correo@ejemplo.com" style="flex:1;padding:11px;border:1px solid var(--line);border-radius:10px;font-size:13px;font-family:inherit;">
+      <button onclick="agregarUsuario()" style="border:none;background:var(--cerulean);color:#fff;border-radius:10px;padding:11px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Vincular</button>
+    </div>
+  </div>
+
+  <div id="listaUsuarios"></div>
+</section>
+
 <section class="view" id="view-settings">
   <div class="section-label">Ajustes</div>
 
@@ -1518,6 +1561,15 @@
       <div class="si-ic" style="background:var(--cerulean-dim);color:var(--cerulean-bright);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
       <div class="si-txt"><div class="t">Cómo usar la aplicación</div><div class="d">Guía paso a paso</div></div>
       <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" style="width:18px;height:18px;"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+    <div class="set-item" id="setItemUsuarios" onclick="openUsuarios()" style="cursor:pointer;display:none;">
+      <div class="si-ic" style="background:#3a3016;color:#e8c877;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      <div class="si-txt"><div class="t">Usuarios y permisos</div><div class="d">Quién entra y qué puede hacer</div></div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" style="width:18px;height:18px;"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+    <div class="set-item" style="cursor:default;">
+      <div class="si-ic" style="background:var(--cerulean-dim);color:var(--cerulean-bright);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/></svg></div>
+      <div class="si-txt"><div class="t">Consorcio</div><div class="d"><span class="js-consorcio">—</span> · <span id="miRolTxt">—</span></div></div>
     </div>
   </div>
 
@@ -1572,7 +1624,7 @@
       <div class="si-act" style="color:var(--amber);" onclick="doLogout()">Salir</div>
     </div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v4.0 nube · Santo Domingo, RD</div>
+  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v4.2 nube · Santo Domingo, RD</div>
 </section>
 
 <!-- NAV -->
@@ -1586,7 +1638,7 @@
     <span class="lbl">Historial</span>
   </button>
   <div class="nav-spacer">
-    <div class="fab" onclick="go('add')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+    <div class="fab" id="fabAdd" onclick="go('add')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
   </div>
   <button id="tab-reports" onclick="go('reports')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="7"/><rect x="12" y="7" width="3" height="11"/><rect x="17" y="13" width="3" height="5"/></svg>
@@ -1988,11 +2040,12 @@ function go(v){
   document.querySelectorAll('nav.tabbar button').forEach(b=>b.classList.remove('active'));
   const tab=document.getElementById('tab-'+v); if(tab)tab.classList.add('active');
   window.scrollTo(0,0);
-  if(v==='dash')renderDash();
+  if(v==='dash'){ renderDash(); aplicarPermisos(); }
   if(v==='history')renderHistory();
   if(v==='reports')renderReports();
   if(v==='settings')renderSettings();
   if(v==='add')resetForms();
+  if(v==='settings')aplicarPermisos();
 }
 
 /* ---------- MONTH PICKER ---------- */
@@ -6364,12 +6417,12 @@ async function startEnroll(){
     const pend=((fl&&fl.all)||[]).filter(f=>f.status!=='verified');
     for(const f of pend){ try{ await sb.auth.mfa.unenroll({factorId:f.id}); }catch(e){} }
 
-    const { data, error } = await sb.auth.mfa.enroll({ factorType:'totp', friendlyName:'AdmBca '+Date.now() });
+    const { data, error } = await sb.auth.mfa.enroll({ factorType:'totp', issuer:'AdmBca', friendlyName:'AdmBca '+Date.now() });
     if(error) throw error;
     mfaFactorId=data.id;
-    document.getElementById('enrollQr').innerHTML='<img alt="Código QR" src="'+data.totp.qr_code+'" style="width:100%;max-width:180px;display:block;">';
-    document.getElementById('enrollSecret').textContent=data.totp.secret;
+    mostrarQrTotp(data.totp);
     showStep('loginStepEnroll');
+    revisarHora();
     document.getElementById('enrollCode').focus();
   }catch(e){
     console.error('enroll error',e);
@@ -6377,6 +6430,203 @@ async function startEnroll(){
     showStep('loginStep1');
     const b=document.getElementById('loginBtn'); b.textContent='Continuar'; b.disabled=false;
   }
+}
+
+const MODULOS = [
+  ['operaciones','Operaciones','Registrar ingresos, gastos y salidas'],
+  ['corte','Corte Diario','Recolección del día'],
+  ['desglose','Desglose de Efectivo','Conteo de billetes'],
+  ['cuadre','Cuadre Mensual','Matriz de bancas y oficina'],
+  ['cierremes','Cierre de Mes','Cerrar mes y arrastrar saldo'],
+  ['maquinas','Máquinas','Ruletas y lecturas'],
+  ['virtuales','Virtuales','Resumen y reparto'],
+  ['ajustes','Ajustes','Bancas, categorías y configuración']
+];
+const NIVELES = [['no','Sin acceso'],['ver','Solo ver'],['editar','Ver y editar']];
+
+function esAdmin(){ return (state&&state.rol)==='admin'; }
+function nivel(mod){
+  if(esAdmin()) return 'editar';
+  return ((state&&state.permisos&&state.permisos[mod])||'no');
+}
+function puedeVer(mod){ return nivel(mod)!=='no'; }
+function puedeEditar(mod){ return nivel(mod)==='editar'; }
+
+// Oculta del inicio lo que el usuario no puede ver y muestra su rol
+function aplicarPermisos(){
+  document.querySelectorAll('[data-mod]').forEach(el=>{
+    el.style.display = puedeVer(el.getAttribute('data-mod')) ? '' : 'none';
+  });
+  document.querySelectorAll('[data-grupo]').forEach(g=>{
+    const hijos=[...g.querySelectorAll('[data-mod]')];
+    const algunoVisible = hijos.length===0 || hijos.some(h=>h.style.display!=='none');
+    const soloTitulo = hijos.length>0 && !algunoVisible && !g.querySelector('[onclick^="openCorte"]');
+    g.style.display = soloTitulo ? 'none' : '';
+  });
+  const fab=document.getElementById('fabAdd');
+  if(fab) fab.style.display = puedeEditar('operaciones') ? '' : 'none';
+  const it=document.getElementById('setItemUsuarios');
+  if(it) it.style.display = esAdmin() ? '' : 'none';
+  const rt=document.getElementById('miRolTxt');
+  if(rt) rt.textContent = esAdmin() ? 'Administrador' : 'Usuario';
+}
+
+/* ---------- Administración de usuarios ---------- */
+function openUsuarios(){ go('usuarios'); cargarUsuarios(); }
+
+async function cargarUsuarios(){
+  const cont=document.getElementById('listaUsuarios');
+  cont.innerHTML='<div class="panel" style="text-align:center;color:var(--muted);font-size:13px;">Cargando…</div>';
+  const { data, error } = await sb.rpc('listar_usuarios');
+  if(error){ cont.innerHTML='<div class="panel" style="color:var(--red);font-size:13px;">No se pudo cargar la lista.</div>'; return; }
+  if(!data || !data.length){ cont.innerHTML='<div class="panel" style="color:var(--muted);font-size:13px;">Todavía no hay usuarios vinculados.</div>'; return; }
+  const yo=(await sb.auth.getUser()).data.user.id;
+  cont.innerHTML = data.map(u=>tarjetaUsuario(u, u.user_id===yo)).join('');
+}
+
+function tarjetaUsuario(u, soyYo){
+  const p=u.permisos||{};
+  const adm=u.rol==='admin';
+  const filas = adm ? '<div style="font-size:12.5px;color:var(--muted);padding:6px 0;">Un administrador tiene acceso completo a todos los módulos.</div>'
+    : MODULOS.map(([k,nom,desc])=>{
+        const v=p[k]||'no';
+        const ops=NIVELES.map(([nv,lbl])=>'<option value="'+nv+'"'+(v===nv?' selected':'')+'>'+lbl+'</option>').join('');
+        return '<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line);">'
+             + '<div style="flex:1;"><div style="font-size:13px;font-weight:600;">'+nom+'</div>'
+             + '<div style="font-size:11px;color:var(--muted);">'+desc+'</div></div>'
+             + '<select data-usu="'+u.user_id+'" data-perm="'+k+'" style="border:1px solid var(--line);border-radius:8px;padding:7px 8px;font-size:12.5px;font-family:inherit;background:#fff;">'+ops+'</select></div>';
+      }).join('');
+
+  const llave = u.tiene_llave ? '<span style="color:var(--green,#2d6a4f);">llave activa</span>' : '<span style="color:#c0731f;">sin llave</span>';
+  const acceso = u.ultimo_acceso ? new Date(u.ultimo_acceso).toLocaleDateString('es-DO') : 'nunca';
+
+  return '<div class="panel" style="margin-bottom:12px;">'
+   + '<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">'
+   +   '<div style="flex:1;"><div style="font-size:14px;font-weight:800;word-break:break-all;">'+u.email+'</div>'
+   +   '<div style="font-size:11.5px;color:var(--muted);margin-top:2px;">'+(adm?'Administrador':'Usuario')+' · '+llave+' · último acceso: '+acceso+'</div></div>'
+   +   (soyYo?'<span style="font-size:11px;font-weight:700;color:var(--cerulean);background:var(--cerulean-dim);padding:4px 8px;border-radius:7px;">tú</span>':'')
+   + '</div>'
+   + filas
+   + (soyYo?'' :
+       '<div style="display:flex;gap:8px;margin-top:12px;">'
+     + '<button onclick="guardarUsuario(\''+u.user_id+'\')" style="flex:1;border:none;background:var(--cerulean);color:#fff;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Guardar</button>'
+     + '<button onclick="alternarActivo(\''+u.user_id+'\','+(u.activo?'false':'true')+')" style="border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:11px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">'+(u.activo?'Bloquear':'Reactivar')+'</button>'
+     + '<button onclick="quitarUsuario(\''+u.user_id+'\')" style="border:1px solid #e9b3ad;background:#fff;color:var(--red);border-radius:10px;padding:11px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Quitar</button>'
+     + '</div>')
+   + (u.activo?'':'<div style="margin-top:10px;background:#3d211e11;border:1px solid #e9b3ad;color:var(--red);font-size:12px;padding:8px 10px;border-radius:8px;">Bloqueado: no puede entrar ni ver datos.</div>')
+   + '</div>';
+}
+
+async function agregarUsuario(){
+  const email=(document.getElementById('nuevoUsuEmail').value||'').trim();
+  if(!email){ toast('Escribe el correo del usuario.',false); return; }
+  const permisos={}; MODULOS.forEach(([k])=>{ permisos[k]='no'; });
+  const { data, error } = await sb.rpc('vincular_usuario',{p_email:email,p_rol:'usuario',p_permisos:permisos});
+  if(error){ toast('No se pudo vincular.',false); return; }
+  if(data && data.indexOf('ERROR')===0){ toast(data.replace('ERROR: ',''),false); return; }
+  document.getElementById('nuevoUsuEmail').value='';
+  toast('Usuario vinculado. Ahora define qué puede hacer.',true);
+  cargarUsuarios();
+}
+
+async function guardarUsuario(uid){
+  const permisos={};
+  document.querySelectorAll('select[data-usu="'+uid+'"]').forEach(sel=>{
+    permisos[sel.getAttribute('data-perm')]=sel.value;
+  });
+  const { data, error } = await sb.rpc('guardar_permisos',{p_user:uid,p_rol:null,p_permisos:permisos,p_activo:null});
+  if(error || (data&&data.indexOf('ERROR')===0)){ toast('No se pudo guardar.',false); return; }
+  toast('Permisos guardados.',true);
+}
+
+async function alternarActivo(uid, activar){
+  const { data, error } = await sb.rpc('guardar_permisos',{p_user:uid,p_rol:null,p_permisos:null,p_activo:activar});
+  if(error || (data&&data.indexOf('ERROR')===0)){ toast('No se pudo cambiar.',false); return; }
+  toast(activar?'Usuario reactivado.':'Usuario bloqueado.',true);
+  cargarUsuarios();
+}
+
+async function quitarUsuario(uid){
+  if(!confirm('¿Quitar este usuario del consorcio?\n\nLa cuenta seguirá existiendo, pero no podrá ver ningún dato.')) return;
+  const { data, error } = await sb.rpc('desvincular_usuario',{p_user:uid});
+  if(error || (data&&data.indexOf('ERROR')===0)){ toast('No se pudo quitar.',false); return; }
+  toast('Usuario desvinculado.',true);
+  cargarUsuarios();
+}
+
+function mostrarQrTotp(totp){
+  const box=document.getElementById('enrollQr');
+  const raw=(totp&&totp.qr_code)||'';
+  box.innerHTML=''; let ok=false;
+  // El SVG viene en un data URI y sus colores (#000000) cortan la imagen en un <img>.
+  // Por eso se inserta el dibujo directo en la pagina.
+  if(raw){
+    let svg=raw;
+    if(/^data:/i.test(svg)){
+      const cab=svg.slice(0,svg.indexOf(','));
+      svg=svg.slice(svg.indexOf(',')+1);
+      if(/;base64/i.test(cab)){ try{ svg=atob(svg); }catch(e){} }
+      else { try{ svg=decodeURIComponent(svg); }catch(e){ try{ svg=unescape(svg); }catch(e2){} } }
+    }
+    if(svg.indexOf('<svg')>=0){
+      box.innerHTML=svg;
+      const el=box.querySelector('svg');
+      if(el){
+        const w=parseFloat(el.getAttribute('width'))||0, h=parseFloat(el.getAttribute('height'))||0;
+        if(!el.getAttribute('viewBox') && w && h) el.setAttribute('viewBox','0 0 '+w+' '+h);
+        el.setAttribute('width','200'); el.setAttribute('height','200');
+        el.setAttribute('shape-rendering','crispEdges');
+        el.style.display='block'; ok=true;
+      }
+    }
+    if(!ok){ box.innerHTML='<img alt="QR" src="'+raw.replace(/#/g,'%23')+'" style="width:200px;height:200px;display:block;">'; ok=true; }
+  }
+  if(!ok) box.innerHTML='<div style="color:#8a97a1;font-size:12px;text-align:center;padding:24px;">No se pudo dibujar el codigo.<br>Usa la clave de abajo.</div>';
+
+  const uri=(totp&&totp.uri)||'';
+  const a=document.getElementById('enrollLink');
+  if(a){ if(uri){ a.href=uri; a.style.display='block'; } else { a.style.display='none'; } }
+
+  const sec=(totp&&totp.secret)||'';
+  window.__totpSecret=sec;
+  document.getElementById('enrollSecret').textContent=sec.replace(/(.{4})/g,'$1 ').trim();
+}
+
+function copiarClaveTotp(){
+  const s=window.__totpSecret||''; const b=document.getElementById('copyKeyBtn');
+  if(!s) return;
+  const listo=()=>{ if(b){ b.textContent='Clave copiada'; setTimeout(()=>{b.textContent='Copiar clave';},1800); } };
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(s).then(listo).catch(()=>copiaManual(s,listo));
+  } else copiaManual(s,listo);
+}
+function copiaManual(txt,cb){
+  try{
+    const t=document.createElement('textarea');
+    t.value=txt; t.style.position='fixed'; t.style.opacity='0';
+    document.body.appendChild(t); t.select(); document.execCommand('copy');
+    document.body.removeChild(t); cb&&cb();
+  }catch(e){}
+}
+
+// Un reloj desfasado es la causa mas comun de que el codigo sea rechazado
+async function revisarHora(){
+  const box=document.getElementById('horaAviso');
+  if(!box) return;
+  box.style.display='none';
+  try{
+    const t0=Date.now();
+    const r=await fetch('https://okrfnucuombayysmdviq.supabase.co/auth/v1/health',{cache:'no-store'});
+    const t1=Date.now();
+    const d=r.headers.get('date');
+    if(!d) return;
+    const desfase=Math.round((((t0+t1)/2)-new Date(d).getTime())/1000);
+    window.__desfaseSeg=desfase;
+    if(Math.abs(desfase)>25){
+      box.innerHTML='<b>La hora de este equipo está desfasada '+Math.abs(desfase)+' segundos.</b><br>Los códigos dependen del reloj. Ponlo en automático (Ajustes → Fecha y hora) en el teléfono donde tienes Authenticator y vuelve a intentar.';
+      box.style.display='block';
+    }
+  }catch(e){}
 }
 
 async function doConfirmEnroll(){
@@ -6393,7 +6643,9 @@ async function doConfirmEnroll(){
     await startApp();
   }catch(e){
     console.error('enroll verify error',e);
-    loginErr('El código no coincide. Revisa la hora de tu teléfono y prueba con el código nuevo.');
+    let m='El código no coincide. Asegúrate de usar la cuenta AdmBca recién agregada (borra las anteriores) y escribe el código apenas aparezca.';
+    if(typeof window.__desfaseSeg==='number' && Math.abs(window.__desfaseSeg)>25) m='El reloj de este equipo está desfasado '+Math.abs(window.__desfaseSeg)+' segundos. Corrige la hora del teléfono y vuelve a intentar.';
+    loginErr(m);
     document.getElementById('enrollCode').value='';
     btn.textContent='Activar y entrar'; btn.disabled=false;
   }
@@ -6456,7 +6708,15 @@ async function loadConsorcio(){
     const { data, error } = await sb.from('consorcios').select('id,codigo,nombre').limit(1);
     if(error) throw error;
     state.consorcio = (data&&data[0]) ? data[0] : null;
+    const { data:u } = await sb.auth.getUser();
+    const uid = u && u.user && u.user.id;
+    if(uid){
+      const { data:v } = await sb.from('usuarios_consorcio').select('rol,permisos,activo').eq('user_id',uid).maybeSingle();
+      state.rol = (v&&v.rol)||'usuario';
+      state.permisos = (v&&v.permisos)||{};
+    }
   }catch(e){ console.error('consorcio',e); state.consorcio=null; }
+  aplicarPermisos();
   const nom = (state.consorcio&&state.consorcio.nombre) || '—';
   document.querySelectorAll('.js-consorcio').forEach(el=>{ el.textContent=nom; });
 }
