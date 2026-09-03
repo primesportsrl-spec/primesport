@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#101820">
-<title>PRIME SPORT · Control de Ingresos y Gastos</title>
+<title>AdmBca · Control de Ingresos y Gastos</title>
 <style>
   :root{
     --navy:#101820; --navy-soft:#1a2733; --navy-line:#283947;
@@ -241,24 +241,51 @@
 <div id="loginOverlay" style="position:fixed;inset:0;z-index:200;background:linear-gradient(160deg,#101820,#16242f);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;">
   <div style="width:100%;max-width:340px;">
     <div style="text-align:center;margin-bottom:28px;">
-      <div style="display:flex;align-items:baseline;justify-content:center;gap:2px;font-weight:800;letter-spacing:-1.5px;margin-bottom:6px;"><span style="color:#fff;font-size:42px;">prime</span><span style="color:#e07a2b;font-size:26px;font-style:italic;font-weight:700;transform:translateY(-4px);">sport</span></div>
+      <div style="display:flex;align-items:baseline;justify-content:center;gap:2px;font-weight:800;letter-spacing:-1.5px;margin-bottom:6px;"><span style="color:#fff;font-size:42px;">Adm</span><span style="color:#e07a2b;font-size:26px;font-style:italic;font-weight:700;transform:translateY(-4px);">Bca</span></div>
       <div style="color:#9fb1bd;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;">Control Financiero</div>
     </div>
     <div style="background:#1a2733;border:1px solid #283947;border-radius:18px;padding:24px 20px;box-shadow:0 12px 40px rgba(0,0,0,.3);">
-      <div style="color:#fff;font-size:17px;font-weight:700;margin-bottom:4px;">Iniciar sesión</div>
-      <div style="color:#7d909e;font-size:12.5px;margin-bottom:20px;">Ingresa con tu correo y contraseña</div>
-      <div style="margin-bottom:14px;">
-        <label style="display:block;color:#9fb1bd;font-size:12px;font-weight:600;margin-bottom:6px;">Correo</label>
-        <input type="email" id="loginEmail" autocomplete="username" placeholder="correo@ejemplo.com" style="width:100%;border:1.5px solid #283947;border-radius:11px;padding:13px 14px;font-size:16px;background:#0e1620;color:#fff;">
+
+      <!-- PASO 1: correo + clave -->
+      <div id="loginStep1">
+        <div style="color:#fff;font-size:17px;font-weight:700;margin-bottom:4px;">Iniciar sesión</div>
+        <div style="color:#7d909e;font-size:12.5px;margin-bottom:20px;">Ingresa con tu correo y contraseña</div>
+        <div style="margin-bottom:14px;">
+          <label style="display:block;color:#9fb1bd;font-size:12px;font-weight:600;margin-bottom:6px;">Correo</label>
+          <input type="email" id="loginEmail" autocomplete="username" placeholder="correo@ejemplo.com" style="width:100%;border:1.5px solid #283947;border-radius:11px;padding:13px 14px;font-size:16px;background:#0e1620;color:#fff;">
+        </div>
+        <div style="margin-bottom:20px;">
+          <label style="display:block;color:#9fb1bd;font-size:12px;font-weight:600;margin-bottom:6px;">Contraseña</label>
+          <input type="password" id="loginPass" autocomplete="current-password" placeholder="••••••••" style="width:100%;border:1.5px solid #283947;border-radius:11px;padding:13px 14px;font-size:16px;background:#0e1620;color:#fff;" onkeydown="if(event.key==='Enter')doLogin()">
+        </div>
+        <button id="loginBtn" onclick="doLogin()" style="width:100%;border:none;border-radius:12px;padding:15px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#0086AD,#16a8d4);box-shadow:0 4px 14px rgba(0,134,173,.4);">Continuar</button>
       </div>
-      <div style="margin-bottom:20px;">
-        <label style="display:block;color:#9fb1bd;font-size:12px;font-weight:600;margin-bottom:6px;">Contraseña</label>
-        <input type="password" id="loginPass" autocomplete="current-password" placeholder="••••••••" style="width:100%;border:1.5px solid #283947;border-radius:11px;padding:13px 14px;font-size:16px;background:#0e1620;color:#fff;" onkeydown="if(event.key==='Enter')doLogin()">
+
+      <!-- PASO 2: código del autenticador -->
+      <div id="loginStepMfa" style="display:none;">
+        <div style="color:#fff;font-size:17px;font-weight:700;margin-bottom:4px;">Código de verificación</div>
+        <div style="color:#7d909e;font-size:12.5px;margin-bottom:20px;">Abre <b>Google Authenticator</b> y escribe el código de 6 dígitos.</div>
+        <input type="text" id="mfaCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" style="width:100%;border:1.5px solid #283947;border-radius:11px;padding:15px 14px;font-size:26px;letter-spacing:9px;text-align:center;background:#0e1620;color:#fff;font-family:inherit;margin-bottom:20px;" onkeydown="if(event.key==='Enter')doVerifyMfa()">
+        <button id="mfaBtn" onclick="doVerifyMfa()" style="width:100%;border:none;border-radius:12px;padding:15px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#0086AD,#16a8d4);box-shadow:0 4px 14px rgba(0,134,173,.4);">Entrar</button>
+        <button onclick="resetLogin()" style="width:100%;border:none;background:none;color:#7d909e;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;padding:14px 0 0;">Volver</button>
       </div>
-      <div id="loginError" style="display:none;background:#3d211e;border:1px solid #d3564b;color:#f08980;font-size:12.5px;padding:10px 12px;border-radius:9px;margin-bottom:14px;"></div>
-      <button id="loginBtn" onclick="doLogin()" style="width:100%;border:none;border-radius:12px;padding:15px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#0086AD,#16a8d4);box-shadow:0 4px 14px rgba(0,134,173,.4);">Entrar</button>
+
+      <!-- PASO 3: vincular el autenticador (primera vez) -->
+      <div id="loginStepEnroll" style="display:none;">
+        <div style="color:#fff;font-size:17px;font-weight:700;margin-bottom:4px;">Activa tu llave de seguridad</div>
+        <div style="color:#7d909e;font-size:12.5px;margin-bottom:16px;">Instala <b>Google Authenticator</b> y escanea este código. Solo se hace una vez.</div>
+        <div id="enrollQr" style="background:#fff;border-radius:12px;padding:10px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;min-height:180px;"></div>
+        <div style="color:#7d909e;font-size:11.5px;margin-bottom:6px;">¿No puedes escanear? Escribe esta clave a mano:</div>
+        <div id="enrollSecret" style="background:#0e1620;border:1px solid #283947;border-radius:9px;padding:10px;color:#9fb1bd;font-size:12px;font-family:monospace;word-break:break-all;text-align:center;margin-bottom:18px;"></div>
+        <label style="display:block;color:#9fb1bd;font-size:12px;font-weight:600;margin-bottom:6px;">Escribe el código que aparece en la app</label>
+        <input type="text" id="enrollCode" inputmode="numeric" maxlength="6" placeholder="000000" style="width:100%;border:1.5px solid #283947;border-radius:11px;padding:15px 14px;font-size:26px;letter-spacing:9px;text-align:center;background:#0e1620;color:#fff;font-family:inherit;margin-bottom:20px;" onkeydown="if(event.key==='Enter')doConfirmEnroll()">
+        <button id="enrollBtn" onclick="doConfirmEnroll()" style="width:100%;border:none;border-radius:12px;padding:15px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#0086AD,#16a8d4);box-shadow:0 4px 14px rgba(0,134,173,.4);">Activar y entrar</button>
+        <button onclick="resetLogin()" style="width:100%;border:none;background:none;color:#7d909e;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;padding:14px 0 0;">Cancelar</button>
+      </div>
+
+      <div id="loginError" style="display:none;background:#3d211e;border:1px solid #d3564b;color:#f08980;font-size:12.5px;padding:10px 12px;border-radius:9px;margin-top:14px;"></div>
     </div>
-    <div style="text-align:center;margin-top:18px;color:#5a6b78;font-size:11px;">PRIME SPORT · Santo Domingo, RD</div>
+    <div style="text-align:center;margin-top:18px;color:#5a6b78;font-size:11px;">AdmBca · Santo Domingo, RD</div>
   </div>
 </div>
 
@@ -1365,11 +1392,27 @@
 <section class="view" id="view-help">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
     <button onclick="go('settings')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
-    <div><div style="font-size:17px;font-weight:800;">Cómo usar la app</div><div style="font-size:12px;color:var(--muted);">Guía rápida de PRIME SPORT</div></div>
+    <div><div style="font-size:17px;font-weight:800;">Cómo usar la app</div><div style="font-size:12px;color:var(--muted);">Guía rápida de AdmBca</div></div>
   </div>
 
   <div class="panel" style="line-height:1.6;">
-    <div style="font-size:14px;color:var(--ink);">PRIME SPORT Control es tu sistema integral de <b>caja, cuadre, virtuales y reportes</b>. Aquí está la guía rápida de cada módulo, en orden de uso diario.</div>
+    <div style="font-size:14px;color:var(--ink);">AdmBca es el sistema de administración de bancas del consorcio <b class="js-consorcio">—</b>. Cubre <b>caja, cuadre, virtuales y reportes</b>. Aquí está la guía rápida de cada módulo, en orden de uso diario.</div>
+  </div>
+
+  <div class="panel" style="background:linear-gradient(135deg,#fdf4ec,#f8e6d5);border-color:#e8c7a5;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><svg viewBox="0 0 24 24" fill="none" stroke="#c0731f" stroke-width="2" style="width:22px;height:22px;flex-shrink:0;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><h3 style="font-size:15px;font-weight:700;color:#c0731f;">Acceso y seguridad</h3></div>
+    <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">
+    Para entrar necesitas <b>tres cosas</b>: tu correo, tu contraseña y un <b>código de 6 dígitos</b> que genera Google Authenticator en tu teléfono. El código cambia cada 30 segundos, así que aunque alguien conozca tu clave no puede entrar sin tu teléfono.<br><br>
+    <b>La primera vez:</b><br>
+    1. Instala <b>Google Authenticator</b> (gratis, Play Store o App Store).<br>
+    2. Entra con tu correo y contraseña.<br>
+    3. Escanea el código QR que aparece en pantalla.<br>
+    4. Escribe los 6 dígitos que muestra la app y listo.<br><br>
+    <b>De ahí en adelante:</b> correo, contraseña y el código del momento.<br><br>
+    <b>Importante:</b> al cerrar la página la sesión se cierra sola. Al volver hay que entrar de nuevo con los tres datos. Esto protege la información si dejas el equipo abierto.<br><br>
+    Si el código te da error, casi siempre es la <b>hora del teléfono</b>: actívala en automático y vuelve a probar.<br><br>
+    Cada consorcio es <b>totalmente independiente</b>. Tu usuario solo ve la información de <b class="js-consorcio">—</b>; ninguna banca, gasto o cuadre de otro consorcio aparece ni se mezcla en los reportes.
+    </div>
   </div>
 
   <div class="panel" style="background:linear-gradient(135deg,#eef4fb,#dde9f6);border-color:#c3d8ee;">
@@ -1529,7 +1572,7 @@
       <div class="si-act" style="color:var(--amber);" onclick="doLogout()">Salir</div>
     </div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;">PRIME SPORT · v3.1 nube · Santo Domingo, RD</div>
+  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v4.0 nube · Santo Domingo, RD</div>
 </section>
 
 <!-- NAV -->
@@ -1586,12 +1629,15 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 window.__supabase = createClient(
   'https://okrfnucuombayysmdviq.supabase.co',
-  'sb_publishable_JlxZdS70vitaGNqvI_4Q-g_OMGnRdrU'
+  'sb_publishable_JlxZdS70vitaGNqvI_4Q-g_OMGnRdrU',
+  { auth: { persistSession:false, autoRefreshToken:true, detectSessionInUrl:false } }
 );
 window.dispatchEvent(new Event('supabase-ready'));
 </script>
 <script>
-/* ===================== PRIME SPORT v2 ===================== */
+/* ===================== AdmBca v4.0 ===================== */
+function idConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.id)||null; }catch(e){ return null; } }
+function nomConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.nombre)||'AdmBca'; }catch(e){ return 'AdmBca'; } }
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const MONTHS_SHORT=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 const CAT_COLORS=['#0086AD','#1f9d6b','#d9a534','#9b59b6','#e67e22','#16a8d4','#e74c3c','#34495e','#2980b9','#27ae60'];
@@ -2884,7 +2930,7 @@ function buildCorteSummary(){
   const banks=sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false));
   const pend=banks.map(b=>({name:b.name,p:bankPending(b.name)})).filter(x=>Math.abs(x.p)>=1);
   const pendTotal=banks.reduce((s,b)=>s+bankPending(b.name),0);
-  let txt=`*PRIME SPORT — Cierre del ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}*\n\n`;
+  let txt=`*${nomConsorcio()} — Cierre del ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}*\n\n`;
   txt+=`💼 Balance en Oficina: RD$${fmt(officeBal)}\n`;
   txt+=`⏳ Pendientes en bancas: RD$${fmt(pendTotal)}\n`;
   if(pend.length){
@@ -3128,7 +3174,7 @@ async function editMaqDigPct(branch){
   const pct=num/100;
   setSyncState('saving');
   try{
-    await sb.from('maquinas_config_banca').upsert({sucursal:branch,digitador_pct:pct},{onConflict:'sucursal'});
+    await sb.from('maquinas_config_banca').upsert({consorcio_id:idConsorcio(),sucursal:branch,digitador_pct:pct},{onConflict:'consorcio_id,sucursal'});
     state.maqCfgBanca[branch]={digitadorPct:pct,notas:(state.maqCfgBanca[branch]||{}).notas||''};
     setSyncState('ok');
     toast('Guardado',true);
@@ -3386,7 +3432,7 @@ function exportMaqGlobalPDF(){
       th:first-child,td:first-child{text-align:left;}
       @media print { @page { size: A4 landscape; margin: 10mm; } body{margin:0;} }
     </style></head><body>
-    <h1>PRIME SPORT · ${title}</h1>
+    <h1>${nomConsorcio()} · ${title}</h1>
     <div class="meta">Generado ${new Date().toLocaleString('es-DO')}</div>
     ${node.innerHTML}
     <script>window.onload=()=>{setTimeout(()=>window.print(),300);};</`+`script>
@@ -4204,7 +4250,7 @@ function exportCuadreBancasPDF(){
   const title=`Cuadre Mensual · ${MONTHS[cbMesCur-1]} ${cbAnioCur}`;
   w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${title}</title>
     <style>body{font-family:-apple-system,sans-serif;background:#fff;margin:18px;color:#101820;}h1{font-size:17px;margin:0 0 4px;}.meta{color:#7d909e;font-size:11px;margin-bottom:14px;}.panel{border:1px solid #e1e5e8;border-radius:9px;padding:11px;margin-bottom:11px;}.panel h3{font-size:12px;margin:0 0 8px;}table{width:100%;border-collapse:collapse;font-size:10.5px;}th,td{padding:5px 7px;text-align:right;border:1px solid #eef2f4;}th:first-child,td:first-child{text-align:left;font-weight:700;}th{background:#101820;color:#fff;}@media print{@page{size:A4 landscape;margin:10mm;}body{margin:0;}}</style>
-    </head><body><h1>PRIME SPORT · ${title}</h1><div class="meta">${new Date().toLocaleString('es-DO')}</div>${node.innerHTML}<script>window.onload=()=>setTimeout(()=>window.print(),300);</`+`script></body></html>`);
+    </head><body><h1>${nomConsorcio()} · ${title}</h1><div class="meta">${new Date().toLocaleString('es-DO')}</div>${node.innerHTML}<script>window.onload=()=>setTimeout(()=>window.print(),300);</`+`script></body></html>`);
   w.document.close();
 }
 
@@ -4320,7 +4366,7 @@ async function guardarDesglose(){
   setSyncState('saving');
   try{
     const row={fecha:dgFechaCur,denominaciones:denoms,total_contado:total,total_esperado:esperado,diferencia:dif,nota:nota||null,creado_por:currentUser||null};
-    const {data,error}=await sb.from('desglose_efectivo').upsert(row,{onConflict:'fecha'}).select();
+    const {data,error}=await sb.from('desglose_efectivo').upsert(Object.assign({consorcio_id:idConsorcio()},row),{onConflict:'consorcio_id,fecha'}).select();
     if(error)throw error;
     // Update local state
     const idx=state.desgloses.findIndex(d=>d.fecha===dgFechaCur);
@@ -5245,7 +5291,7 @@ function exportRepartoPDF(){
       .section-label{font-size:11px;color:#7d909e;text-transform:uppercase;font-weight:700;letter-spacing:.5px;margin:18px 0 8px;}
       @media print { @page { size: A4; margin: 14mm; } body{margin:0;} }
     </style></head><body>
-    <h1>PRIME SPORT · ${title}</h1>
+    <h1>${nomConsorcio()} · ${title}</h1>
     <div class="meta">Generado ${new Date().toLocaleString('es-DO')}</div>
     ${node.innerHTML}
     <script>window.onload=()=>{setTimeout(()=>window.print(),300);};</`+`script>
@@ -5830,7 +5876,7 @@ async function toggleVirtSuc(suc){
   else delete state.virtSucursalesInactivas[suc];
   setSyncState('saving');
   try{
-    await sb.from('virtuales_sucursales_estado').upsert({sucursal:suc,activa:!wasActive},{onConflict:'sucursal'});
+    await sb.from('virtuales_sucursales_estado').upsert({consorcio_id:idConsorcio(),sucursal:suc,activa:!wasActive},{onConflict:'consorcio_id,sucursal'});
     setSyncState('ok'); toast(wasActive?`${suc} desactivada`:`${suc} activada`,true);
     renderVirtSucList();
   }catch(e){ console.warn(e); setSyncState('ok'); renderVirtSucList(); }
@@ -5853,7 +5899,7 @@ async function toggleVirtReng(campo){
   else delete state.virtRenglonesInactivos[campo];
   setSyncState('saving');
   try{
-    await sb.from('virtuales_renglones_estado').upsert({campo,activo:!wasActive},{onConflict:'campo'});
+    await sb.from('virtuales_renglones_estado').upsert({consorcio_id:idConsorcio(),campo,activo:!wasActive},{onConflict:'consorcio_id,campo'});
     setSyncState('ok'); toast(wasActive?`Renglón "${campo}" desactivado`:`Renglón "${campo}" activado`,true);
     renderVirtRengList();
   }catch(e){ console.warn(e); setSyncState('ok'); renderVirtRengList(); }
@@ -6191,7 +6237,7 @@ async function saveConfig(clave,valor){
   if(!state.config) state.config={};
   state.config[clave]=valor;
   try{
-    await sb.from('app_config').upsert({clave,valor,actualizado:new Date().toISOString()});
+    await sb.from('app_config').upsert({consorcio_id:idConsorcio(),clave,valor,actualizado:new Date().toISOString()},{onConflict:'consorcio_id,clave'});
   }catch(e){ console.warn('config save failed',e); }
 }
 function saveMensajeroNum(){
@@ -6257,24 +6303,122 @@ function toast(msg,ok){ const t=document.getElementById('toast'); document.getEl
 /* ---------- LOGIN & INIT ---------- */
 function setLoginLogo(){ /* text logo, nothing to copy */ }
 
+/* ---------- Segundo factor (TOTP / Google Authenticator) ---------- */
+let mfaFactorId=null;
+
+function loginErr(msg){
+  const b=document.getElementById('loginError');
+  if(!msg){ b.style.display='none'; return; }
+  b.textContent=msg; b.style.display='block';
+}
+function showStep(id){
+  ['loginStep1','loginStepMfa','loginStepEnroll'].forEach(s=>{
+    document.getElementById(s).style.display = (s===id)?'block':'none';
+  });
+  loginErr('');
+}
+async function resetLogin(){
+  try{ await sb.auth.signOut(); }catch(e){}
+  mfaFactorId=null;
+  document.getElementById('loginPass').value='';
+  document.getElementById('mfaCode').value='';
+  document.getElementById('enrollCode').value='';
+  const b=document.getElementById('loginBtn'); b.textContent='Continuar'; b.disabled=false;
+  showStep('loginStep1');
+}
+
 async function doLogin(){
   const email=document.getElementById('loginEmail').value.trim();
   const pass=document.getElementById('loginPass').value;
-  const errBox=document.getElementById('loginError');
   const btn=document.getElementById('loginBtn');
-  errBox.style.display='none';
-  if(!email||!pass){ errBox.textContent='Escribe tu correo y contraseña.'; errBox.style.display='block'; return; }
-  btn.textContent='Entrando…'; btn.disabled=true;
+  loginErr('');
+  if(!email||!pass){ loginErr('Escribe tu correo y contraseña.'); return; }
+  btn.textContent='Verificando…'; btn.disabled=true;
   try{
-    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-    if(error){ throw error; }
+    const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+    if(error) throw error;
     currentUser=email;
-    await startApp();
+    await routeMfa();
   }catch(e){
     console.error('login error',e);
     let msg='No se pudo iniciar sesión. Verifica tu correo y contraseña.';
-    if(e&&e.message&&/Invalid login/.test(e.message)) msg='Correo o contraseña incorrectos.';
-    errBox.textContent=msg; errBox.style.display='block';
+    if(e&&e.message&&/Invalid login/i.test(e.message)) msg='Correo o contraseña incorrectos.';
+    loginErr(msg);
+    btn.textContent='Continuar'; btn.disabled=false;
+  }
+}
+
+// Decide si pedir el código, vincular el autenticador, o entrar directo
+async function routeMfa(){
+  const { data:aal, error } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+  if(error) throw error;
+  if(aal.currentLevel==='aal2'){ await startApp(); return; }
+  if(aal.nextLevel==='aal2'){ showStep('loginStepMfa'); document.getElementById('mfaCode').focus(); return; }
+  await startEnroll();   // no tiene llave todavía: obligar a vincularla
+}
+
+async function startEnroll(){
+  try{
+    // limpiar intentos de vinculación anteriores que quedaron a medias
+    const { data:fl } = await sb.auth.mfa.listFactors();
+    const pend=((fl&&fl.all)||[]).filter(f=>f.status!=='verified');
+    for(const f of pend){ try{ await sb.auth.mfa.unenroll({factorId:f.id}); }catch(e){} }
+
+    const { data, error } = await sb.auth.mfa.enroll({ factorType:'totp', friendlyName:'AdmBca '+Date.now() });
+    if(error) throw error;
+    mfaFactorId=data.id;
+    document.getElementById('enrollQr').innerHTML='<img alt="Código QR" src="'+data.totp.qr_code+'" style="width:100%;max-width:180px;display:block;">';
+    document.getElementById('enrollSecret').textContent=data.totp.secret;
+    showStep('loginStepEnroll');
+    document.getElementById('enrollCode').focus();
+  }catch(e){
+    console.error('enroll error',e);
+    loginErr('No se pudo preparar la llave de seguridad. Intenta de nuevo.');
+    showStep('loginStep1');
+    const b=document.getElementById('loginBtn'); b.textContent='Continuar'; b.disabled=false;
+  }
+}
+
+async function doConfirmEnroll(){
+  const code=document.getElementById('enrollCode').value.replace(/\D/g,'');
+  const btn=document.getElementById('enrollBtn');
+  loginErr('');
+  if(code.length!==6){ loginErr('Escribe los 6 dígitos que muestra la app.'); return; }
+  btn.textContent='Activando…'; btn.disabled=true;
+  try{
+    const { data:ch, error:e1 } = await sb.auth.mfa.challenge({ factorId:mfaFactorId });
+    if(e1) throw e1;
+    const { error:e2 } = await sb.auth.mfa.verify({ factorId:mfaFactorId, challengeId:ch.id, code });
+    if(e2) throw e2;
+    await startApp();
+  }catch(e){
+    console.error('enroll verify error',e);
+    loginErr('El código no coincide. Revisa la hora de tu teléfono y prueba con el código nuevo.');
+    document.getElementById('enrollCode').value='';
+    btn.textContent='Activar y entrar'; btn.disabled=false;
+  }
+}
+
+async function doVerifyMfa(){
+  const code=document.getElementById('mfaCode').value.replace(/\D/g,'');
+  const btn=document.getElementById('mfaBtn');
+  loginErr('');
+  if(code.length!==6){ loginErr('Escribe los 6 dígitos del autenticador.'); return; }
+  btn.textContent='Entrando…'; btn.disabled=true;
+  try{
+    const { data:fl, error:e0 } = await sb.auth.mfa.listFactors();
+    if(e0) throw e0;
+    const totp=(fl&&fl.totp&&fl.totp[0])||null;
+    if(!totp) throw new Error('sin factor');
+    const { data:ch, error:e1 } = await sb.auth.mfa.challenge({ factorId:totp.id });
+    if(e1) throw e1;
+    const { error:e2 } = await sb.auth.mfa.verify({ factorId:totp.id, challengeId:ch.id, code });
+    if(e2) throw e2;
+    await startApp();
+  }catch(e){
+    console.error('mfa error',e);
+    loginErr('Código incorrecto o vencido. Espera al siguiente y vuelve a intentar.');
+    document.getElementById('mfaCode').value='';
     btn.textContent='Entrar'; btn.disabled=false;
   }
 }
@@ -6284,6 +6428,7 @@ async function startApp(){
   document.getElementById('loginOverlay').style.display='none';
   document.getElementById('syncOverlay').style.display='flex';
   try{
+    await loadConsorcio();
     await loadState();
     document.getElementById('syncOverlay').style.display='none';
     document.getElementById('appRoot').style.display='block';
@@ -6299,11 +6444,21 @@ async function startApp(){
     console.error('load error',e);
     document.getElementById('syncOverlay').style.display='none';
     document.getElementById('loginOverlay').style.display='flex';
-    const errBox=document.getElementById('loginError');
-    errBox.textContent='Sesión iniciada, pero falló la carga de datos. Revisa tu conexión y vuelve a entrar.';
-    errBox.style.display='block';
-    const btn=document.getElementById('loginBtn'); btn.textContent='Entrar'; btn.disabled=false;
+    showStep('loginStep1');
+    loginErr('Sesión iniciada, pero falló la carga de datos. Revisa tu conexión y vuelve a entrar.');
+    const btn=document.getElementById('loginBtn'); btn.textContent='Continuar'; btn.disabled=false;
   }
+}
+
+// Consorcio activo (RLS solo devuelve el del usuario conectado)
+async function loadConsorcio(){
+  try{
+    const { data, error } = await sb.from('consorcios').select('id,codigo,nombre').limit(1);
+    if(error) throw error;
+    state.consorcio = (data&&data[0]) ? data[0] : null;
+  }catch(e){ console.error('consorcio',e); state.consorcio=null; }
+  const nom = (state.consorcio&&state.consorcio.nombre) || '—';
+  document.querySelectorAll('.js-consorcio').forEach(el=>{ el.textContent=nom; });
 }
 
 async function doLogout(){
@@ -6316,13 +6471,8 @@ function bootstrap(){
   sb = window.__supabase;
   if(!sb){ window.addEventListener('supabase-ready',bootstrap,{once:true}); return; }
   setLoginLogo();
-  // auto-login if a session already exists
-  sb.auth.getSession().then(({data})=>{
-    if(data&&data.session&&data.session.user){
-      currentUser=data.session.user.email;
-      startApp();
-    }
-  });
+  // Sin auto-login: la sesión vive solo en memoria, al cerrar la página se pierde.
+  showStep('loginStep1');
 }
 
 if(document.readyState==='loading'){
