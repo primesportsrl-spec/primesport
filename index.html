@@ -1624,7 +1624,7 @@
       <div class="si-act" style="color:var(--amber);" onclick="doLogout()">Salir</div>
     </div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v4.2 nube · Santo Domingo, RD</div>
+  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v4.3 nube · Santo Domingo, RD</div>
 </section>
 
 <!-- NAV -->
@@ -1713,7 +1713,7 @@ const DEFAULTS={
 
 let state={txns:[],branches:[],incCats:[],expCats:[],officeIncCats:[],maquinas:[],lecturas:[],denoms:[],cierres:[],cierresMes:[],config:{},desgloses:[],virtRegs:[],virtConfig:null,virtProviders:[],virtSucursalesInactivas:{},virtRenglonesInactivos:{},maqGastos:[],maqPog:[],maqCfgBanca:{},cbGastos:[],cbIngresos:[],cbOficinaGastos:[]};
 const VIRT_EMPRESAS=['MERENGUE','VARMANEX','VG','SOLL'];
-const VIRT_SUCURSALES=['PRIME SPORT 01','PRIME SPORT 02','PRIME SPORT 03','PRIME SPORT 04','PRIME SPORT 05','PRIME SPORT 06','PRIME SPORT 07','PRIME SPORT 08','PRIME SPORT 09','PRIME SPORT 10'];
+const VIRT_SUCURSALES=['PRIME SPORT 1','PRIME SPORT 2','PRIME SPORT 3','PRIME SPORT 4','PRIME SPORT 5','PRIME SPORT 6','PRIME SPORT 7','PRIME SPORT 8','PRIME SPORT 9','PRIME SPORT 10'];
 
 // Cuadre Bancas — categorías estándar (basadas en Libro1.xlsx)
 const CB_GASTO_CATS=['Alquiler','Combustible','D. Feriados','Dieta','E. Eléctrica','Mant/Reparación','Nómina Dig','Nómina Limp','Picheos','DGII','Tel y/o Cable','Mat Limp','Agua','Mat Gastable','Central','Otros','Vacaciones','Licencia','TSS','Infotep','Liquidación','Administración'];
@@ -1930,7 +1930,7 @@ async function loadState(){
     } else { state.virtProviders=[]; state._providersReady=false; }
     // Active sucursales for Virtuales
     state.virtSucursalesInactivas={};
-    if(!vsuc.error){ vsuc.data.forEach(r=>{ if(r.activa===false) state.virtSucursalesInactivas[r.sucursal]=true; }); }
+    if(!vsuc.error){ vsuc.data.forEach(r=>{ if(r.activa===false) state.virtSucursalesInactivas[normBranchName(r.sucursal)]=true; }); }
     // Active renglones (fields)
     state.virtRenglonesInactivos={};
     if(!vren.error){ vren.data.forEach(r=>{ if(r.activo===false) state.virtRenglonesInactivos[r.campo]=true; }); }
@@ -4987,8 +4987,13 @@ function openVirtuales(){
   showOnlyView('view-virtuales');
   // init selectors
   const now=new Date();
-  if(virtCurMes==null) virtCurMes=now.getMonth()+1;
-  if(virtCurAnio==null) virtCurAnio=now.getFullYear();
+  if(virtCurMes==null||virtCurAnio==null){
+    // Abrir en el ultimo mes que tenga registros; si no hay, el mes actual
+    let bestA=null,bestM=null;
+    (state.virtRegs||[]).forEach(r=>{ if(bestA==null||r.anio>bestA||(r.anio===bestA&&r.mes>bestM)){ bestA=r.anio; bestM=r.mes; } });
+    virtCurAnio = bestA!=null?bestA:now.getFullYear();
+    virtCurMes  = bestM!=null?bestM:(now.getMonth()+1);
+  }
   const mesSel=document.getElementById('virtMes');
   mesSel.innerHTML=MONTHS.map((m,i)=>`<option value="${i+1}">${m}</option>`).join('');
   mesSel.value=virtCurMes;
@@ -5240,7 +5245,7 @@ function renderVirtuales(){
   if(regs.length===0){ byBranch.innerHTML='<div class="empty-hint" style="padding:16px;">—</div>'; }
   else {
     const rows=VIRT_SUCURSALES.map(suc=>{
-      const sr=regs.filter(r=>r.sucursal===suc);
+      const sr=regs.filter(r=>normBranchName(r.sucursal)===normBranchName(suc));
       const venta=sr.reduce((s,r)=>s+r.venta,0);
       const neto=sr.reduce((s,r)=>s+r.total,0);
       const tk=sr.reduce((s,r)=>s+r.tk,0);
@@ -5993,7 +5998,7 @@ function renderVirtRegRows(){
   if(!activeSucs.length){ wrap.innerHTML='<div class="empty-hint" style="padding:20px;">No hay sucursales activas para Virtuales.</div>'; return; }
   if(!activeFields.length){ wrap.innerHTML='<div class="empty-hint" style="padding:20px;">No hay renglones activos. Activa al menos uno en Ajustes de Virtuales.</div>'; return; }
   wrap.innerHTML=activeSucs.map(suc=>{
-    const r=existing.find(x=>x.sucursal===suc);
+    const r=existing.find(x=>normBranchName(x.sucursal)===normBranchName(suc));
     const id=suc.replace(/[^0-9]/g,'');
     const fields=activeFields.map(c=>`<div class="fld" style="margin:0;"><label style="font-size:11px;">${c.label}</label><input type="number" inputmode="decimal" id="vr_${c.k}_${id}" value="${r?r[c.k]:''}" placeholder="0" oninput="calcVirtRow('${id}')"></div>`).join('');
     return `<div class="panel" style="padding:12px;margin-bottom:10px;" data-suc="${suc}">
@@ -6031,7 +6036,7 @@ async function saveVirtRegistro(){
       const tk=g('tk'),venta=g('venta'),balance=g('balance'),bonos=g('bonos'),comision=g('comision'),faltantes=g('faltantes');
       const hasData=(tk||venta||balance||bonos||comision||faltantes);
       const total=balance+bonos+comision+faltantes;
-      const existing=state.virtRegs.find(r=>r.mes===virtCurMes&&r.anio===virtCurAnio&&r.empresa===emp&&r.proveedorId===provId&&r.sucursal===suc);
+      const existing=state.virtRegs.find(r=>r.mes===virtCurMes&&r.anio===virtCurAnio&&r.empresa===emp&&r.proveedorId===provId&&normBranchName(r.sucursal)===suc);
       if(!hasData){
         if(existing){ await sb.from('virtuales_registros').delete().eq('id',existing._id); state.virtRegs=state.virtRegs.filter(r=>r._id!==existing._id); }
         continue;
