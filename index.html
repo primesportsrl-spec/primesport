@@ -470,7 +470,7 @@
 
       <div class="fld">
         <label>Sucursal <span class="req">*</span></label>
-        <select id="fBranchInc" onchange="updateFundBanner('inc')"></select>
+        <select id="fBranchInc" onchange="updateFundBanner('inc'); if(incMode==='multi') renderMultiList();"></select>
       </div>
       <div class="fund-banner" id="fundBannerInc" style="display:none;">
         <div><div class="fb-l">Fondo actual de</div><div class="fb-n" id="fbNameInc">—</div></div>
@@ -504,7 +504,8 @@
 
       <div class="fld"><label>Fecha <span style="font-weight:500;color:var(--muted);font-size:11px;">· jornada de la banca (por defecto ayer)</span></label><input type="date" id="fDateInc"></div>
       <div class="fld"><label>Nota (opcional)</label><input type="text" id="fNoteInc" placeholder="Detalle o referencia…"></div>
-      <button class="btn-primary green" id="saveBtnInc" onclick="saveIncome()">Guardar operación</button>
+      <button class="btn-primary green" id="saveBtnInc" onclick="saveIncome()">Guardar y seguir con la próxima banca</button>
+      <button onclick="go('dash')" style="width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px;font-size:13.5px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;margin-top:9px;">Terminar</button>
     </div>
 
     <!-- ===== EXPENSE ===== -->
@@ -524,6 +525,10 @@
       <div class="fld">
         <label>Categoría del gasto <span class="req">*</span></label>
         <select id="fExpCat"></select>
+      </div>
+      <div class="fld">
+        <label>Banca a la que aplica <span style="font-weight:500;color:var(--muted);font-size:11px;">· opcional</span></label>
+        <select id="fExpBanca"></select>
       </div>
       <div class="ncf-toggle">
         <div class="lbl">¿Tiene NCF?<small>Comprobante fiscal DGII</small></div>
@@ -555,6 +560,14 @@
         <label>Sucursal destino <span class="req">*</span></label>
         <select id="fBranchDest"></select>
       </div>
+      <div class="fld" id="outTransferKindBlock" style="display:none;">
+        <label>Tipo de transferencia</label>
+        <select id="fTransferKind">
+          <option value="Adelanto a banca (se devuelve)">Adelanto — se devuelve</option>
+          <option value="Envío de fondo (no se devuelve)">Envío de fondo — no se devuelve</option>
+        </select>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5;">El adelanto queda visible en el corte y en el WhatsApp del cierre hasta que la banca lo devuelva.</div>
+      </div>
       <div class="fld">
         <label>Monto <span class="req">*</span></label>
         <div class="amount-input"><span class="cur">RD$</span><input type="number" id="fAmountOut" inputmode="decimal" placeholder="0.00" step="0.01"></div>
@@ -565,6 +578,10 @@
           <option>Retiro de socio</option>
           <option>Depósito a banco</option>
           <option>Pago de premio</option>
+          <option>Pago a proveedor / merengue</option>
+          <option>Impuestos (DGII / TSS)</option>
+          <option>Gasto de oficina</option>
+          <option>Capitalización de fondo de banca</option>
           <option>Recolección central</option>
           <option>Otro</option>
         </select>
@@ -707,6 +724,12 @@
   </div>
 
   <div id="corteList"></div>
+
+  <div class="panel" id="corteExcesoPanel" style="padding:16px 14px;display:none;margin-bottom:14px;">
+    <div class="panel-head"><h3>Efectivo fuera del fondo</h3><span class="hint">Adelantos abiertos</span></div>
+    <div style="font-size:11.5px;color:var(--muted);line-height:1.5;margin-bottom:10px;">Dinero que la banca tiene y que no es su fondo ni cuadre pendiente. Casi siempre es un adelanto que falta devolver.</div>
+    <div id="corteExcesoList"></div>
+  </div>
 
   <div class="panel" id="cortePendPanel" style="padding:16px 14px;display:none;">
     <div class="panel-head"><h3>Saldos pendientes</h3><span class="hint">Arrastrado</span></div>
@@ -1585,6 +1608,11 @@
       <input type="tel" id="adminNum" placeholder="Ej: 18095551234" style="flex:1;padding:11px;border:1px solid var(--line);border-radius:10px;font-size:13px;font-family:inherit;" onblur="saveAdminNum()">
     </div>
     <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5;">Aquí te llega el resumen de totales (Deportiva, Máquinas, virtuales) por banca y general.</div>
+    <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin:14px 0 6px;">Número para el cierre del corte</label>
+    <div style="display:flex;gap:8px;">
+      <input type="tel" id="corteNum" placeholder="Ej: 18095551234" style="flex:1;padding:11px;border:1px solid var(--line);border-radius:10px;font-size:13px;font-family:inherit;" onblur="saveCorteNum()">
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5;">Recibe el resumen de cierre del corte diario (balance en oficina y pendientes por banca). Si lo dejas vacío se usa tu número de arriba.</div>
   </div>
 
   <div class="section-label" style="margin-top:6px;">Sucursales y fondos</div>
@@ -1624,7 +1652,7 @@
       <div class="si-act" style="color:var(--amber);" onclick="doLogout()">Salir</div>
     </div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v4.3 nube · Santo Domingo, RD</div>
+  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v4.7 nube · Santo Domingo, RD</div>
 </section>
 
 <!-- NAV -->
@@ -1780,7 +1808,7 @@ function setSyncState(s){ // 'ok' | 'saving' | 'error'
 function dbToTxn(r){
   const t={ id:r.id, type:r.tipo, amount:Number(r.monto)||0, branch:r.sucursal, category:r.categoria,
             subtype:r.subtipo||'', date:r.fecha, note:r.nota||'' };
-  if(r.tipo==='expense'){ t.hasNcf=!!r.tiene_ncf; t.ncf=r.ncf||''; }
+  if(r.tipo==='expense'){ t.hasNcf=!!r.tiene_ncf; t.ncf=r.ncf||''; t.bancaAplica=r.banca_aplica||''; }
   if(r.tipo==='out'){ t.outKind=r.tipo_salida; t.dest=r.destino||''; t.reason=r.motivo||''; }
   if(r.tipo==='collect'){ t.office=r.oficina; t.cuadre=Number(r.cuadre)||0; t.moved=Number(r.movido)||0; t.jornada=r.fecha_jornada||null; }
   return t;
@@ -1793,6 +1821,7 @@ function txnToDb(t){
            tipo_salida:t.outKind||null, destino:t.dest||null, motivo:t.reason||null,
            oficina:t.office||null, cuadre:(t.cuadre!=null?t.cuadre:null), movido:(t.moved!=null?t.moved:null),
            fecha_jornada:t.jornada||null,
+           banca_aplica:t.bancaAplica||null,
            creado_por:currentUser||null };
 }
 
@@ -1980,8 +2009,9 @@ async function cloudInsertTxn(t){
     let {data,error}=await sb.from('movimientos').insert(row).select();
     if(error && /fecha_jornada|column|schema cache/i.test(error.message||'')){
       // Backward compat: DB doesn't have fecha_jornada column yet — retry without it
-      console.warn('fecha_jornada not in DB yet, retrying without it');
+      console.warn('columna nueva no está en la BD todavía, reintentando sin ella');
       delete row.fecha_jornada;
+      delete row.banca_aplica;
       ({data,error}=await sb.from('movimientos').insert(row).select());
     }
     if(error)throw error;
@@ -2161,7 +2191,7 @@ function setIncMode(m){
   document.getElementById('miMulti').classList.toggle('on',m==='multi');
   document.getElementById('incSingle').style.display=m==='single'?'block':'none';
   document.getElementById('incMulti').style.display=m==='multi'?'block':'none';
-  document.getElementById('saveBtnInc').textContent=m==='multi'?'Guardar operaciones':'Guardar operación';
+  document.getElementById('saveBtnInc').textContent='Guardar y seguir con la próxima banca';
   if(m==='multi')renderMultiList();
 }
 
@@ -2179,6 +2209,7 @@ function setOutMode(m){
   document.getElementById('moWithdraw').classList.toggle('on',m==='withdraw');
   document.getElementById('moTransfer').classList.toggle('on',m==='transfer');
   document.getElementById('outDestBlock').style.display=m==='transfer'?'block':'none';
+  document.getElementById('outTransferKindBlock').style.display=m==='transfer'?'block':'none';
   document.getElementById('outReasonBlock').style.display=m==='withdraw'?'block':'none';
   document.getElementById('outBranchLabel').innerHTML=m==='transfer'?'Sucursal origen <span class="req">*</span>':'Sucursal <span class="req">*</span>';
   document.getElementById('saveBtnOut').textContent=m==='transfer'?'Registrar transferencia':'Registrar salida';
@@ -2229,6 +2260,9 @@ function renderFormOptions(){
   const visible=activeBranches().map(b=>b.name);
   const opts=visible.map(n=>`<option>${n}</option>`).join('');
   ['fBranchInc','fBranchExp','fBranchOut'].forEach(id=>document.getElementById(id).innerHTML=opts);
+  const expBanca=document.getElementById('fExpBanca');
+  if(expBanca) expBanca.innerHTML='<option value="">— Ninguna / gasto general —</option>'+
+    sortBranchesNum(activeBranches().filter(b=>!b.isOffice)).map(b=>`<option>${b.name}</option>`).join('');
   document.getElementById('incCatChips').innerHTML=state.incCats.map(c=>`<div class="chip" data-cat="${c.name}" onclick="pickIncCat('${c.name.replace(/'/g,"\\'")}')">${c.name}</div>`).join('');
   document.getElementById('fExpCat').innerHTML=state.expCats.map(c=>`<option>${c}</option>`).join('');
   selIncCat=null;
@@ -2256,13 +2290,21 @@ function pickIncCat(name){
 
 function renderMultiList(){
   const el=document.getElementById('multiList');
-  el.innerHTML=state.incCats.map((c,i)=>{
+  // La oficina no maneja subtipos; las bancas sí, y ahí cada subtipo lleva su propia línea
+  const office=isOfficeBranch(document.getElementById('fBranchInc').value);
+  const rows=[];
+  state.incCats.forEach((c,i)=>{
     const color=CAT_COLORS[i%CAT_COLORS.length];
-    return `<div class="multi-row">
-      <div class="mr-cat"><span class="cat-dot" style="background:${color}"></span>${c.name}</div>
-      <div class="mr-input"><span class="mc">RD$</span><input type="number" inputmode="decimal" placeholder="0" step="0.01" data-cat="${c.name}" oninput="updateMultiTotal()"></div>
-    </div>`;
-  }).join('');
+    if(!office && c.subs && c.subs.length){
+      c.subs.forEach(sub=>rows.push({label:`${c.name} · ${sub}`,cat:c.name,sub,color}));
+    } else {
+      rows.push({label:c.name,cat:c.name,sub:'',color});
+    }
+  });
+  el.innerHTML=rows.map(r=>`<div class="multi-row">
+      <div class="mr-cat"><span class="cat-dot" style="background:${r.color}"></span>${r.label}</div>
+      <div class="mr-input"><span class="mc">RD$</span><input type="number" inputmode="decimal" placeholder="0" step="0.01" data-cat="${r.cat}" data-sub="${r.sub}" oninput="updateMultiTotal()"></div>
+    </div>`).join('');
   updateMultiTotal();
 }
 function updateMultiTotal(){
@@ -2300,14 +2342,14 @@ function saveIncome(){
     if(!selIncCat){ toast('Selecciona una categoría',false); return; }
     const tx={id:uid(),type:'income',amount,branch,date,note,category:selIncCat,subtype:document.getElementById('fIncSub').value||''};
     state.txns.push(tx); cloudInsertTxn(tx);
-    afterSave(date,'Operación guardada');
+    afterSaveIncome(date,'Operación guardada');
   } else {
     const inputs=document.querySelectorAll('#multiList input');
     const batch=[];
-    inputs.forEach(inp=>{ const raw=inp.value.trim(); if(raw==='')return; const v=parseFloat(raw); if(!isNaN(v)&&v!==0)batch.push({cat:inp.dataset.cat,amount:v}); });
+    inputs.forEach(inp=>{ const raw=inp.value.trim(); if(raw==='')return; const v=parseFloat(raw); if(!isNaN(v)&&v!==0)batch.push({cat:inp.dataset.cat,sub:inp.dataset.sub||'',amount:v}); });
     if(!batch.length){ toast('Ingresa al menos un monto',false); return; }
-    batch.forEach(b=>{ const tx={id:uid(),type:'income',amount:b.amount,branch,date,note,category:b.cat,subtype:''}; state.txns.push(tx); cloudInsertTxn(tx); });
-    afterSave(date,`${batch.length} operaciones guardadas`);
+    batch.forEach(b=>{ const tx={id:uid(),type:'income',amount:b.amount,branch,date,note,category:b.cat,subtype:b.sub}; state.txns.push(tx); cloudInsertTxn(tx); });
+    afterSaveIncome(date,`${batch.length} operaciones guardadas`);
   }
 }
 
@@ -2320,7 +2362,11 @@ function saveExpense(){
   const note=document.getElementById('fNoteExp').value.trim();
   if(isDayClosed(date)){ toast('El corte de ese día está cerrado. Reábrelo para registrar.',false); return; }
   const hasNcf=document.getElementById('fHasNcf').checked;
-  const tx={id:uid(),type:'expense',amount,branch,date,note,category:document.getElementById('fExpCat').value,hasNcf,ncf:hasNcf?document.getElementById('fNcf').value.trim().toUpperCase():''};
+  const category=document.getElementById('fExpCat').value;
+  const bancaSel=document.getElementById('fExpBanca');
+  const bancaAplica=bancaSel?bancaSel.value:'';
+  if(!confirmarRiesgos({tipo:'expense',branch,amount,category,date,etiqueta:'Revisa este gasto'})) return;
+  const tx={id:uid(),type:'expense',amount,branch,date,note,category,bancaAplica,hasNcf,ncf:hasNcf?document.getElementById('fNcf').value.trim().toUpperCase():''};
   state.txns.push(tx); cloudInsertTxn(tx);
   afterSave(date,'Gasto guardado');
 }
@@ -2336,15 +2382,72 @@ function saveOut(){
   if(outMode==='transfer'){
     const dest=document.getElementById('fBranchDest').value;
     if(!dest||dest===branch){ toast('Selecciona una sucursal destino distinta',false); return; }
-    const tx={id:uid(),type:'out',outKind:'transfer',amount,branch,dest,date,note,category:'Transferencia',reason:'Transferencia entre sucursales'};
+    const kindSel=document.getElementById('fTransferKind');
+    const reason=kindSel&&kindSel.value?kindSel.value:'Transferencia entre sucursales';
+    if(!confirmarRiesgos({tipo:'out',branch,amount,category:'Transferencia',date,etiqueta:'Revisa esta transferencia'})) return;
+    const tx={id:uid(),type:'out',outKind:'transfer',amount,branch,dest,date,note,category:'Transferencia',reason};
     state.txns.push(tx); cloudInsertTxn(tx);
     afterSave(date,'Transferencia registrada');
   } else {
     const reason=document.getElementById('fOutReason').value;
+    if(!confirmarRiesgos({tipo:'out',branch,amount,category:'Retiro',date,etiqueta:'Revisa esta salida'})) return;
     const tx={id:uid(),type:'out',outKind:'withdraw',amount,branch,date,note,category:'Retiro',reason};
     state.txns.push(tx); cloudInsertTxn(tx);
     afterSave(date,'Salida registrada');
   }
+}
+
+// ---------- Validaciones antes de guardar ----------
+const MONTO_ALTO=50000; // pide confirmación extra por encima de este monto
+// Busca un movimiento muy parecido en los últimos 7 días (mismo tipo, banca, monto y categoría)
+function movimientoParecido(tipo,branch,amount,category,date){
+  const d=new Date(date+'T00:00:00');
+  return state.txns.find(t=>{
+    if(t.type!==tipo||t.branch!==branch)return false;
+    if(Math.abs((t.amount||0)-amount)>0.01)return false;
+    if(category&&t.category!==category)return false;
+    const td=new Date(t.date+'T00:00:00');
+    return Math.abs((d-td)/86400000)<=7;
+  });
+}
+// Devuelve false si el usuario cancela. Junta los avisos en un solo diálogo.
+function confirmarRiesgos({tipo,branch,amount,category,date,etiqueta}){
+  const avisos=[];
+  const dup=movimientoParecido(tipo,branch,amount,category,date);
+  if(dup){
+    const dd=new Date(dup.date+'T00:00:00');
+    avisos.push(`⚠️ Ya existe un movimiento igual: RD$${fmt(amount)} en ${branch.replace('PRIME SPORT','PS')} el ${dd.getDate()}/${dd.getMonth()+1}${dup.note?' ('+dup.note+')':''}.`);
+  }
+  if(amount>=MONTO_ALTO) avisos.push(`💰 Monto alto: RD$${fmt(amount)}.`);
+  if(!avisos.length) return true;
+  return confirm(`${etiqueta}\n\n${avisos.join('\n\n')}\n\n¿Registrar de todos modos?`);
+}
+
+// Siguiente banca de la lista, para encadenar el registro sin volver al inicio
+function siguienteBanca(){
+  const sel=document.getElementById('fBranchInc');
+  const opts=Array.from(sel.options).map(o=>o.value).filter(v=>!isOfficeBranch(v));
+  const i=opts.indexOf(sel.value);
+  if(i<0) return null;
+  return (i+1<opts.length) ? opts[i+1] : null;
+}
+// Tras guardar una operación NO se sale del formulario: se limpian los montos,
+// se conservan fecha y categoría, y salta a la siguiente banca.
+function afterSaveIncome(date,msg){
+  const d=new Date(date+'T00:00:00'); curMonth=d.getMonth(); curYear=d.getFullYear(); updateMonthLabel();
+  document.getElementById('fAmountInc').value='';
+  document.getElementById('fNoteInc').value='';
+  document.querySelectorAll('#multiList input').forEach(i=>i.value='');
+  updateMultiTotal();
+  const next=siguienteBanca();
+  if(!next){ toast(msg+' · última banca',true); go('dash'); return; }
+  document.getElementById('fBranchInc').value=next;
+  updateFundBanner('inc');
+  if(incMode==='multi') renderMultiList();
+  toast(`${msg} · sigue ${next.replace('PRIME SPORT','PS')}`,true);
+  const amt=document.getElementById('fAmountInc');
+  if(incMode==='single'&&amt) amt.focus();
+  else { const first=document.querySelector('#multiList input'); if(first) first.focus(); }
 }
 
 function afterSave(date,msg){
@@ -2628,6 +2731,13 @@ function bankPending(branch){
   return totalCuadre-totalCollected;
 }
 
+// Efectivo que la banca tiene por encima (o por debajo) de su fondo asignado
+// descontando el cuadre pendiente. Lo que queda son adelantos/transferencias
+// que no se han devuelto, o fondo que quedó corto.
+function fondoExceso(branch){
+  return liveFund(branch) - branchFund(branch) - bankPending(branch);
+}
+
 /* ---------- AUDIT (diagnostic) ---------- */
 function openAuditBranch(){
   showOnlyView('view-audit');
@@ -2754,7 +2864,7 @@ function openCorte(){
 // Envía por WhatsApp al mensajero la lista de bancas con el PENDIENTE TOTAL a recoger
 // (cuadre del día + lo arrastrado de días anteriores)
 function enviarRutaMensajero(){
-  const num=(state.config&&state.config.mensajero_num)||'';
+  const num=waNum(state.config&&state.config.mensajero_num);
   if(!num){
     toast('Primero guarda el número del mensajero en Ajustes',false);
     setTimeout(()=>go('settings'),900);
@@ -2786,7 +2896,7 @@ function enviarRutaMensajero(){
 // Envía a MI número el resumen de totales por categoría (Deportiva, Máquinas, virtuales)
 // por banca y general, de la jornada del corte.
 function enviarResumenTotales(){
-  const num=(state.config&&state.config.admin_num)||'';
+  const num=waNum(state.config&&state.config.admin_num);
   if(!num){
     toast('Primero guarda tu número en Ajustes',false);
     setTimeout(()=>go('settings'),900);
@@ -2830,7 +2940,9 @@ function renderCorte(){
   const d=new Date(corteDateVal+'T00:00:00');
   const isYesterday = corteDateVal===yesterdayISO();
   const isToday = corteDateVal===todayISO();
+  const dias = diasDesdeHoy(corteDateVal);
   let tag = isYesterday ? ' · jornada de ayer ✓' : (isToday ? ' · ⚠️ HOY (normalmente se cuadra ayer)' : '');
+  if(Math.abs(dias)>7) tag = ` · <span style="color:var(--red);font-weight:800;">⛔ ${Math.abs(dias)} días ${dias>0?'atrás':'adelante'} — revisa el mes</span>`;
   document.getElementById('corteDateLabel').innerHTML=`Cuadrando jornada del <b>${d.getDate()} de ${MONTHS[d.getMonth()]}, ${d.getFullYear()}</b>${tag}`;
 
   const banks=sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false));
@@ -2884,6 +2996,44 @@ function renderCorte(){
   document.getElementById('corteActionsPanel').style.display=closed?'none':'block';
 
   renderCortePending();
+  renderCorteExceso();
+}
+
+// Días entre la jornada elegida y hoy. Sirve para cazar errores de mes al escribir la fecha.
+function diasDesdeHoy(date){
+  return Math.round((new Date(todayISO()+'T00:00:00') - new Date(date+'T00:00:00'))/86400000);
+}
+function renderCorteExceso(){
+  const banks=sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false));
+  const exc=banks.map(b=>({name:b.name,e:fondoExceso(b.name)}))
+                 .filter(x=>Math.abs(x.e)>=1)
+                 .sort((a,b)=>Math.abs(b.e)-Math.abs(a.e));
+  const panel=document.getElementById('corteExcesoPanel');
+  if(!panel) return;
+  if(!exc.length){ panel.style.display='none'; return; }
+  panel.style.display='block';
+  document.getElementById('corteExcesoList').innerHTML=exc.map(x=>{
+    const sobra=x.e>0;
+    const btn=sobra?`<button onclick="devolverAdelanto('${x.name.replace(/'/g,"\\'")}')" style="border:1px solid var(--navy);background:#fff;border-radius:9px;padding:7px 11px;font-size:12px;font-weight:700;color:var(--navy);cursor:pointer;font-family:inherit;white-space:nowrap;">Devolver</button>`:'';
+    return `<div class="fund-card" style="margin-bottom:9px;">
+      <div class="fund-info"><div class="bn">${x.name.replace('PRIME SPORT ','PS ')}</div><div class="bt">${sobra?'Tiene de más · fondo RD$'+fmt(branchFund(x.name)):'Le falta al fondo'}</div></div>
+      <div class="fund-bal" style="display:flex;align-items:center;gap:9px;"><div class="fv ${sobra?'neg':'pos'}">RD$${fmt(Math.abs(x.e))}</div>${btn}</div>
+    </div>`;
+  }).join('');
+}
+// Registra la devolución del adelanto: transferencia de la banca hacia la Oficina.
+function devolverAdelanto(branch){
+  const monto=Math.round(fondoExceso(branch)*100)/100;
+  if(monto<1){ toast('Esa banca no tiene efectivo de más',false); return; }
+  const hoy=todayISO();
+  if(isDayClosed(hoy)){ toast('El corte de hoy está cerrado. Reábrelo para registrar.',false); return; }
+  const bancaTxt=branch.replace('PRIME SPORT','PS');
+  if(!confirm(`¿Registrar la devolución de ${bancaTxt}?\n\nMonto: RD$${fmt(monto)}\nDe ${bancaTxt} hacia Oficina\n\nEl fondo de la banca vuelve a RD$${fmt(branchFund(branch))}.`)) return;
+  const tx={id:uid(),type:'out',outKind:'transfer',amount:monto,branch,dest:officeName(),date:hoy,
+            note:`Devolución de adelanto de ${bancaTxt}`,category:'Transferencia',reason:'Devolución de adelanto'};
+  state.txns.push(tx); cloudInsertTxn(tx);
+  toast('Devolución registrada',true);
+  renderCorte();
 }
 
 function renderCortePending(){
@@ -2916,7 +3066,9 @@ function collectOne(branch){
   const d=new Date(corteDateVal+'T00:00:00');
   const jornadaTxt=`${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`;
   const bancaTxt=branch.replace('PRIME SPORT','PS');
-  if(!confirm(`¿Confirmas registrar de ${bancaTxt}?\n\nMonto: RD$${fmt(moved)}\nJornada: ${jornadaTxt}\n\nVerifica que el monto sea correcto antes de aceptar.`)) return;
+  const dias=diasDesdeHoy(corteDateVal);
+  const avisoFecha = Math.abs(dias)>7 ? `\n\n⛔ ATENCIÓN: esa jornada está a ${Math.abs(dias)} días de hoy. Verifica el mes antes de continuar.` : '';
+  if(!confirm(`¿Confirmas registrar de ${bancaTxt}?\n\nMonto: RD$${fmt(moved)}\nJornada: ${jornadaTxt}${avisoFecha}\n\nVerifica que el monto sea correcto antes de aceptar.`)) return;
   recordCollect(branch,corteDateVal,cuadre,moved);
   toast('Movimiento registrado',true);
   renderCorte();
@@ -2925,7 +3077,9 @@ function collectOne(branch){
 // "Recolectar todo": for each bank with activity, move the full net outstanding (today + carried)
 function collectAll(){
   if(isDayClosed(corteDateVal)){ toast('El corte de este día está cerrado.',false); return; }
-  if(!confirm('¿Recolectar el neto completo de todas las bancas (cuadre de hoy + pendientes anteriores)? El dinero se moverá desde/hacia la Oficina.')) return;
+  const diasAll=diasDesdeHoy(corteDateVal);
+  const avisoAll = Math.abs(diasAll)>7 ? `\n\n⛔ ATENCIÓN: la jornada seleccionada está a ${Math.abs(diasAll)} días de hoy. Verifica el mes antes de continuar.` : '';
+  if(!confirm(`¿Recolectar el neto completo de todas las bancas (cuadre de hoy + pendientes anteriores)? El dinero se moverá desde/hacia la Oficina.${avisoAll}`)) return;
   const banks=sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false));
   let count=0;
   banks.forEach(b=>{
@@ -2976,7 +3130,18 @@ async function closeCorte(){
 }
 
 // Build the closing summary text and open WhatsApp to the default number
-const CORTE_WA_NUMBER='18097134190'; // número fijo por defecto
+const CORTE_WA_NUMBER='18495724190'; // respaldo si no hay nada configurado
+// Normaliza a formato wa.me: solo dígitos y con código de país (RD = 1)
+function waNum(raw){
+  let n=String(raw||'').replace(/[^0-9]/g,'');
+  if(n.length===10 && /^(809|829|849)/.test(n)) n='1'+n;
+  return n;
+}
+// Número al que se envía el cierre del corte: Ajustes > corte_num, si no admin_num, si no el respaldo
+function corteWaNumber(){
+  const c=state.config||{};
+  return waNum(c.corte_num) || waNum(c.admin_num) || CORTE_WA_NUMBER;
+}
 function buildCorteSummary(){
   const d=new Date(corteDateVal+'T00:00:00');
   const officeBal=liveFund(officeName());
@@ -2996,12 +3161,30 @@ function buildCorteSummary(){
   } else {
     txt+=`\n✅ Sin pendientes.\n`;
   }
+  const exc=banks.map(b=>({name:b.name,e:fondoExceso(b.name)}))
+                 .filter(x=>Math.abs(x.e)>=1)
+                 .sort((a,b)=>Math.abs(b.e)-Math.abs(a.e));
+  if(exc.length){
+    txt+=`\n*Efectivo fuera del fondo:*\n`;
+    exc.forEach(x=>{
+      const name=x.name.replace('PRIME SPORT','PS');
+      const f=fmt(branchFund(x.name));
+      if(x.e>0) txt+=`🟡 ${name}: RD$${fmt(x.e)} de más (fondo RD$${f})\n`;
+      else txt+=`🔻 ${name}: RD$${fmt(Math.abs(x.e))} de menos (fondo RD$${f})\n`;
+    });
+  }
   if(currentUser) txt+=`\nCerrado por: ${currentUser}`;
   return txt;
 }
 function sendCorteWhatsApp(){
+  const num=corteWaNumber();
+  if(!num){
+    toast('Primero guarda el número del cierre en Ajustes',false);
+    setTimeout(()=>go('settings'),900);
+    return;
+  }
   const txt=buildCorteSummary();
-  const url=`https://wa.me/${CORTE_WA_NUMBER}?text=${encodeURIComponent(txt)}`;
+  const url=`https://wa.me/${num}?text=${encodeURIComponent(txt)}`;
   window.open(url,'_blank');
 }
 
@@ -6264,6 +6447,7 @@ function renderSettings(){
   const ul=document.getElementById('currentUserLabel'); if(ul&&currentUser) ul.textContent=currentUser;
   const mn=document.getElementById('mensajeroNum'); if(mn) mn.value=(state.config&&state.config.mensajero_num)||'';
   const an=document.getElementById('adminNum'); if(an) an.value=(state.config&&state.config.admin_num)||'';
+  const cn=document.getElementById('corteNum'); if(cn) cn.value=(state.config&&state.config.corte_num)||'';
   document.getElementById('branchList').innerHTML=state.branches
     .map((b,i)=>({b,i}))
     .sort((x,y)=>{
@@ -6307,6 +6491,11 @@ function saveAdminNum(){
   const raw=document.getElementById('adminNum').value.trim().replace(/[^0-9]/g,'');
   saveConfig('admin_num',raw);
   if(raw) toast('Tu número guardado',true);
+}
+function saveCorteNum(){
+  const raw=document.getElementById('corteNum').value.trim().replace(/[^0-9]/g,'');
+  saveConfig('corte_num',raw);
+  if(raw) toast('Número del cierre guardado',true);
 }function delBranch(i){ if(!confirm(`¿Eliminar "${state.branches[i].name}"? Los movimientos existentes se conservan.`))return; cloudDeleteBranch(state.branches[i]._id); state.branches.splice(i,1); saveState(); renderSettings(); }
 async function toggleBranchActive(i){
   const b=state.branches[i];
