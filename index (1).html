@@ -2,7 +2,11 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AdmBca">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23101820'/%3E%3Ctext x='90' y='104' font-family='Helvetica,Arial,sans-serif' font-size='54' font-weight='bold' fill='%23ffffff' text-anchor='middle'%3EAdm%3C/text%3E%3Ctext x='90' y='140' font-family='Helvetica,Arial,sans-serif' font-size='36' font-weight='bold' font-style='italic' fill='%23e07a2b' text-anchor='middle'%3EBca%3C/text%3E%3C/svg%3E">
 <meta name="theme-color" content="#101820">
 <title>AdmBca · Control de Ingresos y Gastos</title>
 <style>
@@ -233,7 +237,21 @@
   .mb-cancel{background:#eef2f4;color:var(--muted);}
   .mb-ok{background:var(--cerulean);color:#fff;}
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+/* Manifest generado en el momento: la app es un solo archivo, asi que no hay
+   un manifest.json aparte en el repositorio. */
+(function(){
+  var icono="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%23101820'/%3E%3Ctext x='256' y='296' font-family='Helvetica,Arial,sans-serif' font-size='152' font-weight='bold' fill='%23ffffff' text-anchor='middle'%3EAdm%3C/text%3E%3Ctext x='256' y='396' font-family='Helvetica,Arial,sans-serif' font-size='102' font-weight='bold' font-style='italic' fill='%23e07a2b' text-anchor='middle'%3EBca%3C/text%3E%3C/svg%3E";
+  var man={name:"AdmBca - Control Financiero",short_name:"AdmBca",start_url:location.pathname,scope:location.pathname,
+           display:"standalone",orientation:"portrait",background_color:"#101820",theme_color:"#101820",
+           icons:[{src:icono,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}]};
+  try{
+    var url=URL.createObjectURL(new Blob([JSON.stringify(man)],{type:'application/manifest+json'}));
+    var l=document.createElement('link'); l.rel='manifest'; l.href=url;
+    document.head.appendChild(l);
+  }catch(e){}
+})();
+</script>
 </head>
 <body>
 
@@ -241,8 +259,8 @@
 <div id="loginOverlay" style="position:fixed;inset:0;z-index:200;background:linear-gradient(160deg,#101820,#16242f);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;">
   <div style="width:100%;max-width:340px;">
     <div style="text-align:center;margin-bottom:28px;">
-      <div style="display:flex;align-items:baseline;justify-content:center;gap:2px;font-weight:800;letter-spacing:-1.5px;margin-bottom:6px;"><span id="logoA" style="color:#fff;font-size:42px;">Adm</span><span id="logoB" style="color:#e07a2b;font-size:26px;font-style:italic;font-weight:700;transform:translateY(-4px);">Bca</span></div>
-      <div id="logoSub" style="color:#9fb1bd;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;">Control Financiero</div>
+      <div style="display:flex;align-items:baseline;justify-content:center;gap:2px;font-weight:800;letter-spacing:-1.5px;margin-bottom:6px;"><span style="color:#fff;font-size:42px;">Adm</span><span style="color:#e07a2b;font-size:26px;font-style:italic;font-weight:700;transform:translateY(-4px);">Bca</span></div>
+      <div style="color:#9fb1bd;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;">Control Financiero</div>
     </div>
     <div style="background:#1a2733;border:1px solid #283947;border-radius:18px;padding:24px 20px;box-shadow:0 12px 40px rgba(0,0,0,.3);">
 
@@ -292,7 +310,7 @@
 
       <div id="loginError" style="display:none;background:#3d211e;border:1px solid #d3564b;color:#f08980;font-size:12.5px;padding:10px 12px;border-radius:9px;margin-top:14px;"></div>
     </div>
-    <div id="loginPie" style="text-align:center;margin-top:18px;color:#5a6b78;font-size:11px;">AdmBca · Santo Domingo, RD</div>
+    <div style="text-align:center;margin-top:18px;color:#5a6b78;font-size:11px;">AdmBca · Santo Domingo, RD</div>
   </div>
 </div>
 
@@ -325,22 +343,24 @@
 
 <!-- DASHBOARD -->
 <section class="view active" id="view-dash">
-  <div id="avisoPagina" style="display:none;background:#fdf4ec;border:1px solid #e8c7a5;color:#8a5a1f;font-size:12.5px;line-height:1.5;padding:11px 13px;border-radius:11px;margin-bottom:12px;"></div>
-  <div id="selConsorcio" style="display:none;margin-bottom:12px;">
-    <label style="display:block;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Consorcio</label>
-    <select id="selConsorcioInput" onchange="cambiarConsorcio(this.value)" style="width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:12px;font-size:14px;font-weight:700;font-family:inherit;background:#fff;color:var(--ink);"></select>
-  </div>
+  <div id="avisoCargando" style="display:none;background:#eef6fb;border:1px solid #cfe3ee;color:#2f6f86;border-radius:11px;padding:10px 12px;font-size:12.5px;font-weight:600;margin-bottom:12px;">Cargando los datos del cierre mensual…</div>
   <div class="hero-card">
     <div class="label">Balance Neto del Mes</div>
     <div class="big"><span class="cur">RD$</span><span id="heroNet">0</span></div>
+    <div id="heroVs" style="font-size:11.5px;font-weight:700;margin-top:2px;">&nbsp;</div>
     <div class="hero-sub">
-      <div class="item"><div class="t">Ingresos</div><div class="v pos" id="heroInc">RD$0</div></div>
+      <div class="item"><div class="t">Recogido</div><div class="v pos" id="heroMov">RD$0</div></div>
       <div class="divider-v"></div>
-      <div class="item"><div class="t">Gastos</div><div class="v neg" id="heroExp">RD$0</div></div>
+      <div class="item"><div class="t">− Gastos</div><div class="v neg" id="heroExp">RD$0</div></div>
       <div class="divider-v"></div>
-      <div class="item"><div class="t">Salidas</div><div class="v amb" id="heroOut">RD$0</div></div>
+      <div class="item"><div class="t">− Salidas netas</div><div class="v amb" id="heroOut">RD$0</div></div>
+    </div>
+    <div style="margin-top:11px;padding-top:10px;border-top:1px solid rgba(255,255,255,.13);display:flex;justify-content:space-between;align-items:center;gap:10px;">
+      <span style="color:rgba(255,255,255,.62);font-size:11.5px;font-weight:600;">Balance de bancas del mes</span>
+      <span id="heroInc" style="color:#fff;font-size:13px;font-weight:800;">RD$0</span>
     </div>
   </div>
+  <div id="dashAlertas"></div>
 
   <div data-grupo="dia">
   <div class="grp-title" style="font-size:11.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin:4px 2px 10px;">Día a día</div>
@@ -446,7 +466,7 @@
   </div>
 
   <div class="panel">
-    <div class="panel-head"><h3>Fondo por sucursal</h3><span class="hint">Saldo en caja</span></div>
+    <div class="panel-head"><h3>Fondo por sucursal</h3><span class="hint">Saldo actual · no depende del mes</span></div>
     <div id="fundList"></div>
   </div>
 
@@ -475,7 +495,7 @@
 
       <div class="fld">
         <label>Sucursal <span class="req">*</span></label>
-        <select id="fBranchInc" onchange="updateFundBanner('inc')"></select>
+        <select id="fBranchInc" onchange="updateFundBanner('inc'); if(incMode==='multi') renderMultiList();"></select>
       </div>
       <div class="fund-banner" id="fundBannerInc" style="display:none;">
         <div><div class="fb-l">Fondo actual de</div><div class="fb-n" id="fbNameInc">—</div></div>
@@ -509,7 +529,8 @@
 
       <div class="fld"><label>Fecha <span style="font-weight:500;color:var(--muted);font-size:11px;">· jornada de la banca (por defecto ayer)</span></label><input type="date" id="fDateInc"></div>
       <div class="fld"><label>Nota (opcional)</label><input type="text" id="fNoteInc" placeholder="Detalle o referencia…"></div>
-      <button class="btn-primary green" id="saveBtnInc" onclick="saveIncome()">Guardar operación</button>
+      <button class="btn-primary green" id="saveBtnInc" onclick="saveIncome()">Guardar y seguir con la próxima banca</button>
+      <button onclick="go('dash')" style="width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px;font-size:13.5px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;margin-top:9px;">Terminar</button>
     </div>
 
     <!-- ===== EXPENSE ===== -->
@@ -529,6 +550,10 @@
       <div class="fld">
         <label>Categoría del gasto <span class="req">*</span></label>
         <select id="fExpCat"></select>
+      </div>
+      <div class="fld">
+        <label>Banca a la que aplica <span style="font-weight:500;color:var(--muted);font-size:11px;">· opcional</span></label>
+        <select id="fExpBanca"></select>
       </div>
       <div class="ncf-toggle">
         <div class="lbl">¿Tiene NCF?<small>Comprobante fiscal DGII</small></div>
@@ -560,6 +585,14 @@
         <label>Sucursal destino <span class="req">*</span></label>
         <select id="fBranchDest"></select>
       </div>
+      <div class="fld" id="outTransferKindBlock" style="display:none;">
+        <label>Tipo de transferencia</label>
+        <select id="fTransferKind">
+          <option value="Adelanto a banca (se devuelve)">Adelanto — se devuelve</option>
+          <option value="Envío de fondo (no se devuelve)">Envío de fondo — no se devuelve</option>
+        </select>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5;">El adelanto queda visible en el corte y en el WhatsApp del cierre hasta que la banca lo devuelva.</div>
+      </div>
       <div class="fld">
         <label>Monto <span class="req">*</span></label>
         <div class="amount-input"><span class="cur">RD$</span><input type="number" id="fAmountOut" inputmode="decimal" placeholder="0.00" step="0.01"></div>
@@ -570,6 +603,10 @@
           <option>Retiro de socio</option>
           <option>Depósito a banco</option>
           <option>Pago de premio</option>
+          <option>Pago a proveedor / merengue</option>
+          <option>Impuestos (DGII / TSS)</option>
+          <option>Gasto de oficina</option>
+          <option>Capitalización de fondo de banca</option>
           <option>Recolección central</option>
           <option>Otro</option>
         </select>
@@ -584,6 +621,14 @@
 <!-- HISTORIAL -->
 <section class="view" id="view-history">
   <div class="section-label">Historial de Movimientos</div>
+
+  <div style="position:relative;margin-bottom:12px;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="width:16px;height:16px;position:absolute;left:13px;top:50%;transform:translateY(-50%);"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="search" id="histQ" placeholder="Buscar por nota, categoría, banca, NCF o monto…" oninput="setHistQ(this.value)"
+      style="width:100%;box-sizing:border-box;padding:11px 36px 11px 37px;border:1px solid var(--line);border-radius:11px;font-size:13px;font-family:inherit;background:#fff;color:var(--ink);">
+    <button id="histQClear" onclick="setHistQ('',true)" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:#eef3f5;color:var(--muted);width:24px;height:24px;border-radius:50%;font-size:15px;line-height:1;cursor:pointer;font-family:inherit;">×</button>
+  </div>
+
   <div class="filter-bar" id="histFilters"></div>
 
   <!-- branch + date + sort controls -->
@@ -704,7 +749,7 @@
 
   <div class="panel" style="padding:16px 14px;margin-bottom:14px;" id="corteActionsPanel">
     <div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:12px;">El <b>cuadre</b> es lo que cada banca debería entregar (positivo) o recibir (negativo) ese día. Registra lo que el mensajero <b>movió de verdad</b>; lo que falte queda como <b>pendiente</b> y se arrastra.</div>
-    <button onclick="collectAll()" style="width:100%;border:none;border-radius:12px;padding:14px;font-size:14.5px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,var(--green),#27b87f);box-shadow:0 4px 12px rgba(31,157,107,.3);margin-bottom:10px;">
+    <button id="btnCollectAll" onclick="collectAll()" style="width:100%;border:none;border-radius:12px;padding:14px;font-size:14.5px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,var(--green),#27b87f);box-shadow:0 4px 12px rgba(31,157,107,.3);margin-bottom:10px;">
       ⚡ Recolectar todo (cuadre completo → Oficina)
     </button>
     <button onclick="openAuditBranch()" style="width:100%;border:1px solid var(--cerulean);background:#fff;border-radius:12px;padding:13px;font-size:13.5px;font-weight:700;color:var(--cerulean);cursor:pointer;font-family:inherit;margin-bottom:10px;">🔍 Auditar banca (ver rastro completo)</button>
@@ -712,6 +757,12 @@
   </div>
 
   <div id="corteList"></div>
+
+  <div class="panel" id="corteExcesoPanel" style="padding:16px 14px;display:none;margin-bottom:14px;">
+    <div class="panel-head"><h3>Efectivo fuera del fondo</h3><span class="hint">Adelantos abiertos</span></div>
+    <div style="font-size:11.5px;color:var(--muted);line-height:1.5;margin-bottom:10px;">Dinero que la banca tiene y que no es su fondo ni cuadre pendiente. Casi siempre es un adelanto que falta devolver.</div>
+    <div id="corteExcesoList"></div>
+  </div>
 
   <div class="panel" id="cortePendPanel" style="padding:16px 14px;display:none;">
     <div class="panel-head"><h3>Saldos pendientes</h3><span class="hint">Arrastrado</span></div>
@@ -1435,15 +1486,17 @@
     <b>De ahí en adelante:</b> correo, contraseña y el código del momento.<br><br>
     <b>Importante:</b> al cerrar la página la sesión se cierra sola. Al volver hay que entrar de nuevo con los tres datos. Esto protege la información si dejas el equipo abierto.<br><br>
     Si el código te da error, casi siempre es la <b>hora del teléfono</b>: actívala en automático y vuelve a probar.<br><br>
+    <b>El botón atrás del teléfono</b> ahora vuelve a la pantalla anterior en vez de cerrar la app. Y desde el navegador puedes usar “Agregar a pantalla de inicio” para dejar AdmBca como una aplicación más, con su propio ícono.<br><br>
+    <b>Si son varios trabajando a la vez:</b> al volver a la app después de un rato, los movimientos se vuelven a traer solos y avisa si alguien más registró o borró algo. También puedes forzarlo desde <b>Ajustes &rsaquo; Actualizar datos</b>. Y si sales de la página con algo a medio escribir en el cuadre, el navegador te pregunta antes de perderlo.<br><br>
     Cada consorcio es <b>totalmente independiente</b>. Tu usuario solo ve la información de <b class="js-consorcio">—</b>; ninguna banca, gasto o cuadre de otro consorcio aparece ni se mezcla en los reportes.<br><br>
     <b>Usuarios y permisos</b> (solo administradores)<br>
     En <b>Ajustes &rsaquo; Usuarios y permisos</b> defines quién entra y qué puede hacer. Para cada persona eliges, módulo por módulo, entre <b>Sin acceso</b>, <b>Solo ver</b> y <b>Ver y editar</b>. Lo que quede sin acceso ni siquiera aparece en su pantalla de inicio.<br><br>
     Para agregar a alguien: primero crea su cuenta en Supabase con su correo y una clave temporal, y luego escribe ese correo en <b>Vincular</b>. Cada persona activa su propio Google Authenticator la primera vez que entra.<br><br>
     <b>Bloquear</b> le corta el acceso de inmediato sin borrar nada, útil si alguien deja de trabajar contigo. <b>Quitar</b> lo desvincula del consorcio. En ambos casos la cuenta sigue existiendo, pero deja de ver información.<br><br>
-    <b>Acceso entre consorcios</b><br>
-    Una misma persona puede tener acceso a varios consorcios, pero <b>solo si el administrador de cada uno se lo concede</b>. Nadie puede entrar a un consorcio ajeno por su cuenta, ni siquiera siendo administrador del suyo.<br><br>
-    Cuando tengas acceso a más de uno, aparece un <b>selector de consorcio</b> arriba en el inicio. Al cambiarlo, toda la aplicación —balances, bancas, cuadres y reportes— pasa a mostrar únicamente ese consorcio. Tus permisos pueden ser distintos en cada uno: puedes ser administrador en el tuyo y tener solo lectura en otro.<br><br>
-    <b>Cada consorcio tiene su propia dirección web</b> y su propio logo. Al entrar por una de ellas, el sistema abre directamente ese consorcio si tienes acceso; si no lo tienes, te avisa y te deja en el tuyo. Aunque las direcciones sean distintas, la información vive en un solo lugar y sigue separada por consorcio.
+    <b>El código es obligatorio de verdad.</b> Antes el Google Authenticator protegía solo la pantalla. Ahora la base de datos tampoco entrega información si la sesión no pasó por el código de 6 dígitos, aunque alguien tenga el correo y la contraseña.<br><br>
+    <b>Queda registro de todo.</b> Cada movimiento que se crea, se corrige o se borra queda guardado con el correo de quien lo hizo y la hora, incluyendo cómo estaba antes del cambio. Lo mismo con los cortes, los cierres de mes y el cuadre.<br><br>
+    <b>Bitácora</b> (solo administradores)<br>
+    En <b>Ajustes &rsaquo; Bitácora</b> ves ese registro. Puedes filtrar por tipo de dato (movimientos, cuadre, virtuales, cortes, cierres) y por acción (creados, cambiados, borrados). En los cambios aparece el campo exacto que se movió y de cuánto a cuánto; en los borrados queda guardado cómo estaba el registro antes de desaparecer. Empieza a llenarse desde la versión 4.9, así que al principio estará vacía.
     </div>
   </div>
 
@@ -1500,7 +1553,25 @@
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><div style="width:30px;height:30px;border-radius:9px;background:var(--cerulean-dim);color:var(--cerulean-bright);display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">5</div><h3 style="font-size:15px;font-weight:700;">Historial y Reportes</h3></div>
     <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">
     • <b>Historial</b> (abajo): elige rango de fechas, filtra por bancas y tipo. Muestra el resumen de cada día con desglose por categoría y las transferencias entre cajas separadas (préstamo desde oficina / devolución a oficina).<br>
+    • <b>Buscador</b>: arriba del historial hay una caja para buscar por nota, categoría, banca, NCF o monto exacto. Escribe <i>15000</i> y salen todos los movimientos de RD$15,000 del período que tengas filtrado.<br>
+    • <b>Corregir monto</b>: si un movimiento quedó con el monto equivocado, toca <b>Corregir monto</b> en la línea y escribe el correcto. Ya <b>no hace falta</b> meter el mismo monto en negativo para anularlo: se corrige el original y el historial queda limpio. Si el día ya está cerrado hay que reabrirlo primero.<br>
     • <b>Reportes</b> (abajo): consolidados por sucursal, categoría y fondos. Exporta a CSV.</div>
+  </div>
+
+  <div class="panel" style="background:linear-gradient(135deg,#eef6fb,#e3f0f7);border-color:#cfe3ee;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><svg viewBox="0 0 24 24" fill="none" stroke="#0086AD" stroke-width="2" style="width:22px;height:22px;flex-shrink:0;"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-5"/></svg><h3 style="font-size:15px;font-weight:700;color:#0086AD;">Cómo leer la pantalla de inicio</h3></div>
+    <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">
+    El número grande es el <b>Balance Neto del Mes</b>: el dinero real que quedó. Los tres números de abajo son <b>la resta exacta</b> que lo produce:<br><br>
+    <b>Recogido</b> − <b>Gastos</b> − <b>Salidas netas</b> = <b>Balance Neto</b><br><br>
+    • <b>Recogido</b> es el efectivo que entró de verdad a la Oficina desde las bancas (las recolecciones del corte diario), no lo que las bancas produjeron en papel.<br>
+    • <b>Salidas netas</b> son los retiros más lo que la Oficina prestó a las bancas, menos lo que las bancas le devolvieron.<br>
+    • Debajo aparece el <b>Balance de bancas del mes</b>, que es lo que las bancas produjeron. Es información aparte: no entra en la resta, porque parte de ese balance todavía puede estar en la banca sin recoger.<br>
+    • Bajo el número grande se compara con el mes anterior.<br><br>
+    <b>Avisos</b>: arriba de las tarjetas pueden aparecer hasta tres avisos, y cada uno lleva directo a su pantalla:<br>
+    • <b>Pendiente por recoger</b>: cuánto dinero está todavía en las bancas.<br>
+    • <b>Días sin cerrar el corte</b>: de la última semana.<br>
+    • <b>Meses sin cerrar</b>: meses con movimientos a los que no se les hizo el Cierre de Mes.<br><br>
+    <b>Fondo por sucursal</b> es el saldo actual en caja de cada banca. Ese panel <b>no cambia</b> al cambiar de mes, porque es un saldo acumulado, no del mes.</div>
   </div>
 
   <div class="panel">
@@ -1551,8 +1622,7 @@
   <div class="panel" style="margin-bottom:14px;">
     <div style="font-size:13px;font-weight:700;margin-bottom:8px;">Agregar usuario</div>
     <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:10px;">
-      Primero crea la cuenta en Supabase (Authentication &rsaquo; Users &rsaquo; Add user) con su correo y una clave temporal, marcando <b>Auto Confirm User</b>. Luego escribe aquí ese mismo correo para darle acceso a este consorcio.<br><br>
-      También sirve para dar acceso a alguien que ya administra otro consorcio: verá este solo con los permisos que le definas aquí.
+      Primero crea la cuenta en Supabase (Authentication &rsaquo; Users &rsaquo; Add user) con su correo y una clave temporal, marcando <b>Auto Confirm User</b>. Luego escribe aquí ese mismo correo para vincularlo a este consorcio.
     </div>
     <div style="display:flex;gap:8px;">
       <input type="email" id="nuevoUsuEmail" placeholder="correo@ejemplo.com" style="flex:1;padding:11px;border:1px solid var(--line);border-radius:10px;font-size:13px;font-family:inherit;">
@@ -1561,6 +1631,34 @@
   </div>
 
   <div id="listaUsuarios"></div>
+</section>
+
+<section class="view" id="view-bitacora">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="go('settings')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Bitácora</div><div style="font-size:12px;color:var(--muted);">Quién creó, cambió o borró cada registro</div></div>
+  </div>
+
+  <div style="display:flex;gap:8px;margin-bottom:10px;">
+    <select id="bitTabla" onchange="cargarBitacora()" style="flex:1;padding:10px 12px;border:1px solid var(--line);border-radius:11px;font-size:12.5px;font-family:inherit;background:#fff;color:var(--ink);">
+      <option value="">Todo</option>
+      <option value="movimientos">Movimientos</option>
+      <option value="cuadre_banca_gasto">Cuadre · gastos de banca</option>
+      <option value="cuadre_oficina_gasto">Cuadre · gastos de oficina</option>
+      <option value="virtuales_registros">Virtuales</option>
+      <option value="cierres_dia">Cortes diarios</option>
+      <option value="cierres_mes">Cierres de mes</option>
+    </select>
+    <select id="bitAccion" onchange="cargarBitacora()" style="flex:1;padding:10px 12px;border:1px solid var(--line);border-radius:11px;font-size:12.5px;font-family:inherit;background:#fff;color:var(--ink);">
+      <option value="">Toda acción</option>
+      <option value="INSERT">Creados</option>
+      <option value="UPDATE">Cambiados</option>
+      <option value="DELETE">Borrados</option>
+    </select>
+  </div>
+  <div style="font-size:11.5px;color:var(--muted);margin-bottom:12px;line-height:1.5;">Se registran los últimos movimientos, cuadres, cortes y cierres. Los borrados guardan cómo estaba el registro antes de desaparecer.</div>
+  <div id="bitLista"></div>
+  <button id="bitMas" onclick="cargarBitacora(true)" style="display:none;width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin:12px 0 24px;">Ver más</button>
 </section>
 
 <section class="view" id="view-settings">
@@ -1575,6 +1673,11 @@
     <div class="set-item" id="setItemUsuarios" onclick="openUsuarios()" style="cursor:pointer;display:none;">
       <div class="si-ic" style="background:#3a3016;color:#e8c877;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
       <div class="si-txt"><div class="t">Usuarios y permisos</div><div class="d">Quién entra y qué puede hacer</div></div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" style="width:18px;height:18px;"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+    <div class="set-item" id="setItemBitacora" onclick="openBitacora()" style="cursor:pointer;display:none;">
+      <div class="si-ic" style="background:#2a2440;color:#b9a5e8;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v5l3 2"/><circle cx="12" cy="12" r="9"/></svg></div>
+      <div class="si-txt"><div class="t">Bitácora</div><div class="d">Quién cambió qué, y cuándo</div></div>
       <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" style="width:18px;height:18px;"><polyline points="9 18 15 12 9 6"/></svg>
     </div>
     <div class="set-item" style="cursor:default;">
@@ -1595,6 +1698,11 @@
       <input type="tel" id="adminNum" placeholder="Ej: 18095551234" style="flex:1;padding:11px;border:1px solid var(--line);border-radius:10px;font-size:13px;font-family:inherit;" onblur="saveAdminNum()">
     </div>
     <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5;">Aquí te llega el resumen de totales (Deportiva, Máquinas, virtuales) por banca y general.</div>
+    <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin:14px 0 6px;">Número para el cierre del corte</label>
+    <div style="display:flex;gap:8px;">
+      <input type="tel" id="corteNum" placeholder="Ej: 18095551234" style="flex:1;padding:11px;border:1px solid var(--line);border-radius:10px;font-size:13px;font-family:inherit;" onblur="saveCorteNum()">
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5;">Recibe el resumen de cierre del corte diario (balance en oficina y pendientes por banca). Si lo dejas vacío se usa tu número de arriba.</div>
   </div>
 
   <div class="section-label" style="margin-top:6px;">Sucursales y fondos</div>
@@ -1624,6 +1732,11 @@
       <div class="si-act" onclick="backupData()">Exportar</div>
     </div>
     <div class="set-item">
+      <div class="si-ic" style="background:var(--cerulean-dim);color:var(--cerulean-bright);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg></div>
+      <div class="si-txt"><div class="t">Actualizar datos</div><div class="d">Traer lo que otro usuario haya guardado</div></div>
+      <div class="si-act" onclick="refrescarMovimientos(false)">Actualizar</div>
+    </div>
+    <div class="set-item">
       <div class="si-ic" style="background:var(--red-dim);color:#f08980;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></div>
       <div class="si-txt"><div class="t">Borrar movimientos</div><div class="d">Conserva sucursales y categorías</div></div>
       <div class="si-act" style="color:var(--red);" onclick="wipeData()">Borrar</div>
@@ -1634,7 +1747,7 @@
       <div class="si-act" style="color:var(--amber);" onclick="doLogout()">Salir</div>
     </div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v4.4 nube · Santo Domingo, RD</div>
+  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v4.9 nube · Santo Domingo, RD</div>
 </section>
 
 <!-- NAV -->
@@ -1697,7 +1810,7 @@ window.__supabase = createClient(
 window.dispatchEvent(new Event('supabase-ready'));
 </script>
 <script>
-/* ===================== AdmBca v4.0 ===================== */
+/* ===================== AdmBca v4.9 ===================== */
 function idConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.id)||null; }catch(e){ return null; } }
 function nomConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.nombre)||'AdmBca'; }catch(e){ return 'AdmBca'; } }
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -1723,7 +1836,7 @@ const DEFAULTS={
 
 let state={txns:[],branches:[],incCats:[],expCats:[],officeIncCats:[],maquinas:[],lecturas:[],denoms:[],cierres:[],cierresMes:[],config:{},desgloses:[],virtRegs:[],virtConfig:null,virtProviders:[],virtSucursalesInactivas:{},virtRenglonesInactivos:{},maqGastos:[],maqPog:[],maqCfgBanca:{},cbGastos:[],cbIngresos:[],cbOficinaGastos:[]};
 const VIRT_EMPRESAS=['MERENGUE','VARMANEX','VG','SOLL'];
-const VIRT_SUCURSALES=['PRIME SPORT 01','PRIME SPORT 02','PRIME SPORT 03','PRIME SPORT 04','PRIME SPORT 05','PRIME SPORT 06','PRIME SPORT 07','PRIME SPORT 08','PRIME SPORT 09','PRIME SPORT 10'];
+const VIRT_SUCURSALES=['PRIME SPORT 1','PRIME SPORT 2','PRIME SPORT 3','PRIME SPORT 4','PRIME SPORT 5','PRIME SPORT 6','PRIME SPORT 7','PRIME SPORT 8','PRIME SPORT 9','PRIME SPORT 10'];
 
 // Cuadre Bancas — categorías estándar (basadas en Libro1.xlsx)
 const CB_GASTO_CATS=['Alquiler','Combustible','D. Feriados','Dieta','E. Eléctrica','Mant/Reparación','Nómina Dig','Nómina Limp','Picheos','DGII','Tel y/o Cable','Mat Limp','Agua','Mat Gastable','Central','Otros','Vacaciones','Licencia','TSS','Infotep','Liquidación','Administración'];
@@ -1779,6 +1892,22 @@ let sb=null;              // supabase client
 let currentUser=null;     // logged-in user email
 let saveTimer=null;       // debounce for sync
 
+/* html2canvas pesa ~200 KB y solo hace falta al exportar imagenes.
+   Se descarga la primera vez que se usa, no en cada arranque. */
+let __h2cPromise=null;
+function cargarHtml2Canvas(){
+  if(typeof html2canvas!=='undefined') return Promise.resolve(true);
+  if(__h2cPromise) return __h2cPromise;
+  __h2cPromise=new Promise(res=>{
+    const sc=document.createElement('script');
+    sc.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    sc.onload=()=>res(true);
+    sc.onerror=()=>{ __h2cPromise=null; res(false); };
+    document.head.appendChild(sc);
+  });
+  return __h2cPromise;
+}
+
 function setSyncState(s){ // 'ok' | 'saving' | 'error'
   const d=document.getElementById('syncDot');
   if(!d)return;
@@ -1790,7 +1919,7 @@ function setSyncState(s){ // 'ok' | 'saving' | 'error'
 function dbToTxn(r){
   const t={ id:r.id, type:r.tipo, amount:Number(r.monto)||0, branch:r.sucursal, category:r.categoria,
             subtype:r.subtipo||'', date:r.fecha, note:r.nota||'' };
-  if(r.tipo==='expense'){ t.hasNcf=!!r.tiene_ncf; t.ncf=r.ncf||''; }
+  if(r.tipo==='expense'){ t.hasNcf=!!r.tiene_ncf; t.ncf=r.ncf||''; t.bancaAplica=r.banca_aplica||''; }
   if(r.tipo==='out'){ t.outKind=r.tipo_salida; t.dest=r.destino||''; t.reason=r.motivo||''; }
   if(r.tipo==='collect'){ t.office=r.oficina; t.cuadre=Number(r.cuadre)||0; t.moved=Number(r.movido)||0; t.jornada=r.fecha_jornada||null; }
   return t;
@@ -1803,6 +1932,7 @@ function txnToDb(t){
            tipo_salida:t.outKind||null, destino:t.dest||null, motivo:t.reason||null,
            oficina:t.office||null, cuadre:(t.cuadre!=null?t.cuadre:null), movido:(t.moved!=null?t.moved:null),
            fecha_jornada:t.jornada||null,
+           banca_aplica:t.bancaAplica||null,
            creado_por:currentUser||null };
 }
 
@@ -1822,14 +1952,33 @@ async function fetchAllRows(table){
   return all;
 }
 
+/* Igual que fetchAllRows pero devuelve {data,error} en vez de lanzar,
+   para las tablas que se cargan de forma resiliente. */
+async function fetchAllSafe(table,orden){
+  const PAGE=1000;
+  let all=[], from=0;
+  while(true){
+    let q=sb.from(table).select('*');
+    if(orden) q=q.order(orden);
+    const {data,error}=await q.range(from,from+PAGE-1);
+    if(error) return {data:[],error};
+    if(!data||!data.length) break;
+    all=all.concat(data);
+    if(data.length<PAGE) break;
+    from+=PAGE;
+    if(from>200000) break;
+  }
+  return {data:all,error:null};
+}
+
 async function loadState(){
   // Load everything from the cloud
   const [suc,ci,cg,ta,movRows]=await Promise.all([
-    sb.from('sucursales').select('*').order('creado'),
-    sb.from('categorias_ingreso').select('*'),
-    sb.from('categorias_gasto').select('*'),
-    sb.from('tipos_aporte').select('*'),
-    fetchAllRows('movimientos')   // paginated: brings ALL movimientos, not just first 1000
+    fetchAllSafe('sucursales','creado'),
+    fetchAllSafe('categorias_ingreso'),
+    fetchAllSafe('categorias_gasto'),
+    fetchAllSafe('tipos_aporte'),
+    fetchAllRows('movimientos')   // paginado: trae TODOS los movimientos
   ]);
   if(suc.error||ci.error||cg.error||ta.error){
     throw (suc.error||ci.error||cg.error||ta.error);
@@ -1847,12 +1996,36 @@ async function loadState(){
     const {data}=await sb.from('sucursales').insert({nombre:'Administración / Oficina',fondo_inicial:0,es_oficina:true}).select();
     if(data&&data[0]) state.branches.push({name:data[0].nombre,fund:0,isOffice:true,_id:data[0].id});
   }
+  // App config (mensajero number, etc.) — resilient
+  try{
+    const cfg=await fetchAllSafe('app_config');
+    if(!cfg.error){
+      state.config={};
+      cfg.data.forEach(r=>{ state.config[r.clave]=r.valor; });
+      state._configReady=true;
+    } else { state.config={}; state._configReady=false; }
+  }catch(e){ state.config={}; state._configReady=false; }
+  // Closed days (cierres) — resilient
+  try{
+    const c=await fetchAllSafe('cierres_dia');
+    if(!c.error){ state.cierres=c.data.map(x=>x.fecha); state._cierresReady=true; }
+    else { state.cierres=[]; state._cierresReady=false; }
+  }catch(e){ state.cierres=[]; state._cierresReady=false; }
+}
+
+/* ---------- Carga en segundo plano ----------
+   Lo esencial (bancas, categorías, movimientos, cortes y configuración) ya está
+   arriba y es lo que necesita el inicio, el registro y el corte diario.
+   Todo lo del cierre mensual se trae aquí, después de mostrar la app, para que
+   arrancar no tarde tanto en el teléfono. */
+state._restoListo=false;
+async function loadResto(){
   // Machines tables (may not exist yet if SQL not run — load resiliently)
   try{
     const [maq,lec,den]=await Promise.all([
-      sb.from('maquinas').select('*').order('creado'),
-      sb.from('lecturas_maquina').select('*').order('fecha'),
-      sb.from('denominaciones').select('*')
+      fetchAllSafe('maquinas','creado'),
+      fetchAllSafe('lecturas_maquina','fecha'),
+      fetchAllSafe('denominaciones')
     ]);
     if(!maq.error) state.maquinas=maq.data.map(m=>({_id:m.id,name:m.nombre,branch:m.sucursal,marca:m.marca||'',modelo:m.modelo||'',serie:m.serie||'',tipo:m.tipo,denom:Number(m.denominacion)||0,activa:m.activa!==false}));
     if(!lec.error) state.lecturas=lec.data.map(l=>({_id:l.id,maqId:l.maquina_id,date:l.fecha,entradaAc:num0(l.entrada_ac),salidaAc:num0(l.salida_ac),cashBox:l.cash_box!=null?Number(l.cash_box):null,difEntrada:num0(l.dif_entrada),difSalida:num0(l.dif_salida),benMonedas:num0(l.ben_monedas),benDinero:num0(l.ben_dinero),ingreso:num0(l.ingreso),sumado:l.sumado===true,maestra:l.es_maestra===true,reset:l.reset===true,resetGain:l.reset_gain!=null?Number(l.reset_gain):null,nota:l.nota||''}));
@@ -1864,9 +2037,9 @@ async function loadState(){
   // Machine extras (resilient — new tables)
   try{
     const [mg,mp,mc]=await Promise.all([
-      sb.from('maquinas_gastos_mes').select('*'),
-      sb.from('maquinas_pog_mes').select('*'),
-      sb.from('maquinas_config_banca').select('*')
+      fetchAllSafe('maquinas_gastos_mes'),
+      fetchAllSafe('maquinas_pog_mes'),
+      fetchAllSafe('maquinas_config_banca')
     ]);
     if(!mg.error) state.maqGastos=mg.data.map(g=>({_id:g.id,anio:g.anio,mes:g.mes,sucursal:g.sucursal,descripcion:g.descripcion,monto:Number(g.monto)||0}));
     else state.maqGastos=[];
@@ -1880,41 +2053,26 @@ async function loadState(){
   // Cuadre Bancas Mensual (resilient)
   try{
     const [cbg,cbi,cbo]=await Promise.all([
-      sb.from('cuadre_banca_gasto').select('*'),
-      sb.from('cuadre_banca_ingreso').select('*'),
-      sb.from('cuadre_oficina_gasto').select('*')
+      fetchAllSafe('cuadre_banca_gasto'),
+      fetchAllSafe('cuadre_banca_ingreso'),
+      fetchAllSafe('cuadre_oficina_gasto')
     ]);
     state.cbGastos = (!cbg.error) ? cbg.data.map(g=>({_id:g.id,anio:g.anio,mes:g.mes,sucursal:g.sucursal,categoria:g.categoria,monto:Number(g.monto)||0,origen:g.origen||'manual',refTxnId:g.ref_txn_id||null})) : [];
     state.cbIngresos = (!cbi.error) ? cbi.data.map(i=>({_id:i.id,anio:i.anio,mes:i.mes,sucursal:i.sucursal,categoria:i.categoria,monto:Number(i.monto)||0})) : [];
     state.cbOficinaGastos = (!cbo.error) ? cbo.data.map(o=>({_id:o.id,anio:o.anio,mes:o.mes,categoria:o.categoria,monto:Number(o.monto)||0,origen:o.origen||'manual',refTxnId:o.ref_txn_id||null,sucursal:o.sucursal||null})) : [];
     state._cbReady = !cbg.error && !cbi.error && !cbo.error;
   }catch(e){ console.warn('Cuadre bancas tables not ready',e); state.cbGastos=[]; state.cbIngresos=[]; state.cbOficinaGastos=[]; state._cbReady=false; }
-  // App config (mensajero number, etc.) — resilient
-  try{
-    const cfg=await sb.from('app_config').select('*');
-    if(!cfg.error){
-      state.config={};
-      cfg.data.forEach(r=>{ state.config[r.clave]=r.valor; });
-      state._configReady=true;
-    } else { state.config={}; state._configReady=false; }
-  }catch(e){ state.config={}; state._configReady=false; }
   // Desglose de efectivo — resilient
   try{
-    const dg=await sb.from('desglose_efectivo').select('*');
+    const dg=await fetchAllSafe('desglose_efectivo');
     if(!dg.error){
       state.desgloses=dg.data.map(x=>({_id:x.id,fecha:x.fecha,denoms:x.denominaciones||{},totalContado:Number(x.total_contado)||0,totalEsperado:Number(x.total_esperado)||0,diferencia:Number(x.diferencia)||0,nota:x.nota,creadoPor:x.creado_por,creado:x.creado}));
       state._desglosesReady=true;
     } else { state.desgloses=[]; state._desglosesReady=false; }
   }catch(e){ state.desgloses=[]; state._desglosesReady=false; }
-  // Closed days (cierres) — resilient
-  try{
-    const c=await sb.from('cierres_dia').select('*');
-    if(!c.error){ state.cierres=c.data.map(x=>x.fecha); state._cierresReady=true; }
-    else { state.cierres=[]; state._cierresReady=false; }
-  }catch(e){ state.cierres=[]; state._cierresReady=false; }
   // Cierres de mes (Fase 3) — resilient
   try{
-    const cm=await sb.from('cierres_mes').select('*');
+    const cm=await fetchAllSafe('cierres_mes');
     if(!cm.error){
       state.cierresMes=cm.data.map(x=>({_id:x.id,anio:x.anio,mes:x.mes,modo:x.modo,saldoTipo:x.saldo_tipo,pendienteBancas:Number(x.pendiente_bancas)||0,balanceOficina:Number(x.balance_oficina)||0,saldoArrastrado:Number(x.saldo_arrastrado)||0,nota:x.nota,cerradoPor:x.cerrado_por,creado:x.creado}));
       state._cierresMesReady=true;
@@ -1923,11 +2081,11 @@ async function loadState(){
   // Virtuales — resilient
   try{
     const [vr,vc,vp,vsuc,vren]=await Promise.all([
-      sb.from('virtuales_registros').select('*'),
-      sb.from('virtuales_config').select('*'),
-      sb.from('virtuales_proveedores').select('*'),
-      sb.from('virtuales_sucursales_estado').select('*'),
-      sb.from('virtuales_renglones_estado').select('*')
+      fetchAllSafe('virtuales_registros'),
+      fetchAllSafe('virtuales_config'),
+      fetchAllSafe('virtuales_proveedores'),
+      fetchAllSafe('virtuales_sucursales_estado'),
+      fetchAllSafe('virtuales_renglones_estado')
     ]);
     if(!vr.error){ state.virtRegs=vr.data.map(r=>({_id:r.id,anio:r.anio,mes:r.mes,empresa:r.empresa,proveedorId:r.proveedor_id||null,sucursal:r.sucursal,tk:num0(r.tk),venta:num0(r.venta),balance:num0(r.balance),bonos:num0(r.bonos),comision:num0(r.comision),faltantes:num0(r.faltantes),total:num0(r.total)})); state._virtReady=true; }
     else { state.virtRegs=[]; state._virtReady=false; }
@@ -1940,11 +2098,22 @@ async function loadState(){
     } else { state.virtProviders=[]; state._providersReady=false; }
     // Active sucursales for Virtuales
     state.virtSucursalesInactivas={};
-    if(!vsuc.error){ vsuc.data.forEach(r=>{ if(r.activa===false) state.virtSucursalesInactivas[r.sucursal]=true; }); }
+    if(!vsuc.error){ vsuc.data.forEach(r=>{ if(r.activa===false) state.virtSucursalesInactivas[normBranchName(r.sucursal)]=true; }); }
     // Active renglones (fields)
     state.virtRenglonesInactivos={};
     if(!vren.error){ vren.data.forEach(r=>{ if(r.activo===false) state.virtRenglonesInactivos[r.campo]=true; }); }
   }catch(e){ state.virtRegs=[]; state._virtReady=false; state.virtConfig=null; state.virtProviders=[]; state._providersReady=false; state.virtSucursalesInactivas={}; state.virtRenglonesInactivos={}; }
+  state._restoListo=true;
+  const av=document.getElementById('avisoCargando'); if(av) av.style.display='none';
+  try{ renderDash(); }catch(e){}
+}
+
+/* Los módulos del cierre mensual no se pueden abrir hasta que termine la
+   carga de arriba: si se abrieran antes mostrarían un mes incompleto. */
+function moduloListo(){
+  if(state._restoListo) return true;
+  toast('Terminando de cargar los datos del mes… un momento.',false);
+  return false;
 }
 function num0(v){ return v!=null?Number(v):0; }
 function isDayClosed(date){ return Array.isArray(state.cierres)&&state.cierres.includes(date); }
@@ -1990,8 +2159,9 @@ async function cloudInsertTxn(t){
     let {data,error}=await sb.from('movimientos').insert(row).select();
     if(error && /fecha_jornada|column|schema cache/i.test(error.message||'')){
       // Backward compat: DB doesn't have fecha_jornada column yet — retry without it
-      console.warn('fecha_jornada not in DB yet, retrying without it');
+      console.warn('columna nueva no está en la BD todavía, reintentando sin ella');
       delete row.fecha_jornada;
+      delete row.banca_aplica;
       ({data,error}=await sb.from('movimientos').insert(row).select());
     }
     if(error)throw error;
@@ -2001,13 +2171,43 @@ async function cloudInsertTxn(t){
       if(local) local.id=data[0].id;
     }
     setSyncState('ok');
+    return true;
   }
-  catch(e){ console.error('insert txn failed',e); setSyncState('error'); toast('Error al guardar en la nube',false); }
+  catch(e){ console.error('insert txn failed',e); setSyncState('error'); return false; }
+}
+
+/* ---------- Guardado seguro ----------
+   Espera la confirmacion de la nube. Si falla, saca el movimiento de la
+   pantalla para que nadie crea que quedo guardado. */
+async function guardarTxn(tx){
+  state.txns.push(tx);
+  const ok=await cloudInsertTxn(tx);
+  if(!ok){
+    state.txns=state.txns.filter(t=>t!==tx);
+    toast('NO se guardo. Revisa tu conexion e intentalo de nuevo.',false);
+  }
+  return ok;
+}
+
+/* Bloquea un boton mientras corre la operacion, para que un doble toque
+   no registre el movimiento dos veces. */
+let __guardando=false;
+async function conBloqueo(btnId,fn){
+  if(__guardando) return false;
+  __guardando=true;
+  const b=document.getElementById(btnId);
+  const txt=b?b.textContent:'';
+  if(b){ b.disabled=true; b.style.opacity='.55'; b.textContent='Guardando...'; }
+  try{ return await fn(); }
+  finally{
+    __guardando=false;
+    if(b){ b.disabled=false; b.style.opacity=''; b.textContent=txt; }
+  }
 }
 async function cloudDeleteTxn(id){
   setSyncState('saving');
-  try{ const {error}=await sb.from('movimientos').delete().eq('id',id); if(error)throw error; setSyncState('ok'); }
-  catch(e){ console.error('delete txn failed',e); setSyncState('error'); }
+  try{ const {error}=await sb.from('movimientos').delete().eq('id',id); if(error)throw error; setSyncState('ok'); return true; }
+  catch(e){ console.error('delete txn failed',e); setSyncState('error'); return false; }
 }
 async function cloudDeleteBranch(id){ if(id) await sb.from('sucursales').delete().eq('id',id); }
 async function cloudDeleteIncCat(id){ if(id) await sb.from('categorias_ingreso').delete().eq('id',id); }
@@ -2056,6 +2256,8 @@ function go(v){
   if(v==='settings')renderSettings();
   if(v==='add')resetForms();
   if(v==='settings')aplicarPermisos();
+  __sinGuardar=false;
+  if(v==='dash'){ __pila=['view-dash']; } else { apilarVista('view-'+v); }
 }
 
 /* ---------- MONTH PICKER ---------- */
@@ -2088,44 +2290,117 @@ function monthDate(t){
 function monthTxns(){ return state.txns.filter(t=>{ const d=new Date(monthDate(t)+'T00:00:00'); return d.getMonth()===curMonth&&d.getFullYear()===curYear; }); }
 
 /* ---------- DASHBOARD ---------- */
-function renderDash(){
-  const txns=monthTxns();
+/* Cifras de un mes, todas sobre la MISMA base de caja.
+   La resta cierra exacta:  recogido − gastos − salidasNetas = neto  */
+function cifrasMes(anio,mes){
   const office=officeName();
-  // Balance del mes = NETO REAL (contabilidad de caja):
-  // - Movido (lo que físicamente entró vía collects, contado por jornada)
-  // - menos gastos, retiros, transferencias netas
+  const txns=state.txns.filter(t=>{ const d=new Date(monthDate(t)+'T00:00:00'); return d.getMonth()===mes&&d.getFullYear()===anio; });
   const inc=txns.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
   const exp=txns.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
   const withdraw=txns.filter(t=>t.type==='out'&&t.outKind!=='transfer').reduce((s,t)=>s+t.amount,0);
   const transferOut=txns.filter(t=>t.type==='out'&&t.outKind==='transfer'&&t.branch===office).reduce((s,t)=>s+t.amount,0); // oficina presta
   const transferIn=txns.filter(t=>t.type==='out'&&t.outKind==='transfer'&&t.dest===office).reduce((s,t)=>s+t.amount,0);   // oficina recibe
   const movido=txns.filter(t=>t.type==='collect').reduce((s,t)=>s+t.moved,0);
-  const out=withdraw+transferOut; // salidas totales
-  // NETO REAL = lo que entró (movido) − gastos − salidas − transferOut + transferIn
-  const net=movido-exp-withdraw-transferOut+transferIn;
-  document.getElementById('heroNet').textContent=fmt(net);
-  document.getElementById('heroNet').style.color=net<0?'#f08980':'#fff';
-  document.getElementById('heroInc').textContent='RD$'+fmt(inc);
-  document.getElementById('heroExp').textContent='RD$'+fmt(exp);
-  document.getElementById('heroOut').textContent='RD$'+fmt(out);
+  const salidasNetas=withdraw+transferOut-transferIn;
+  return {txns,inc,exp,movido,salidasNetas,net:movido-exp-salidasNetas};
+}
 
-  const active=new Set(txns.map(t=>t.branch)).size;
-  document.getElementById('statBranches').textContent=active+'/'+state.branches.length;
+function renderDash(){
+  const c=cifrasMes(curYear,curMonth);
+  const txns=c.txns;
+  document.getElementById('heroNet').textContent=fmt(c.net);
+  document.getElementById('heroNet').style.color=c.net<0?'#f08980':'#fff';
+  document.getElementById('heroMov').textContent='RD$'+fmt(c.movido);
+  document.getElementById('heroExp').textContent='RD$'+fmt(c.exp);
+  document.getElementById('heroOut').textContent='RD$'+fmt(c.salidasNetas);
+  document.getElementById('heroInc').textContent='RD$'+fmt(c.inc);
+
+  // comparación con el mes anterior
+  const pm=curMonth===0?11:curMonth-1, pa=curMonth===0?curYear-1:curYear;
+  const prev=cifrasMes(pa,pm);
+  const vs=document.getElementById('heroVs');
+  if(Math.abs(prev.net)<1){ vs.innerHTML='&nbsp;'; }
+  else{
+    const dif=c.net-prev.net;
+    const pct=Math.round(dif/Math.abs(prev.net)*100);
+    const arriba=dif>=0;
+    vs.innerHTML=`<span style="color:${arriba?'#4cd6a0':'#f08980'}">${arriba?'▲':'▼'} ${Math.abs(pct)}%</span>`+
+                 `<span style="color:rgba(255,255,255,.55);font-weight:600;"> vs ${MONTHS_SHORT[pm]} (RD$${fmt(prev.net)})</span>`;
+  }
+
+  // B2: bancas con movimiento este mes / bancas activas (sin contar la Oficina)
+  const bancas=state.branches.filter(b=>!b.isOffice&&b.activa!==false);
+  const conMov=bancas.filter(b=>txns.some(t=>t.branch===b.name)).length;
+  document.getElementById('statBranches').textContent=conMov+'/'+bancas.length;
+
+  // B3: promedio diario sobre lo RECOGIDO, misma base que el balance de arriba
   const daysInMonth=new Date(curYear,curMonth+1,0).getDate();
   const today=new Date();
   const divisor=(curMonth===today.getMonth()&&curYear===today.getFullYear())?today.getDate():daysInMonth;
-  document.getElementById('statAvg').textContent='RD$'+fmt(inc/Math.max(divisor,1));
+  document.getElementById('statAvg').textContent='RD$'+fmt(c.movido/Math.max(divisor,1));
   document.getElementById('statNcf').textContent='RD$'+fmt(txns.filter(t=>t.type==='expense'&&t.hasNcf).reduce((s,t)=>s+t.amount,0));
   document.getElementById('statNoNcf').textContent='RD$'+fmt(txns.filter(t=>t.type==='expense'&&!t.hasNcf).reduce((s,t)=>s+t.amount,0));
 
+  renderAlertas();
   renderFundList();
-  renderCatBreakdown(txns,inc);
+  renderCatBreakdown(txns,c.inc);
+}
+
+/* ---------- B5: avisos del inicio ---------- */
+function renderAlertas(){
+  const el=document.getElementById('dashAlertas');
+  if(!el) return;
+  const avisos=[];
+
+  // 1) pendiente por recoger en las bancas
+  const bancas=state.branches.filter(b=>!b.isOffice&&b.activa!==false);
+  let pendTotal=0; const pendDet=[];
+  bancas.forEach(b=>{ const pnd=bankPending(b.name); if(Math.abs(pnd)>=1){ pendTotal+=pnd; pendDet.push({n:b.name,v:pnd}); } });
+  if(pendDet.length){
+    pendDet.sort((a,b)=>Math.abs(b.v)-Math.abs(a.v));
+    const top=pendDet.slice(0,4).map(x=>`${x.n.replace('PRIME SPORT','PS')} RD$${fmt(x.v)}`).join(' · ');
+    avisos.push({c:'#0086AD',bg:'#eef6fb',bd:'#cfe3ee',t:`Pendiente por recoger: RD$${fmt(pendTotal)}`,d:top+(pendDet.length>4?` · +${pendDet.length-4} más`:''),go:'openCorte()'});
+  }
+
+  // 2) dias sin corte cerrado en la ultima semana
+  if(state._cierresReady){
+    const faltan=[];
+    for(let i=1;i<=7;i++){
+      const d=new Date(); d.setDate(d.getDate()-i);
+      const iso=d.toISOString().slice(0,10);
+      if(!state.cierres.includes(iso)) faltan.push(d.getDate()+' '+MONTHS_SHORT[d.getMonth()]);
+    }
+    if(faltan.length) avisos.push({c:'#a37416',bg:'#fdf6e8',bd:'#ecd9ac',t:`${faltan.length} día(s) sin cerrar el corte`,d:faltan.join(' · '),go:'openCorte()'});
+  }
+
+  // 3) meses con movimiento y sin cierre de mes (solo cuando ya cargó todo)
+  if(state._restoListo && state._cierresMesReady){
+    const hoy=new Date();
+    const claves=new Set();
+    state.txns.forEach(t=>{ const d=new Date(monthDate(t)+'T00:00:00'); claves.add(d.getFullYear()+'-'+d.getMonth()); });
+    const abiertos=[...claves].map(k=>k.split('-').map(Number))
+      .filter(([a,m])=> (a<hoy.getFullYear()||(a===hoy.getFullYear()&&m<hoy.getMonth())) )
+      .filter(([a,m])=> !state.cierresMes.some(x=>x.anio===a&&x.mes===m+1))
+      .sort((x,y)=> x[0]-y[0] || x[1]-y[1]);
+    if(abiertos.length) avisos.push({c:'#2d6a4f',bg:'#eef7f2',bd:'#c8e2d5',t:`${abiertos.length} mes(es) sin cerrar`,d:abiertos.map(([a,m])=>MONTHS_SHORT[m]+' '+a).join(' · '),go:'openCierreMes()'});
+  }
+
+  if(!avisos.length){ el.innerHTML=''; return; }
+  el.innerHTML='<div style="margin-bottom:16px;display:flex;flex-direction:column;gap:8px;">'+avisos.map(a=>`
+    <div onclick="${a.go}" style="background:${a.bg};border:1px solid ${a.bd};border-radius:12px;padding:11px 13px;cursor:pointer;display:flex;align-items:center;gap:11px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:800;color:${a.c};">${a.t}</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.d}</div>
+      </div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="${a.c}" stroke-width="2.5" style="width:16px;height:16px;flex-shrink:0;opacity:.7;"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>`).join('')+'</div>';
 }
 
 function renderFundList(){
   const el=document.getElementById('fundList');
-  const rows=state.branches.map(b=>({name:b.name,bal:liveFund(b.name),hasActivity:state.txns.some(t=>t.branch===b.name||(t.type==='out'&&t.dest===b.name))||b.fund>0}))
-    .filter(r=>r.hasActivity).sort((a,b)=>b.bal-a.bal);
+  const rows=state.branches.filter(b=>b.activa!==false)
+    .map(b=>({name:b.name,bal:liveFund(b.name)}))
+    .sort((a,b)=>b.bal-a.bal);
   if(!rows.length){ el.innerHTML='<div class="empty-hint">Define el fondo inicial de tus sucursales en <b>Ajustes</b>, o registra el primer movimiento.</div>'; return; }
   el.innerHTML=rows.map((r,i)=>`
     <div class="fund-card">
@@ -2171,7 +2446,7 @@ function setIncMode(m){
   document.getElementById('miMulti').classList.toggle('on',m==='multi');
   document.getElementById('incSingle').style.display=m==='single'?'block':'none';
   document.getElementById('incMulti').style.display=m==='multi'?'block':'none';
-  document.getElementById('saveBtnInc').textContent=m==='multi'?'Guardar operaciones':'Guardar operación';
+  document.getElementById('saveBtnInc').textContent='Guardar y seguir con la próxima banca';
   if(m==='multi')renderMultiList();
 }
 
@@ -2189,6 +2464,7 @@ function setOutMode(m){
   document.getElementById('moWithdraw').classList.toggle('on',m==='withdraw');
   document.getElementById('moTransfer').classList.toggle('on',m==='transfer');
   document.getElementById('outDestBlock').style.display=m==='transfer'?'block':'none';
+  document.getElementById('outTransferKindBlock').style.display=m==='transfer'?'block':'none';
   document.getElementById('outReasonBlock').style.display=m==='withdraw'?'block':'none';
   document.getElementById('outBranchLabel').innerHTML=m==='transfer'?'Sucursal origen <span class="req">*</span>':'Sucursal <span class="req">*</span>';
   document.getElementById('saveBtnOut').textContent=m==='transfer'?'Registrar transferencia':'Registrar salida';
@@ -2239,6 +2515,9 @@ function renderFormOptions(){
   const visible=activeBranches().map(b=>b.name);
   const opts=visible.map(n=>`<option>${n}</option>`).join('');
   ['fBranchInc','fBranchExp','fBranchOut'].forEach(id=>document.getElementById(id).innerHTML=opts);
+  const expBanca=document.getElementById('fExpBanca');
+  if(expBanca) expBanca.innerHTML='<option value="">— Ninguna / gasto general —</option>'+
+    sortBranchesNum(activeBranches().filter(b=>!b.isOffice)).map(b=>`<option>${b.name}</option>`).join('');
   document.getElementById('incCatChips').innerHTML=state.incCats.map(c=>`<div class="chip" data-cat="${c.name}" onclick="pickIncCat('${c.name.replace(/'/g,"\\'")}')">${c.name}</div>`).join('');
   document.getElementById('fExpCat').innerHTML=state.expCats.map(c=>`<option>${c}</option>`).join('');
   selIncCat=null;
@@ -2266,13 +2545,21 @@ function pickIncCat(name){
 
 function renderMultiList(){
   const el=document.getElementById('multiList');
-  el.innerHTML=state.incCats.map((c,i)=>{
+  // La oficina no maneja subtipos; las bancas sí, y ahí cada subtipo lleva su propia línea
+  const office=isOfficeBranch(document.getElementById('fBranchInc').value);
+  const rows=[];
+  state.incCats.forEach((c,i)=>{
     const color=CAT_COLORS[i%CAT_COLORS.length];
-    return `<div class="multi-row">
-      <div class="mr-cat"><span class="cat-dot" style="background:${color}"></span>${c.name}</div>
-      <div class="mr-input"><span class="mc">RD$</span><input type="number" inputmode="decimal" placeholder="0" step="0.01" data-cat="${c.name}" oninput="updateMultiTotal()"></div>
-    </div>`;
-  }).join('');
+    if(!office && c.subs && c.subs.length){
+      c.subs.forEach(sub=>rows.push({label:`${c.name} · ${sub}`,cat:c.name,sub,color}));
+    } else {
+      rows.push({label:c.name,cat:c.name,sub:'',color});
+    }
+  });
+  el.innerHTML=rows.map(r=>`<div class="multi-row">
+      <div class="mr-cat"><span class="cat-dot" style="background:${r.color}"></span>${r.label}</div>
+      <div class="mr-input"><span class="mc">RD$</span><input type="number" inputmode="decimal" placeholder="0" step="0.01" data-cat="${r.cat}" data-sub="${r.sub}" oninput="updateMultiTotal()"></div>
+    </div>`).join('');
   updateMultiTotal();
 }
 function updateMultiTotal(){
@@ -2298,7 +2585,8 @@ function resetForms(){
 }
 
 /* ---------- SAVE INCOME ---------- */
-function saveIncome(){
+function saveIncome(){ return conBloqueo('saveBtnInc',_saveIncome); }
+async function _saveIncome(){
   const branch=document.getElementById('fBranchInc').value;
   const date=document.getElementById('fDateInc').value||new Date().toISOString().slice(0,10);
   const note=document.getElementById('fNoteInc').value.trim();
@@ -2308,21 +2596,34 @@ function saveIncome(){
     const amount=parseFloat(document.getElementById('fAmountInc').value);
     if(isNaN(amount)||amount===0){ shake('fAmountInc'); toast('Ingresa un monto (positivo o negativo)',false); return; }
     if(!selIncCat){ toast('Selecciona una categoría',false); return; }
+    if(!confirmarRiesgos({tipo:'income',branch,amount,category:selIncCat,date,etiqueta:'Revisa esta operación'})) return;
     const tx={id:uid(),type:'income',amount,branch,date,note,category:selIncCat,subtype:document.getElementById('fIncSub').value||''};
-    state.txns.push(tx); cloudInsertTxn(tx);
-    afterSave(date,'Operación guardada');
+    if(!await guardarTxn(tx)) return;
+    afterSaveIncome(date,'Operación guardada');
   } else {
     const inputs=document.querySelectorAll('#multiList input');
     const batch=[];
-    inputs.forEach(inp=>{ const raw=inp.value.trim(); if(raw==='')return; const v=parseFloat(raw); if(!isNaN(v)&&v!==0)batch.push({cat:inp.dataset.cat,amount:v}); });
+    inputs.forEach(inp=>{ const raw=inp.value.trim(); if(raw==='')return; const v=parseFloat(raw); if(!isNaN(v)&&v!==0)batch.push({cat:inp.dataset.cat,sub:inp.dataset.sub||'',amount:v}); });
     if(!batch.length){ toast('Ingresa al menos un monto',false); return; }
-    batch.forEach(b=>{ const tx={id:uid(),type:'income',amount:b.amount,branch,date,note,category:b.cat,subtype:''}; state.txns.push(tx); cloudInsertTxn(tx); });
-    afterSave(date,`${batch.length} operaciones guardadas`);
+    // aviso una sola vez si alguno de los renglones ya existe igual esta semana
+    const repes=batch.filter(b=>movimientoParecido('income',branch,b.amount,b.cat,date));
+    if(repes.length){
+      const lista=repes.map(b=>`• ${b.cat}: RD$${fmt(b.amount)}`).join('\n');
+      if(!confirm(`⚠️ Ya hay operaciones iguales registradas esta semana en ${branch.replace('PRIME SPORT','PS')}:\n\n${lista}\n\n¿Registrar de todos modos?`)) return;
+    }
+    let guardados=0;
+    for(const b of batch){
+      const tx={id:uid(),type:'income',amount:b.amount,branch,date,note,category:b.cat,subtype:b.sub};
+      if(await guardarTxn(tx)) guardados++;
+    }
+    if(!guardados) return;
+    afterSaveIncome(date,`${guardados} operaciones guardadas`);
   }
 }
 
 /* ---------- SAVE EXPENSE ---------- */
-function saveExpense(){
+function saveExpense(){ return conBloqueo('saveBtnExp',_saveExpense); }
+async function _saveExpense(){
   const amount=parseFloat(document.getElementById('fAmountExp').value);
   if(!amount||amount<=0){ shake('fAmountExp'); toast('Ingresa un monto válido',false); return; }
   const branch=document.getElementById('fBranchExp').value;
@@ -2330,13 +2631,18 @@ function saveExpense(){
   const note=document.getElementById('fNoteExp').value.trim();
   if(isDayClosed(date)){ toast('El corte de ese día está cerrado. Reábrelo para registrar.',false); return; }
   const hasNcf=document.getElementById('fHasNcf').checked;
-  const tx={id:uid(),type:'expense',amount,branch,date,note,category:document.getElementById('fExpCat').value,hasNcf,ncf:hasNcf?document.getElementById('fNcf').value.trim().toUpperCase():''};
-  state.txns.push(tx); cloudInsertTxn(tx);
+  const category=document.getElementById('fExpCat').value;
+  const bancaSel=document.getElementById('fExpBanca');
+  const bancaAplica=bancaSel?bancaSel.value:'';
+  if(!confirmarRiesgos({tipo:'expense',branch,amount,category,date,etiqueta:'Revisa este gasto'})) return;
+  const tx={id:uid(),type:'expense',amount,branch,date,note,category,bancaAplica,hasNcf,ncf:hasNcf?document.getElementById('fNcf').value.trim().toUpperCase():''};
+  if(!await guardarTxn(tx)) return;
   afterSave(date,'Gasto guardado');
 }
 
 /* ---------- SAVE SALIDA ---------- */
-function saveOut(){
+function saveOut(){ return conBloqueo('saveBtnOut',_saveOut); }
+async function _saveOut(){
   const amount=parseFloat(document.getElementById('fAmountOut').value);
   if(!amount||amount<=0){ shake('fAmountOut'); toast('Ingresa un monto válido',false); return; }
   const branch=document.getElementById('fBranchOut').value;
@@ -2346,15 +2652,73 @@ function saveOut(){
   if(outMode==='transfer'){
     const dest=document.getElementById('fBranchDest').value;
     if(!dest||dest===branch){ toast('Selecciona una sucursal destino distinta',false); return; }
-    const tx={id:uid(),type:'out',outKind:'transfer',amount,branch,dest,date,note,category:'Transferencia',reason:'Transferencia entre sucursales'};
-    state.txns.push(tx); cloudInsertTxn(tx);
+    const kindSel=document.getElementById('fTransferKind');
+    const reason=kindSel&&kindSel.value?kindSel.value:'Transferencia entre sucursales';
+    if(!confirmarRiesgos({tipo:'out',branch,amount,category:'Transferencia',date,etiqueta:'Revisa esta transferencia'})) return;
+    const tx={id:uid(),type:'out',outKind:'transfer',amount,branch,dest,date,note,category:'Transferencia',reason};
+    if(!await guardarTxn(tx)) return;
     afterSave(date,'Transferencia registrada');
   } else {
     const reason=document.getElementById('fOutReason').value;
+    if(!confirmarRiesgos({tipo:'out',branch,amount,category:'Retiro',date,etiqueta:'Revisa esta salida'})) return;
     const tx={id:uid(),type:'out',outKind:'withdraw',amount,branch,date,note,category:'Retiro',reason};
-    state.txns.push(tx); cloudInsertTxn(tx);
+    if(!await guardarTxn(tx)) return;
     afterSave(date,'Salida registrada');
   }
+}
+
+// ---------- Validaciones antes de guardar ----------
+const MONTO_ALTO=50000; // pide confirmación extra por encima de este monto
+// Busca un movimiento muy parecido en los últimos 7 días (mismo tipo, banca, monto y categoría)
+function movimientoParecido(tipo,branch,amount,category,date){
+  const d=new Date(date+'T00:00:00');
+  return state.txns.find(t=>{
+    if(t.type!==tipo||t.branch!==branch)return false;
+    if(Math.abs((t.amount||0)-amount)>0.01)return false;
+    if(category&&t.category!==category)return false;
+    const td=new Date(t.date+'T00:00:00');
+    return Math.abs((d-td)/86400000)<=7;
+  });
+}
+// Devuelve false si el usuario cancela. Junta los avisos en un solo diálogo.
+function confirmarRiesgos({tipo,branch,amount,category,date,etiqueta}){
+  const avisarMontoAlto = (tipo!=='income');
+  const avisos=[];
+  const dup=movimientoParecido(tipo,branch,amount,category,date);
+  if(dup){
+    const dd=new Date(dup.date+'T00:00:00');
+    avisos.push(`⚠️ Ya existe un movimiento igual: RD$${fmt(amount)} en ${branch.replace('PRIME SPORT','PS')} el ${dd.getDate()}/${dd.getMonth()+1}${dup.note?' ('+dup.note+')':''}.`);
+  }
+  if(avisarMontoAlto && amount>=MONTO_ALTO) avisos.push(`💰 Monto alto: RD$${fmt(amount)}.`);
+  if(!avisos.length) return true;
+  return confirm(`${etiqueta}\n\n${avisos.join('\n\n')}\n\n¿Registrar de todos modos?`);
+}
+
+// Siguiente banca de la lista, para encadenar el registro sin volver al inicio
+function siguienteBanca(){
+  const sel=document.getElementById('fBranchInc');
+  const opts=Array.from(sel.options).map(o=>o.value).filter(v=>!isOfficeBranch(v));
+  const i=opts.indexOf(sel.value);
+  if(i<0) return null;
+  return (i+1<opts.length) ? opts[i+1] : null;
+}
+// Tras guardar una operación NO se sale del formulario: se limpian los montos,
+// se conservan fecha y categoría, y salta a la siguiente banca.
+function afterSaveIncome(date,msg){
+  const d=new Date(date+'T00:00:00'); curMonth=d.getMonth(); curYear=d.getFullYear(); updateMonthLabel();
+  document.getElementById('fAmountInc').value='';
+  document.getElementById('fNoteInc').value='';
+  document.querySelectorAll('#multiList input').forEach(i=>i.value='');
+  updateMultiTotal();
+  const next=siguienteBanca();
+  if(!next){ toast(msg+' · última banca',true); go('dash'); return; }
+  document.getElementById('fBranchInc').value=next;
+  updateFundBanner('inc');
+  if(incMode==='multi') renderMultiList();
+  toast(`${msg} · sigue ${next.replace('PRIME SPORT','PS')}`,true);
+  const amt=document.getElementById('fAmountInc');
+  if(incMode==='single'&&amt) amt.focus();
+  else { const first=document.querySelector('#multiList input'); if(first) first.focus(); }
 }
 
 function afterSave(date,msg){
@@ -2376,6 +2740,18 @@ function sortHistTxns(txns){
     return (a.id<b.id?-1:1)*mul;
   });
 }
+let histQ='';
+function setHistQ(v,limpiar){
+  histQ=String(v||'').trim().toLowerCase();
+  if(limpiar){ const i=document.getElementById('histQ'); if(i) i.value=''; }
+  const b=document.getElementById('histQClear'); if(b) b.style.display=histQ?'block':'none';
+  renderHistory();
+}
+/* Texto donde se busca: nota, categoría, subtipo, banca, motivo, destino y NCF. */
+function textoBusqueda(t){
+  return [t.note,t.category,t.subtype,t.branch,t.reason,t.dest,t.ncf,t.office].filter(Boolean).join(' ').toLowerCase();
+}
+
 function renderHistory(){
   const filters=[{k:'all',l:'Todos'},{k:'income',l:'Operaciones'},{k:'expense',l:'Gastos'},{k:'out',l:'Salidas'},{k:'collect',l:'Recolección'},{k:'ncf',l:'Con NCF'},{k:'noncf',l:'Sin NCF'}];
   document.getElementById('histFilters').innerHTML=filters.map(f=>`<div class="fchip ${histFilter===f.k?'on':''}" onclick="setHistFilter('${f.k}')">${f.l}</div>`).join('');
@@ -2406,9 +2782,24 @@ function renderHistory(){
   if(histCat!=='all') txns=txns.filter(t=>t.category===histCat);
   // branch filter (null = all)
   if(histBranches!==null) txns=txns.filter(t=>histBranches.includes(t.branch)||(t.type==='collect'&&histBranches.includes(t.office)));
+  // buscador: texto libre o monto exacto
+  if(histQ){
+    const comoNum=parseFloat(histQ.replace(/[^0-9.\-]/g,''));
+    const esNum=!isNaN(comoNum)&&/[0-9]/.test(histQ);
+    txns=txns.filter(t=>{
+      if(textoBusqueda(t).includes(histQ)) return true;
+      if(esNum){ const v=t.type==='collect'?Math.abs(t.moved||0):Math.abs(t.amount||0); if(Math.abs(v-Math.abs(comoNum))<0.01) return true; }
+      return false;
+    });
+  }
 
   const el=document.getElementById('histList');
-  if(!txns.length){ const ctx=(histDateFrom&&histDateTo)?'el rango seleccionado':(MONTHS[curMonth]+' '+curYear); el.innerHTML='<div class="empty-hint" style="padding:40px 20px;">No hay movimientos con este filtro en '+ctx+'.</div>'; return; }
+  if(!txns.length){
+    const ctx=(histDateFrom&&histDateTo)?'el rango seleccionado':(MONTHS[curMonth]+' '+curYear);
+    const q=histQ?` que digan "${histQ}"`:'';
+    el.innerHTML='<div class="empty-hint" style="padding:40px 20px;">No hay movimientos'+q+' con este filtro en '+ctx+'.</div>';
+    return;
+  }
   el.innerHTML=txns.map(t=>{
     let icBg,icColor,icon,sign,amtClass,amount;
     if(t.type==='income'){ amount=t.amount;icBg='var(--green-dim)';icColor='#4cd6a0';sign='';amtClass='inc';icon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>'; }
@@ -2426,7 +2817,8 @@ function renderHistory(){
     if(t.note)meta+=' · '+t.note;
     let tag='';
     if(t.type==='expense'){ tag=t.hasNcf?`<span class="txn-tag ncf">NCF${t.ncf?' '+t.ncf:''}</span>`:`<span class="txn-tag noncf">SIN NCF</span>`; }
-    const delLink=`<span class="swipe-del" onclick="delTxn('${t.id}')">Eliminar</span>`;
+    const delLink=`<span class="swipe-del" onclick="delTxn('${t.id}')">Eliminar</span>`+
+      (puedeEditar('operaciones')?`<span class="swipe-del" style="color:var(--cerulean);margin-right:12px;" onclick="editarMonto('${t.id}')">Corregir monto</span>`:'');
     const negInc=(t.type==='income'&&amount<0);
     const amtStyle=negInc?' style="color:var(--red)"':'';
     return `<div class="txn">
@@ -2439,6 +2831,137 @@ function renderHistory(){
     </div>`;
   }).join('');
 }
+/* ===================== BITÁCORA ===================== */
+let bitOffset=0, bitHayMas=false;
+
+function openBitacora(){
+  if(!esAdmin()){ toast('Solo un administrador puede ver la bitácora.',false); return; }
+  showOnlyView('view-bitacora');
+  bitOffset=0;
+  document.getElementById('bitLista').innerHTML='<div class="empty-hint" style="padding:30px 10px;">Cargando…</div>';
+  cargarBitacora();
+}
+
+const BIT_TABLAS={movimientos:'Movimiento',cuadre_banca_gasto:'Gasto de banca',cuadre_oficina_gasto:'Gasto de oficina',
+                  virtuales_registros:'Virtuales',cierres_dia:'Corte diario',cierres_mes:'Cierre de mes'};
+const BIT_ACCIONES={INSERT:{t:'Creó',c:'#1f9d6b',bg:'var(--green-dim)'},
+                    UPDATE:{t:'Cambió',c:'#a37416',bg:'#3a3016'},
+                    DELETE:{t:'Borró',c:'#d3564b',bg:'var(--red-dim)'}};
+
+/* Resume en una línea de qué registro se trata. */
+function bitQue(r){
+  const d=r.despues||r.antes||{};
+  if(r.tabla==='movimientos'){
+    const monto = d.tipo==='collect' ? Number(d.movido||0) : Number(d.monto||0);
+    const que = d.tipo==='collect' ? 'Recolección' : (d.categoria||d.tipo||'');
+    return `${que} · ${d.sucursal||''} · RD$${fmt(monto)} · ${d.fecha||''}`;
+  }
+  if(r.tabla==='cierres_dia') return `Jornada ${d.fecha||''}`;
+  if(r.tabla==='cierres_mes') return `${MONTHS[(d.mes||1)-1]||''} ${d.anio||''}`;
+  if(r.tabla==='virtuales_registros') return `${d.empresa||''} · ${d.sucursal||''} · ${MONTHS_SHORT[(d.mes||1)-1]||''} ${d.anio||''}`;
+  if(r.tabla==='cuadre_oficina_gasto') return `${d.categoria||''} · RD$${fmt(Number(d.monto||0))} · ${MONTHS_SHORT[(d.mes||1)-1]||''} ${d.anio||''}`;
+  return `${d.sucursal||''} · ${d.categoria||''} · RD$${fmt(Number(d.monto||0))} · ${MONTHS_SHORT[(d.mes||1)-1]||''} ${d.anio||''}`;
+}
+
+/* En los cambios, muestra exactamente qué campo se movió y de cuánto a cuánto. */
+const BIT_IGNORAR=['id','consorcio_id','creado','creado_por'];
+function bitCambios(r){
+  if(r.accion!=='UPDATE'||!r.antes||!r.despues) return '';
+  const filas=[];
+  Object.keys(r.despues).forEach(k=>{
+    if(BIT_IGNORAR.includes(k)) return;
+    const a=r.antes[k], b=r.despues[k];
+    if(JSON.stringify(a)===JSON.stringify(b)) return;
+    const num=!isNaN(parseFloat(a))&&!isNaN(parseFloat(b));
+    const va=num?'RD$'+fmt(Number(a)):(a===null||a===''?'—':String(a));
+    const vb=num?'RD$'+fmt(Number(b)):(b===null||b===''?'—':String(b));
+    filas.push(`<div style="font-size:11.5px;color:var(--muted);margin-top:3px;"><b style="color:var(--ink);">${k}</b>: ${va} → <b style="color:var(--ink);">${vb}</b></div>`);
+  });
+  return filas.join('');
+}
+
+async function cargarBitacora(mas){
+  const cont=document.getElementById('bitLista');
+  const btnMas=document.getElementById('bitMas');
+  const tabla=document.getElementById('bitTabla').value;
+  const accion=document.getElementById('bitAccion').value;
+  if(!mas){ bitOffset=0; cont.innerHTML='<div class="empty-hint" style="padding:30px 10px;">Cargando…</div>'; }
+  const PAGE=40;
+  try{
+    let q=sb.from('bitacora').select('*').order('id',{ascending:false}).range(bitOffset,bitOffset+PAGE-1);
+    if(tabla) q=q.eq('tabla',tabla);
+    if(accion) q=q.eq('accion',accion);
+    const {data,error}=await q;
+    if(error) throw error;
+    bitHayMas = data.length===PAGE;
+    if(!mas) cont.innerHTML='';
+    if(!data.length && !mas){
+      cont.innerHTML='<div class="empty-hint" style="padding:34px 16px;">Todavía no hay nada registrado. La bitácora empieza a guardar desde ahora: verás aquí cada movimiento que se cree, se corrija o se borre.</div>';
+      btnMas.style.display='none';
+      return;
+    }
+    cont.insertAdjacentHTML('beforeend', data.map(r=>{
+      const ac=BIT_ACCIONES[r.accion]||{t:r.accion,c:'var(--muted)',bg:'#eef2f4'};
+      const f=new Date(r.creado);
+      const cuando=`${f.getDate()} ${MONTHS_SHORT[f.getMonth()]} ${String(f.getHours()).padStart(2,'0')}:${String(f.getMinutes()).padStart(2,'0')}`;
+      const quien=r.correo||'—';
+      return `<div class="panel" style="padding:11px 13px;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+          <span style="background:${ac.bg};color:${ac.c};font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:6px;text-transform:uppercase;letter-spacing:.4px;">${ac.t}</span>
+          <span style="font-size:11.5px;font-weight:700;color:var(--muted);">${BIT_TABLAS[r.tabla]||r.tabla}</span>
+          <span style="flex:1;"></span>
+          <span style="font-size:11px;color:var(--muted);white-space:nowrap;">${cuando}</span>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:var(--ink);">${bitQue(r)}</div>
+        ${bitCambios(r)}
+        <div style="font-size:11px;color:var(--muted);margin-top:5px;">${quien}</div>
+      </div>`;
+    }).join(''));
+    bitOffset+=data.length;
+    btnMas.style.display = bitHayMas ? 'block' : 'none';
+  }catch(e){
+    console.error('bitacora',e);
+    cont.innerHTML='<div class="empty-hint" style="padding:30px 12px;">No se pudo cargar la bitácora.</div>';
+    btnMas.style.display='none';
+  }
+}
+
+/* Actualiza un movimiento ya guardado. */
+async function cloudUpdateTxn(id,cambios){
+  setSyncState('saving');
+  try{ const {error}=await sb.from('movimientos').update(cambios).eq('id',id); if(error)throw error; setSyncState('ok'); return true; }
+  catch(e){ console.error('update txn failed',e); setSyncState('error'); return false; }
+}
+
+/* ---------- Corregir el monto de un movimiento ----------
+   Antes, para arreglar una recolección mal digitada había que meter el mismo
+   monto en negativo y luego el correcto, y el histórico quedaba con tres
+   líneas. Ahora se corrige el movimiento original. */
+async function editarMonto(id){
+  const t=state.txns.find(x=>x.id===id);
+  if(!t){ toast('No se encontró el movimiento',false); return; }
+  if(isDayClosed(t.date)){ toast('Ese día está cerrado. Reábrelo para corregir.',false); return; }
+  if(!puedeEditar('operaciones')){ toast('No tienes permiso para editar.',false); return; }
+  const esCollect=t.type==='collect';
+  const actual=esCollect?(t.moved||0):(t.amount||0);
+  const etiqueta=esCollect
+    ? `Recolección de ${t.branch}\n\nMonto actual: RD$${fmt(actual)}\n(en negativo = cobertura hacia la banca)`
+    : `${t.category||t.type} · ${t.branch}\n\nMonto actual: RD$${fmt(actual)}`;
+  const entrada=prompt(`Corregir monto\n\n${etiqueta}\n\nEscribe el monto correcto:`,String(actual));
+  if(entrada===null) return;
+  const nuevo=parseFloat(String(entrada).replace(/,/g,''));
+  if(isNaN(nuevo)){ toast('Monto inválido',false); return; }
+  if(!esCollect&&nuevo<=0){ toast('El monto debe ser mayor que cero',false); return; }
+  if(esCollect&&nuevo===0){ toast('El monto no puede ser cero',false); return; }
+  if(Math.abs(nuevo-actual)<0.01){ toast('No hubo cambios',false); return; }
+  if(!confirm(`¿Cambiar de RD$${fmt(actual)} a RD$${fmt(nuevo)}?`)) return;
+  const cambios = esCollect ? {movido:nuevo} : {monto:nuevo};
+  if(!await cloudUpdateTxn(id,cambios)){ toast('NO se pudo corregir. Revisa tu conexión.',false); return; }
+  if(esCollect) t.moved=nuevo; else t.amount=nuevo;
+  renderHistory(); renderDash();
+  toast('Monto corregido',true);
+}
+
 function setHistFilter(k){ histFilter=k; renderHistory(); }
 function setHistCat(c){ histCat=c; renderHistory(); }
 
@@ -2530,7 +3053,16 @@ function cycleHistSort(){
   histSort=order[(order.indexOf(histSort)+1)%order.length];
   renderHistory();
 }
-function delTxn(id){ const tx=state.txns.find(t=>t.id===id); if(tx&&isDayClosed(tx.date)){ toast('Ese día está cerrado. Reábrelo para eliminar movimientos.',false); return; } if(!confirm('¿Eliminar este movimiento?'))return; cloudDeleteTxn(id); state.txns=state.txns.filter(t=>t.id!==id); renderHistory(); toast('Movimiento eliminado',true); }
+async function delTxn(id){
+  const tx=state.txns.find(t=>t.id===id);
+  if(tx&&isDayClosed(tx.date)){ toast('Ese día está cerrado. Reábrelo para eliminar movimientos.',false); return; }
+  if(!confirm('¿Eliminar este movimiento?'))return;
+  const ok=await cloudDeleteTxn(id);
+  if(!ok){ toast('NO se pudo eliminar. Revisa tu conexión.',false); return; }
+  state.txns=state.txns.filter(t=>t.id!==id);
+  renderHistory(); renderDash();
+  toast('Movimiento eliminado',true);
+}
 
 /* ---------- REPORTS ---------- */
 function setRepView(v){ repView=v; ['Branch','Cat','Fund','Ncf'].forEach(x=>document.getElementById('rt'+x).classList.toggle('on',v===x.toLowerCase())); renderReports(); }
@@ -2636,6 +3168,13 @@ function bankPending(branch){
   dates.forEach(d=>{ totalCuadre+=dayCuadre(branch,d); });
   const totalCollected=state.txns.filter(t=>t.type==='collect'&&t.branch===branch).reduce((s,t)=>s+t.moved,0);
   return totalCuadre-totalCollected;
+}
+
+// Efectivo que la banca tiene por encima (o por debajo) de su fondo asignado
+// descontando el cuadre pendiente. Lo que queda son adelantos/transferencias
+// que no se han devuelto, o fondo que quedó corto.
+function fondoExceso(branch){
+  return liveFund(branch) - branchFund(branch) - bankPending(branch);
 }
 
 /* ---------- AUDIT (diagnostic) ---------- */
@@ -2756,6 +3295,7 @@ function openCorte(){
   document.getElementById('corteDate').value=corteDateVal;
   document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
   document.getElementById('view-corte').classList.add('active');
+  apilarVista('view-corte');
   document.querySelectorAll('nav.tabbar button').forEach(b=>b.classList.remove('active'));
   window.scrollTo(0,0);
   renderCorte();
@@ -2764,7 +3304,7 @@ function openCorte(){
 // Envía por WhatsApp al mensajero la lista de bancas con el PENDIENTE TOTAL a recoger
 // (cuadre del día + lo arrastrado de días anteriores)
 function enviarRutaMensajero(){
-  const num=(state.config&&state.config.mensajero_num)||'';
+  const num=waNum(state.config&&state.config.mensajero_num);
   if(!num){
     toast('Primero guarda el número del mensajero en Ajustes',false);
     setTimeout(()=>go('settings'),900);
@@ -2796,7 +3336,7 @@ function enviarRutaMensajero(){
 // Envía a MI número el resumen de totales por categoría (Deportiva, Máquinas, virtuales)
 // por banca y general, de la jornada del corte.
 function enviarResumenTotales(){
-  const num=(state.config&&state.config.admin_num)||'';
+  const num=waNum(state.config&&state.config.admin_num);
   if(!num){
     toast('Primero guarda tu número en Ajustes',false);
     setTimeout(()=>go('settings'),900);
@@ -2840,7 +3380,9 @@ function renderCorte(){
   const d=new Date(corteDateVal+'T00:00:00');
   const isYesterday = corteDateVal===yesterdayISO();
   const isToday = corteDateVal===todayISO();
+  const dias = diasDesdeHoy(corteDateVal);
   let tag = isYesterday ? ' · jornada de ayer ✓' : (isToday ? ' · ⚠️ HOY (normalmente se cuadra ayer)' : '');
+  if(Math.abs(dias)>7) tag = ` · <span style="color:var(--red);font-weight:800;">⛔ ${Math.abs(dias)} días ${dias>0?'atrás':'adelante'} — revisa el mes</span>`;
   document.getElementById('corteDateLabel').innerHTML=`Cuadrando jornada del <b>${d.getDate()} de ${MONTHS[d.getMonth()]}, ${d.getFullYear()}</b>${tag}`;
 
   const banks=sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false));
@@ -2894,6 +3436,44 @@ function renderCorte(){
   document.getElementById('corteActionsPanel').style.display=closed?'none':'block';
 
   renderCortePending();
+  renderCorteExceso();
+}
+
+// Días entre la jornada elegida y hoy. Sirve para cazar errores de mes al escribir la fecha.
+function diasDesdeHoy(date){
+  return Math.round((new Date(todayISO()+'T00:00:00') - new Date(date+'T00:00:00'))/86400000);
+}
+function renderCorteExceso(){
+  const banks=sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false));
+  const exc=banks.map(b=>({name:b.name,e:fondoExceso(b.name)}))
+                 .filter(x=>Math.abs(x.e)>=1)
+                 .sort((a,b)=>Math.abs(b.e)-Math.abs(a.e));
+  const panel=document.getElementById('corteExcesoPanel');
+  if(!panel) return;
+  if(!exc.length){ panel.style.display='none'; return; }
+  panel.style.display='block';
+  document.getElementById('corteExcesoList').innerHTML=exc.map(x=>{
+    const sobra=x.e>0;
+    const btn=sobra?`<button onclick="devolverAdelanto('${x.name.replace(/'/g,"\\'")}')" style="border:1px solid var(--navy);background:#fff;border-radius:9px;padding:7px 11px;font-size:12px;font-weight:700;color:var(--navy);cursor:pointer;font-family:inherit;white-space:nowrap;">Devolver</button>`:'';
+    return `<div class="fund-card" style="margin-bottom:9px;">
+      <div class="fund-info"><div class="bn">${x.name.replace('PRIME SPORT ','PS ')}</div><div class="bt">${sobra?'Tiene de más · fondo RD$'+fmt(branchFund(x.name)):'Le falta al fondo'}</div></div>
+      <div class="fund-bal" style="display:flex;align-items:center;gap:9px;"><div class="fv ${sobra?'neg':'pos'}">RD$${fmt(Math.abs(x.e))}</div>${btn}</div>
+    </div>`;
+  }).join('');
+}
+// Registra la devolución del adelanto: transferencia de la banca hacia la Oficina.
+function devolverAdelanto(branch){
+  const monto=Math.round(fondoExceso(branch)*100)/100;
+  if(monto<1){ toast('Esa banca no tiene efectivo de más',false); return; }
+  const hoy=todayISO();
+  if(isDayClosed(hoy)){ toast('El corte de hoy está cerrado. Reábrelo para registrar.',false); return; }
+  const bancaTxt=branch.replace('PRIME SPORT','PS');
+  if(!confirm(`¿Registrar la devolución de ${bancaTxt}?\n\nMonto: RD$${fmt(monto)}\nDe ${bancaTxt} hacia Oficina\n\nEl fondo de la banca vuelve a RD$${fmt(branchFund(branch))}.`)) return;
+  const tx={id:uid(),type:'out',outKind:'transfer',amount:monto,branch,dest:officeName(),date:hoy,
+            note:`Devolución de adelanto de ${bancaTxt}`,category:'Transferencia',reason:'Devolución de adelanto'};
+  state.txns.push(tx); cloudInsertTxn(tx);
+  toast('Devolución registrada',true);
+  renderCorte();
 }
 
 function renderCortePending(){
@@ -2912,7 +3492,8 @@ function renderCortePending(){
 }
 
 // Record a single bank's collection for the selected date
-function collectOne(branch){
+function collectOne(branch){ return conBloqueo(null,()=>_collectOne(branch)); }
+async function _collectOne(branch){
   if(isDayClosed(corteDateVal)){ toast('El corte de este día está cerrado.',false); return; }
   const fieldId='mv_'+branch.replace(/[^a-zA-Z0-9]/g,'_');
   const raw=document.getElementById(fieldId).value;
@@ -2926,39 +3507,56 @@ function collectOne(branch){
   const d=new Date(corteDateVal+'T00:00:00');
   const jornadaTxt=`${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`;
   const bancaTxt=branch.replace('PRIME SPORT','PS');
-  if(!confirm(`¿Confirmas registrar de ${bancaTxt}?\n\nMonto: RD$${fmt(moved)}\nJornada: ${jornadaTxt}\n\nVerifica que el monto sea correcto antes de aceptar.`)) return;
-  recordCollect(branch,corteDateVal,cuadre,moved);
+  const dias=diasDesdeHoy(corteDateVal);
+  const avisoFecha = Math.abs(dias)>7 ? `\n\n⛔ ATENCIÓN: esa jornada está a ${Math.abs(dias)} días de hoy. Verifica el mes antes de continuar.` : '';
+  const yaHay=recoleccionParecida(branch,corteDateVal,moved);
+  const avisoDup = yaHay ? `\n\n⚠️ YA HAY una recolección de ${bancaTxt} por RD$${fmt(moved)} en esa misma jornada. Si aceptas quedarán dos.` : '';
+  if(!confirm(`¿Confirmas registrar de ${bancaTxt}?\n\nMonto: RD$${fmt(moved)}\nJornada: ${jornadaTxt}${avisoFecha}${avisoDup}\n\nVerifica que el monto sea correcto antes de aceptar.`)) return;
+  if(!await recordCollect(branch,corteDateVal,cuadre,moved)) return;
   toast('Movimiento registrado',true);
   renderCorte();
 }
 
 // "Recolectar todo": for each bank with activity, move the full net outstanding (today + carried)
-function collectAll(){
+function collectAll(){ return conBloqueo('btnCollectAll',_collectAll); }
+async function _collectAll(){
   if(isDayClosed(corteDateVal)){ toast('El corte de este día está cerrado.',false); return; }
-  if(!confirm('¿Recolectar el neto completo de todas las bancas (cuadre de hoy + pendientes anteriores)? El dinero se moverá desde/hacia la Oficina.')) return;
+  const diasAll=diasDesdeHoy(corteDateVal);
+  const avisoAll = Math.abs(diasAll)>7 ? `\n\n⛔ ATENCIÓN: la jornada seleccionada está a ${Math.abs(diasAll)} días de hoy. Verifica el mes antes de continuar.` : '';
+  // ¿ya se recolectó esta jornada?
+  const yaRec=state.txns.filter(t=>t.type==='collect'&&(t.jornada||t.date)===corteDateVal).length;
+  const avisoYa = yaRec ? `\n\n⚠️ Esta jornada YA tiene ${yaRec} recolección(es) registrada(s). Si continúas se sumarán otras.` : '';
+  if(!confirm(`¿Recolectar el neto completo de todas las bancas (cuadre de hoy + pendientes anteriores)? El dinero se moverá desde/hacia la Oficina.${avisoAll}${avisoYa}`)) return;
   const banks=sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false));
-  let count=0;
-  banks.forEach(b=>{
+  let count=0, fallos=0;
+  for(const b of banks){
     const cuadre=dayCuadre(b.name,corteDateVal);
     const netOutstanding=bankPending(b.name);
     const hasToday=state.txns.some(t=>t.branch===b.name&&t.date===corteDateVal&&t.type!=='collect');
     if((hasToday||Math.abs(netOutstanding)>=1) && Math.abs(netOutstanding)>=1){
-      recordCollect(b.name,corteDateVal,cuadre,netOutstanding);
-      count++;
+      if(await recordCollect(b.name,corteDateVal,cuadre,netOutstanding)) count++; else fallos++;
     }
-  });
-  if(count){ toast(`${count} bancas recolectadas`,true); } else { toast('No hay nada pendiente por recolectar',false); }
+  }
+  if(fallos){ toast(`${count} recolectadas, ${fallos} NO se guardaron`,false); }
+  else if(count){ toast(`${count} bancas recolectadas`,true); }
+  else { toast('No hay nada pendiente por recolectar',false); }
   renderCorte();
 }
 
 // Creates the collect record. The collect (money received) counts on its REAL reception
 // date (today), because that's when the cash physically entered the office.
 // The `jornada` field stores which day's operations were being settled (the corte date).
-function recordCollect(branch,date,cuadre,moved){
+async function recordCollect(branch,date,cuadre,moved){
   const office=officeName();
   // date param = corteDateVal (jornada being settled). Registration date = today (when money entered).
   const tx={ id:uid(), type:'collect', branch, office, date:todayISO(), jornada:date, cuadre, moved, note:'' };
-  state.txns.push(tx); cloudInsertTxn(tx);
+  return await guardarTxn(tx);
+}
+
+/* Busca una recolección igual (misma banca y misma jornada) para avisar
+   antes de registrar dos veces el mismo día. */
+function recoleccionParecida(branch,jornada,moved){
+  return state.txns.find(t=>t.type==='collect'&&t.branch===branch&&(t.jornada||t.date)===jornada&&Math.abs((t.moved||0)-moved)<0.01);
 }
 
 // ---- close / reopen the daily cut ----
@@ -2986,7 +3584,18 @@ async function closeCorte(){
 }
 
 // Build the closing summary text and open WhatsApp to the default number
-const CORTE_WA_NUMBER='18097134190'; // número fijo por defecto
+const CORTE_WA_NUMBER='18495724190'; // respaldo si no hay nada configurado
+// Normaliza a formato wa.me: solo dígitos y con código de país (RD = 1)
+function waNum(raw){
+  let n=String(raw||'').replace(/[^0-9]/g,'');
+  if(n.length===10 && /^(809|829|849)/.test(n)) n='1'+n;
+  return n;
+}
+// Número al que se envía el cierre del corte: Ajustes > corte_num, si no admin_num, si no el respaldo
+function corteWaNumber(){
+  const c=state.config||{};
+  return waNum(c.corte_num) || waNum(c.admin_num) || CORTE_WA_NUMBER;
+}
 function buildCorteSummary(){
   const d=new Date(corteDateVal+'T00:00:00');
   const officeBal=liveFund(officeName());
@@ -3006,12 +3615,30 @@ function buildCorteSummary(){
   } else {
     txt+=`\n✅ Sin pendientes.\n`;
   }
+  const exc=banks.map(b=>({name:b.name,e:fondoExceso(b.name)}))
+                 .filter(x=>Math.abs(x.e)>=1)
+                 .sort((a,b)=>Math.abs(b.e)-Math.abs(a.e));
+  if(exc.length){
+    txt+=`\n*Efectivo fuera del fondo:*\n`;
+    exc.forEach(x=>{
+      const name=x.name.replace('PRIME SPORT','PS');
+      const f=fmt(branchFund(x.name));
+      if(x.e>0) txt+=`🟡 ${name}: RD$${fmt(x.e)} de más (fondo RD$${f})\n`;
+      else txt+=`🔻 ${name}: RD$${fmt(Math.abs(x.e))} de menos (fondo RD$${f})\n`;
+    });
+  }
   if(currentUser) txt+=`\nCerrado por: ${currentUser}`;
   return txt;
 }
 function sendCorteWhatsApp(){
+  const num=corteWaNumber();
+  if(!num){
+    toast('Primero guarda el número del cierre en Ajustes',false);
+    setTimeout(()=>go('settings'),900);
+    return;
+  }
   const txt=buildCorteSummary();
-  const url=`https://wa.me/${CORTE_WA_NUMBER}?text=${encodeURIComponent(txt)}`;
+  const url=`https://wa.me/${num}?text=${encodeURIComponent(txt)}`;
   window.open(url,'_blank');
 }
 
@@ -3035,9 +3662,44 @@ function showOnlyView(id){
   document.getElementById(id).classList.add('active');
   document.querySelectorAll('nav.tabbar button').forEach(b=>b.classList.remove('active'));
   window.scrollTo(0,0);
+  __sinGuardar=false;
+  apilarVista(id);
 }
 
+/* ---------- Botón atrás del teléfono ----------
+   Sin esto, dar "atrás" dentro de un módulo cierra la app entera y hay que
+   volver a entrar con correo, clave y código. */
+let __pila=['view-dash'];
+let __volviendo=false;
+function apilarVista(id){
+  if(__volviendo) return;
+  if(__pila[__pila.length-1]===id) return;
+  __pila.push(id);
+  try{ history.pushState({v:id},''); }catch(e){}
+}
+window.addEventListener('popstate',function(){
+  if(__pila.length<=1) return;           // ya está en el inicio: que salga normal
+  __pila.pop();
+  const destino=__pila[__pila.length-1];
+  __volviendo=true;
+  try{
+    if(destino==='view-dash') go('dash');
+    else if(destino==='view-history') go('history');
+    else if(destino==='view-reports') go('reports');
+    else if(destino==='view-settings') go('settings');
+    else if(destino==='view-add') go('add');
+    else{
+      document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+      const el=document.getElementById(destino); if(el) el.classList.add('active');
+      window.scrollTo(0,0);
+    }
+  } finally { __volviendo=false; }
+  // se mantiene siempre una entrada de reserva para poder seguir volviendo
+  if(__pila.length>1){ try{ history.pushState({v:destino},''); }catch(e){} }
+});
+
 function openMaquinas(){
+  if(!moduloListo()) return;
   if(!state._machinesReady){
     showOnlyView('view-maquinas');
     document.getElementById('maqListWrap').innerHTML='<div class="panel" style="padding:20px;text-align:center;"><div style="font-size:14px;color:var(--ink);line-height:1.6;">El módulo de máquinas necesita activarse en la base de datos primero.<br><br>Falta crear las tablas en Supabase (pegar el código SQL que te entregué).</div></div>';
@@ -3459,9 +4121,10 @@ function renderMaqGlobal(){
 }
 
 // === Export functions ===
-function exportMaqGlobalImage(){
+async function exportMaqGlobalImage(){
   const node=document.getElementById('maqGlobalExportArea');
-  if(typeof html2canvas==='undefined'){ toast('Herramienta no disponible',false); return; }
+  toast('Preparando…',true);
+  if(!await cargarHtml2Canvas()){ toast('No se pudo cargar la herramienta de imagen. Revisa tu conexión.',false); return; }
   toast('Generando imagen...',true);
   const origBg=node.style.background;
   node.style.background='#fff'; node.style.padding='14px';
@@ -3550,6 +4213,7 @@ function cbActiveBranches(){
 }
 
 function openCuadreBancas(){
+  if(!moduloListo()) return;
   showOnlyView('view-cuadrebancas');
   const mesSel=document.getElementById('cbMesSel');
   mesSel.innerHTML=MONTHS.map((m,i)=>`<option value="${i+1}" ${(i+1)===cbMesCur?'selected':''}>${m}</option>`).join('');
@@ -3991,6 +4655,7 @@ function renderCbGastoEditor(){
 }
 
 async function guardarCbGastos(branch){
+  __sinGuardar=false;
   setSyncState('saving');
   for(const cat of CB_GASTO_CATS){
     const el=document.getElementById(`cbGC_${cat.replace(/[\s\/]+/g,'_')}`);
@@ -4290,9 +4955,10 @@ async function cbProrratearOficina(){
 }
 
 // === EXPORTS ===
-function exportCuadreBancasImage(){
+async function exportCuadreBancasImage(){
   const node=document.getElementById('cbExportArea');
-  if(typeof html2canvas==='undefined'){ toast('Herramienta no disponible',false); return; }
+  toast('Preparando…',true);
+  if(!await cargarHtml2Canvas()){ toast('No se pudo cargar la herramienta de imagen. Revisa tu conexión.',false); return; }
   toast('Generando imagen...',true);
   node.style.background='#fff'; node.style.padding='14px';
   html2canvas(node,{backgroundColor:'#fff',scale:2}).then(canvas=>{
@@ -4349,6 +5015,7 @@ const DENOMS_DR=[2000,1000,500,200,100,50,25,10,5,1];
 let dgFechaCur=null;
 
 function openDesglose(fecha){
+  if(!moduloListo()) return;
   showOnlyView('view-desglose');
   dgFechaCur = fecha || corteDateVal || yesterdayISO();
   document.getElementById('dgFecha').value=dgFechaCur;
@@ -4446,6 +5113,7 @@ async function guardarDesglose(){
 let cmMesCur=new Date().getMonth()+1, cmAnioCur=new Date().getFullYear();
 
 function openCierreMes(){
+  if(!moduloListo()) return;
   showOnlyView('view-cierremes');
   const mesSel=document.getElementById('cmMesSel');
   mesSel.innerHTML=MONTHS.map((m,i)=>`<option value="${i+1}" ${(i+1)===cmMesCur?'selected':''}>${m}</option>`).join('');
@@ -4989,6 +5657,7 @@ function fmtDate(d){ const x=new Date(d+'T00:00:00'); return `${x.getDate()} ${M
 let virtCurMes, virtCurAnio;
 
 function openVirtuales(){
+  if(!moduloListo()) return;
   if(!state._virtReady){
     showOnlyView('view-virtuales');
     document.getElementById('virtTotals').innerHTML='<div class="panel" style="padding:20px;text-align:center;"><div style="font-size:14px;color:var(--ink);line-height:1.6;">El módulo de Virtuales necesita activarse en la base de datos primero.<br><br>Falta crear las tablas en Supabase (pegar el código SQL que te entregué).</div></div>';
@@ -4997,8 +5666,13 @@ function openVirtuales(){
   showOnlyView('view-virtuales');
   // init selectors
   const now=new Date();
-  if(virtCurMes==null) virtCurMes=now.getMonth()+1;
-  if(virtCurAnio==null) virtCurAnio=now.getFullYear();
+  if(virtCurMes==null||virtCurAnio==null){
+    // Abrir en el ultimo mes que tenga registros; si no hay, el mes actual
+    let bestA=null,bestM=null;
+    (state.virtRegs||[]).forEach(r=>{ if(bestA==null||r.anio>bestA||(r.anio===bestA&&r.mes>bestM)){ bestA=r.anio; bestM=r.mes; } });
+    virtCurAnio = bestA!=null?bestA:now.getFullYear();
+    virtCurMes  = bestM!=null?bestM:(now.getMonth()+1);
+  }
   const mesSel=document.getElementById('virtMes');
   mesSel.innerHTML=MONTHS.map((m,i)=>`<option value="${i+1}">${m}</option>`).join('');
   mesSel.value=virtCurMes;
@@ -5249,8 +5923,8 @@ function renderVirtuales(){
   const byBranch=document.getElementById('virtByBranch');
   if(regs.length===0){ byBranch.innerHTML='<div class="empty-hint" style="padding:16px;">—</div>'; }
   else {
-    const rows=VIRT_SUCURSALES.map(suc=>{
-      const sr=regs.filter(r=>r.sucursal===suc);
+    const rows=activeVirtSucursales().map(suc=>{
+      const sr=regs.filter(r=>normBranchName(r.sucursal)===normBranchName(suc));
       const venta=sr.reduce((s,r)=>s+r.venta,0);
       const neto=sr.reduce((s,r)=>s+r.total,0);
       const tk=sr.reduce((s,r)=>s+r.tk,0);
@@ -5316,9 +5990,10 @@ function virtNavigateMonth(mes){
 }
 
 // === Export reparto ===
-function exportRepartoImage(){
+async function exportRepartoImage(){
   const node=document.getElementById('virtRepartoExportArea');
-  if(typeof html2canvas==='undefined'){ toast('Herramienta de imagen no disponible',false); return; }
+  toast('Preparando…',true);
+  if(!await cargarHtml2Canvas()){ toast('No se pudo cargar la herramienta de imagen. Revisa tu conexión.',false); return; }
   toast('Generando imagen...',true);
   // temp white background
   const origBg=node.style.background;
@@ -5592,7 +6267,14 @@ function virtDistribute(empresa, balanceTotal, comisionTotal, totalNeto, bonosTo
 // ---- helpers for providers (Phase B) ----
 function virtProvidersOf(empresa, includeInactive){ return state.virtProviders.filter(p=>p.empresa===empresa && (includeInactive||p.activo!==false)); }
 function virtProvidersAll(includeInactive){ const arr=[]; VIRT_EMPRESAS.forEach(e=>{ arr.push(...virtProvidersOf(e,includeInactive)); }); return arr; }
-function isVirtSucursalActiva(suc){ return !state.virtSucursalesInactivas[suc]; }
+function isVirtSucursalActiva(suc){
+  if(state.virtSucursalesInactivas[suc]) return false;
+  // si la banca está dada de baja en Ajustes, se oculta — salvo que tenga
+  // registros históricos de Virtuales que haya que poder seguir consultando
+  const b=(state.branches||[]).find(x=>normBranchName(x.name)===normBranchName(suc));
+  if(b && b.activa===false) return (state.virtRegs||[]).some(r=>normBranchName(r.sucursal)===normBranchName(suc));
+  return true;
+}
 function isVirtRenglonActivo(campo){ return !state.virtRenglonesInactivos[campo]; }
 function activeVirtSucursales(){ return VIRT_SUCURSALES.filter(isVirtSucursalActiva); }
 function activeVirtCampos(){ return VIRT_CAMPOS.filter(c=>isVirtRenglonActivo(c.k)); }
@@ -6003,7 +6685,7 @@ function renderVirtRegRows(){
   if(!activeSucs.length){ wrap.innerHTML='<div class="empty-hint" style="padding:20px;">No hay sucursales activas para Virtuales.</div>'; return; }
   if(!activeFields.length){ wrap.innerHTML='<div class="empty-hint" style="padding:20px;">No hay renglones activos. Activa al menos uno en Ajustes de Virtuales.</div>'; return; }
   wrap.innerHTML=activeSucs.map(suc=>{
-    const r=existing.find(x=>x.sucursal===suc);
+    const r=existing.find(x=>normBranchName(x.sucursal)===normBranchName(suc));
     const id=suc.replace(/[^0-9]/g,'');
     const fields=activeFields.map(c=>`<div class="fld" style="margin:0;"><label style="font-size:11px;">${c.label}</label><input type="number" inputmode="decimal" id="vr_${c.k}_${id}" value="${r?r[c.k]:''}" placeholder="0" oninput="calcVirtRow('${id}')"></div>`).join('');
     return `<div class="panel" style="padding:12px;margin-bottom:10px;" data-suc="${suc}">
@@ -6041,7 +6723,7 @@ async function saveVirtRegistro(){
       const tk=g('tk'),venta=g('venta'),balance=g('balance'),bonos=g('bonos'),comision=g('comision'),faltantes=g('faltantes');
       const hasData=(tk||venta||balance||bonos||comision||faltantes);
       const total=balance+bonos+comision+faltantes;
-      const existing=state.virtRegs.find(r=>r.mes===virtCurMes&&r.anio===virtCurAnio&&r.empresa===emp&&r.proveedorId===provId&&r.sucursal===suc);
+      const existing=state.virtRegs.find(r=>r.mes===virtCurMes&&r.anio===virtCurAnio&&r.empresa===emp&&r.proveedorId===provId&&normBranchName(r.sucursal)===suc);
       if(!hasData){
         if(existing){ await sb.from('virtuales_registros').delete().eq('id',existing._id); state.virtRegs=state.virtRegs.filter(r=>r._id!==existing._id); }
         continue;
@@ -6068,6 +6750,7 @@ async function saveVirtRegistro(){
 function openHelp(){
   document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
   document.getElementById('view-help').classList.add('active');
+  apilarVista('view-help');
   document.querySelectorAll('nav.tabbar button').forEach(b=>b.classList.remove('active'));
   window.scrollTo(0,0);
 }
@@ -6080,6 +6763,7 @@ function openHistoric(){
   document.getElementById('histTo').value=t.toISOString().slice(0,10);
   document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
   document.getElementById('view-historic').classList.add('active');
+  apilarVista('view-historic');
   document.querySelectorAll('nav.tabbar button').forEach(b=>b.classList.remove('active'));
   window.scrollTo(0,0);
   renderHistoric();
@@ -6269,6 +6953,7 @@ function renderSettings(){
   const ul=document.getElementById('currentUserLabel'); if(ul&&currentUser) ul.textContent=currentUser;
   const mn=document.getElementById('mensajeroNum'); if(mn) mn.value=(state.config&&state.config.mensajero_num)||'';
   const an=document.getElementById('adminNum'); if(an) an.value=(state.config&&state.config.admin_num)||'';
+  const cn=document.getElementById('corteNum'); if(cn) cn.value=(state.config&&state.config.corte_num)||'';
   document.getElementById('branchList').innerHTML=state.branches
     .map((b,i)=>({b,i}))
     .sort((x,y)=>{
@@ -6312,6 +6997,11 @@ function saveAdminNum(){
   const raw=document.getElementById('adminNum').value.trim().replace(/[^0-9]/g,'');
   saveConfig('admin_num',raw);
   if(raw) toast('Tu número guardado',true);
+}
+function saveCorteNum(){
+  const raw=document.getElementById('corteNum').value.trim().replace(/[^0-9]/g,'');
+  saveConfig('corte_num',raw);
+  if(raw) toast('Número del cierre guardado',true);
 }function delBranch(i){ if(!confirm(`¿Eliminar "${state.branches[i].name}"? Los movimientos existentes se conservan.`))return; cloudDeleteBranch(state.branches[i]._id); state.branches.splice(i,1); saveState(); renderSettings(); }
 async function toggleBranchActive(i){
   const b=state.branches[i];
@@ -6357,42 +7047,34 @@ function closeFundModal(){ document.getElementById('fundModal').classList.remove
 function saveFund(){ if(fundEditIdx===null)return; const v=parseFloat(document.getElementById('fundInput').value)||0; state.branches[fundEditIdx].fund=v; saveState(); closeFundModal(); renderSettings(); toast('Fondo actualizado',true); }
 
 function backupData(){ const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`PrimeSport_Respaldo_${new Date().toISOString().slice(0,10)}.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); toast('Respaldo descargado',true); }
-async function wipeData(){ if(!confirm('¿Borrar TODOS los movimientos? Las sucursales, fondos y categorías se conservan.'))return; if(!confirm('Confirma una vez más.'))return; setSyncState('saving'); try{ const ids=state.txns.map(t=>t.id); for(const id of ids){ await sb.from('movimientos').delete().eq('id',id); } state.txns=[]; setSyncState('ok'); toast('Movimientos borrados',true); go('dash'); }catch(e){ console.error(e); setSyncState('error'); toast('Error al borrar',false); } }
+async function wipeData(){
+  if(!esAdmin()){ toast('Solo un administrador puede hacer esto.',false); return; }
+  const n=state.txns.length;
+  const nom=(state.consorcio&&state.consorcio.nombre)||'AdmBca';
+  if(!confirm(`⛔ Vas a borrar ${n} movimientos de ${nom}.\n\nEsto NO se puede deshacer. Primero se va a descargar un respaldo.\n\n¿Continuar?`)) return;
+  // respaldo obligatorio antes de borrar
+  try{ backupData(); }catch(e){ toast('No se pudo generar el respaldo. No se borró nada.',false); return; }
+  const escrito=prompt(`Se descargó el respaldo.\n\nPara confirmar, escribe exactamente el nombre del consorcio:\n\n${nom}`);
+  if(escrito===null) return;
+  if(String(escrito).trim().toLowerCase()!==String(nom).trim().toLowerCase()){ toast('El nombre no coincide. No se borró nada.',false); return; }
+  setSyncState('saving');
+  try{
+    // una sola operación: el RLS ya limita el borrado a este consorcio
+    const {error}=await sb.from('movimientos').delete().neq('id','00000000-0000-0000-0000-000000000000');
+    if(error) throw error;
+    state.txns=[];
+    setSyncState('ok');
+    toast('Movimientos borrados',true);
+    go('dash');
+  }catch(e){ console.error(e); setSyncState('error'); toast('Error al borrar. Recarga la página para ver el estado real.',false); }
+}
 
 /* ---------- TOAST ---------- */
 let toastTimer;
 function toast(msg,ok){ const t=document.getElementById('toast'); document.getElementById('toastMsg').textContent=msg; t.querySelector('svg').style.display=ok?'block':'none'; t.style.background=ok?'var(--navy)':'var(--red)'; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2200); }
 
 /* ---------- LOGIN & INIT ---------- */
-/* ---------- Marca segun la dirección de la página ----------
-   El archivo es idéntico en los tres repos: cada dirección se pinta sola. */
-const MARCAS = {
-  'primesport': { codigo:'PRIMESPORT', nombre:'PRIME SPORT', a:'prime', b:'sport', acento:'#e07a2b' },
-  'fuegosport': { codigo:'FUEGOSPORT', nombre:'FUEGO SPORT', a:'fuego', b:'sport', acento:'#e2543a' },
-  'sportmixx':  { codigo:'SPORTMIXX',  nombre:'SPORTMIXX',   a:'sport', b:'mixx',  acento:'#33b08a' }
-};
-const MARCA_POR_DEFECTO = { codigo:null, nombre:'AdmBca', a:'Adm', b:'Bca', acento:'#e07a2b' };
-
-function marcaActual(){
-  // Se mira primero la ruta (el nombre del repo). El dominio del usuario de GitHub
-  // ya contiene "primesport", asi que usarlo primero daria siempre la misma marca.
-  const ruta = (location.pathname||'').toLowerCase();
-  for(const k in MARCAS){ if(ruta.indexOf(k)>=0) return MARCAS[k]; }
-  const host = (location.hostname||'').toLowerCase();
-  for(const k in MARCAS){ if(host.indexOf(k)>=0) return MARCAS[k]; }
-  return MARCA_POR_DEFECTO;
-}
-
-function setLoginLogo(){
-  const m = marcaActual();
-  const a=document.getElementById('logoA'), b=document.getElementById('logoB');
-  const sub=document.getElementById('logoSub'), pie=document.getElementById('loginPie');
-  if(a) a.textContent=m.a;
-  if(b){ b.textContent=m.b; b.style.color=m.acento; }
-  if(sub) sub.textContent='Control Financiero';
-  if(pie) pie.textContent=m.nombre+' · Santo Domingo, RD';
-  document.title = m.nombre+' · AdmBca';
-}
+function setLoginLogo(){ /* text logo, nothing to copy */ }
 
 /* ---------- Segundo factor (TOTP / Google Authenticator) ---------- */
 let mfaFactorId=null;
@@ -6470,47 +7152,6 @@ async function startEnroll(){
   }
 }
 
-// El selector solo aparece si algun otro consorcio te dio acceso
-function pintarSelectorConsorcio(){
-  const caja=document.getElementById('selConsorcio');
-  const sel=document.getElementById('selConsorcioInput');
-  if(!caja||!sel) return;
-  const lista=(state&&state.consorcios)||[];
-  if(lista.length<2){ caja.style.display='none'; return; }
-  const activo=(state.consorcio&&state.consorcio.id)||'';
-  sel.innerHTML=lista.map(c=>'<option value="'+c.id+'"'+(c.id===activo?' selected':'')+'>'+c.nombre+(c.rol==='admin'?' · admin':'')+'</option>').join('');
-  caja.style.display='block';
-}
-
-async function cambiarConsorcio(id){
-  if(!id || (state.consorcio && id===state.consorcio.id)) return;
-  document.getElementById('syncOverlay').style.display='flex';
-  document.getElementById('syncMsg').textContent='Cambiando de consorcio…';
-  try{
-    const { data, error } = await sb.rpc('cambiar_consorcio',{p_consorcio:id});
-    if(error || (data && data.indexOf('ERROR')===0)) throw new Error(data||'fallo');
-    await loadConsorcio();
-    await loadState();
-    updateMonthLabel();
-    renderFormOptions();
-    renderDash();
-    go('dash');
-    toast('Ahora estás en '+((state.consorcio&&state.consorcio.nombre)||'otro consorcio')+'.',true);
-  }catch(e){
-    console.error('cambiar consorcio',e);
-    toast('No se pudo cambiar de consorcio.',false);
-    pintarSelectorConsorcio();
-  const av=document.getElementById('avisoPagina');
-  if(av){
-    if(state.avisoPagina){ av.textContent=state.avisoPagina; av.style.display='block'; }
-    else av.style.display='none';
-  }
-  }finally{
-    document.getElementById('syncOverlay').style.display='none';
-    document.getElementById('syncMsg').textContent='Sincronizando…';
-  }
-}
-
 const MODULOS = [
   ['operaciones','Operaciones','Registrar ingresos, gastos y salidas'],
   ['corte','Corte Diario','Recolección del día'],
@@ -6546,6 +7187,8 @@ function aplicarPermisos(){
   if(fab) fab.style.display = puedeEditar('operaciones') ? '' : 'none';
   const it=document.getElementById('setItemUsuarios');
   if(it) it.style.display = esAdmin() ? '' : 'none';
+  const bit=document.getElementById('setItemBitacora');
+  if(bit) bit.style.display = esAdmin() ? '' : 'none';
   const rt=document.getElementById('miRolTxt');
   if(rt) rt.textContent = esAdmin() ? 'Administrador' : 'Usuario';
 }
@@ -6761,6 +7404,12 @@ async function startApp(){
   try{
     await loadConsorcio();
     await loadState();
+    loadResto().catch(e=>{
+      console.error('carga en segundo plano',e);
+      state._restoListo=true;
+      const av=document.getElementById('avisoCargando');
+      if(av) av.innerHTML='No se pudo cargar todo. Recarga la página.';
+    });
     document.getElementById('syncOverlay').style.display='none';
     document.getElementById('appRoot').style.display='block';
     setSyncState('ok');
@@ -6771,6 +7420,9 @@ async function startApp(){
     document.getElementById('fDateExp').value=todayISO();
     document.getElementById('fDateOut').value=todayISO();
     renderDash();
+    marcarCargado();
+    const av=document.getElementById('avisoCargando');
+    if(av&&!state._restoListo) av.style.display='';
   }catch(e){
     console.error('load error',e);
     document.getElementById('syncOverlay').style.display='none';
@@ -6783,37 +7435,14 @@ async function startApp(){
 
 // Consorcio activo (RLS solo devuelve el del usuario conectado)
 async function loadConsorcio(){
-  state.avisoPagina = null;
   try{
-    // 1) A que consorcios tengo acceso
-    const { data:lista } = await sb.rpc('mis_consorcios');
-    state.consorcios = lista||[];
-
-    // 2) Si esta pagina es la de un consorcio, abrir ese
-    const m = marcaActual();
-    if(m.codigo){
-      const destino = state.consorcios.find(c=>c.codigo===m.codigo);
-      if(!destino){
-        state.avisoPagina = 'Esta es la página de '+m.nombre+', pero tu cuenta no tiene acceso a ese consorcio. Estás viendo el tuyo.';
-      } else if(!destino.es_activo){
-        const { data:r } = await sb.rpc('cambiar_consorcio',{p_consorcio:destino.id});
-        if(!r || r.indexOf('ERROR')!==0){
-          const { data:l2 } = await sb.rpc('mis_consorcios');
-          state.consorcios = l2||state.consorcios;
-        }
-      }
-    }
-
-    // 3) Consorcio activo + mi rol y permisos en el
     const { data, error } = await sb.from('consorcios').select('id,codigo,nombre').limit(1);
     if(error) throw error;
     state.consorcio = (data&&data[0]) ? data[0] : null;
-
     const { data:u } = await sb.auth.getUser();
     const uid = u && u.user && u.user.id;
-    if(uid && state.consorcio){
-      const { data:v } = await sb.from('usuarios_consorcio')
-        .select('rol,permisos,activo').eq('user_id',uid).eq('consorcio_id',state.consorcio.id).maybeSingle();
+    if(uid){
+      const { data:v } = await sb.from('usuarios_consorcio').select('rol,permisos,activo').eq('user_id',uid).maybeSingle();
       state.rol = (v&&v.rol)||'usuario';
       state.permisos = (v&&v.permisos)||{};
     }
@@ -6821,7 +7450,6 @@ async function loadConsorcio(){
   aplicarPermisos();
   const nom = (state.consorcio&&state.consorcio.nombre) || '—';
   document.querySelectorAll('.js-consorcio').forEach(el=>{ el.textContent=nom; });
-  pintarSelectorConsorcio();
 }
 
 async function doLogout(){
@@ -6830,6 +7458,55 @@ async function doLogout(){
 }
 
 // Wait for the Supabase client to be ready, then check for an existing session
+/* ---------- Refresco al volver a la app ----------
+   Dos personas pueden estar trabajando a la vez. Si el teléfono estuvo un rato
+   en segundo plano, al volver se vuelven a traer los movimientos para no
+   trabajar sobre una foto vieja. */
+let __ultimaCarga=0;
+function marcarCargado(){ __ultimaCarga=Date.now(); }
+
+async function refrescarMovimientos(silencioso){
+  if(!sb || document.getElementById('appRoot').style.display==='none') return;
+  try{
+    const antes=state.txns.length;
+    const filas=await fetchAllRows('movimientos');
+    state.txns=filas.map(dbToTxn);
+    marcarCargado();
+    const dif=state.txns.length-antes;
+    // refresca lo que esté en pantalla
+    try{ renderDash(); }catch(e){}
+    const act=document.querySelector('.view.active');
+    if(act){
+      if(act.id==='view-history'){ try{ renderHistory(); }catch(e){} }
+      if(act.id==='view-corte'){ try{ renderCorte(); }catch(e){} }
+    }
+    if(!silencioso||dif!==0){
+      if(dif>0) toast(`${dif} movimiento(s) nuevo(s) de otro usuario`,true);
+      else if(dif<0) toast(`${Math.abs(dif)} movimiento(s) fueron eliminados`,true);
+      else if(!silencioso) toast('Datos actualizados',true);
+    }
+  }catch(e){ console.warn('refresco',e); }
+}
+
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState!=='visible') return;
+  if(__guardando) return;
+  if(Date.now()-__ultimaCarga < 120000) return;   // menos de 2 minutos: no hace falta
+  refrescarMovimientos(true);
+});
+
+/* ---------- Aviso antes de perder lo que se está escribiendo ---------- */
+let __sinGuardar=false;
+document.addEventListener('input',e=>{
+  const v=e.target && e.target.closest && e.target.closest('.view');
+  if(v && /^view-(cuadrebancas|desglose|virtregistro|maqlectura|maqconfig|virtconfig|maqmensual)$/.test(v.id)) __sinGuardar=true;
+});
+window.addEventListener('beforeunload',e=>{
+  if(!__sinGuardar) return;
+  e.preventDefault();
+  e.returnValue='';
+});
+
 function bootstrap(){
   sb = window.__supabase;
   if(!sb){ window.addEventListener('supabase-ready',bootstrap,{once:true}); return; }
