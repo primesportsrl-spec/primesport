@@ -28,6 +28,13 @@
   .brand{display:flex;align-items:center;gap:11px;}
   .logo-img{height:46px;width:auto;display:block;flex-shrink:0;}
   .dia-hint{font-size:11.5px;font-weight:700;margin-top:5px;color:var(--muted);}
+  .an-quick{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:9px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .an-quick.on{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .an-tbl{width:100%;border-collapse:collapse;font-size:12px;}
+  .an-tbl th{text-align:right;font-size:10px;text-transform:uppercase;color:var(--muted);font-weight:800;padding:6px 5px;border-bottom:1.5px solid var(--line);letter-spacing:.3px;}
+  .an-tbl th:first-child{text-align:left;}
+  .an-tbl td{text-align:right;padding:7px 5px;border-bottom:1px solid #f2f5f6;}
+  .an-tbl td:first-child{text-align:left;font-weight:700;}
   .brand h1{font-size:17px;font-weight:700;letter-spacing:.3px;line-height:1.1;}
   .brand .sub{font-size:9.5px;color:var(--muted-light);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-top:1px;line-height:1.25;padding-left:9px;border-left:1px solid var(--navy-line);}
   .month-pill{background:var(--navy-soft);border:1px solid var(--navy-line);padding:7px 13px;border-radius:20px;font-size:12.5px;font-weight:600;color:var(--muted-light);display:flex;align-items:center;gap:6px;cursor:pointer;}
@@ -398,7 +405,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     </div>
   </div>
   <div data-mod="desglose">
-<div onclick="openDesglose()" style="background:linear-gradient(135deg,#2a2440,#5a4a8a);border-radius:16px;padding:15px 16px;margin-bottom:16px;display:flex;align-items:center;gap:13px;cursor:pointer;box-shadow:0 4px 16px rgba(90,74,138,.3);">
+<div onclick="openDesglose()" id="cardDesglose" style="background:linear-gradient(135deg,#2a2440,#5a4a8a);border-radius:16px;padding:15px 16px;margin-bottom:16px;display:flex;align-items:center;gap:13px;cursor:pointer;box-shadow:0 4px 16px rgba(90,74,138,.3);">
     <div style="width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
       <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:22px;height:22px;"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
     </div>
@@ -445,6 +452,42 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     <div style="flex:1;">
       <div style="color:#fff;font-size:14.5px;font-weight:700;">Virtuales</div>
       <div style="color:rgba(255,255,255,.78);font-size:11.5px;margin-top:1px;">Resumen mensual y reparto por socio</div>
+    </div>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
+  </div>
+  </div>
+<div data-mod="cuadre">
+<div onclick="openAnalisis()" style="background:linear-gradient(135deg,#1b2a3a,#2f5f7a);border-radius:16px;padding:15px 16px;margin-bottom:16px;display:flex;align-items:center;gap:13px;cursor:pointer;box-shadow:0 4px 16px rgba(47,95,122,.3);">
+    <div style="width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:22px;height:22px;"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
+    </div>
+    <div style="flex:1;">
+      <div style="color:#fff;font-size:14.5px;font-weight:700;">Análisis</div>
+      <div style="color:rgba(255,255,255,.78);font-size:11.5px;margin-top:1px;">Rentabilidad por banca, tendencias y proyección</div>
+    </div>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
+  </div>
+  </div>
+<div data-mod="empleados">
+<div onclick="openEmpleados()" style="background:linear-gradient(135deg,#123028,#1f6b4f);border-radius:16px;padding:15px 16px;margin-bottom:16px;display:flex;align-items:center;gap:13px;cursor:pointer;box-shadow:0 4px 16px rgba(31,107,79,.3);">
+    <div style="width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:22px;height:22px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    </div>
+    <div style="flex:1;">
+      <div style="color:#fff;font-size:14.5px;font-weight:700;">Empleados y Nómina</div>
+      <div style="color:rgba(255,255,255,.78);font-size:11.5px;margin-top:1px;">Fichas, quincenas, préstamos y faltantes</div>
+    </div>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
+  </div>
+  </div>
+<div data-mod="equipos">
+<div onclick="openEquipos()" style="background:linear-gradient(135deg,#2a2440,#5a4a8a);border-radius:16px;padding:15px 16px;margin-bottom:16px;display:flex;align-items:center;gap:13px;cursor:pointer;box-shadow:0 4px 16px rgba(90,74,138,.3);">
+    <div style="width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:22px;height:22px;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+    </div>
+    <div style="flex:1;">
+      <div style="color:#fff;font-size:14.5px;font-weight:700;">Equipos y Mantenimiento</div>
+      <div style="color:rgba(255,255,255,.78);font-size:11.5px;margin-top:1px;">Servicios, cambios e inventario por banca</div>
     </div>
     <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
   </div>
@@ -743,7 +786,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     Enviar ruta al mensajero
   </button>
 
-  <button onclick="openDesglose(corteDateVal)" style="width:100%;border:1px solid #5a4a8a;background:#fff;color:#5a4a8a;border-radius:12px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;">
+  <button onclick="openDesglose(corteDateVal,'corte')" style="width:100%;border:1px solid #5a4a8a;background:#fff;color:#5a4a8a;border-radius:12px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
     Desglose de efectivo
   </button>
@@ -913,6 +956,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
   </div>
 
   <!-- Alerts -->
+  <div id="maqGlobalPendientes"></div>
   <div id="maqGlobalAlerts"></div>
 
   <div id="maqGlobalExportArea">
@@ -1109,11 +1153,11 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
 <section class="view" id="view-desglose">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
     <button onclick="go('dash')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
-    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Desglose de Efectivo</div><div style="font-size:12px;color:var(--muted);">Contar billetes y monedas</div></div>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;" id="dgTitulo">Desglose de Efectivo</div><div style="font-size:12px;color:var(--muted);" id="dgSubtitulo">Cuadrar el fondo de Oficina</div></div>
   </div>
 
   <div class="fld" style="margin-bottom:12px;">
-    <label style="font-size:11.5px;color:var(--muted);">Jornada / fecha del conteo</label>
+    <label style="font-size:11.5px;color:var(--muted);" id="dgFechaLabel">Fecha del conteo · se compara con el fondo de Oficina a ese día</label>
     <input type="date" id="dgFecha" onchange="renderDesglose()">
   </div>
 
@@ -1275,7 +1319,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       </label>
     </div>
 
-    <button class="btn-primary" onclick="saveLectura()">Guardar lectura</button>
+    <button class="btn-primary" id="btnSaveLectura" onclick="saveLectura()">Guardar lectura</button>
   </div>
 
   <div class="panel" style="margin-top:14px;">
@@ -1511,6 +1555,38 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     <b>Importante:</b> al cerrar la página la sesión se cierra sola. Al volver hay que entrar de nuevo con los tres datos. Esto protege la información si dejas el equipo abierto.<br><br>
     Si el código te da error, casi siempre es la <b>hora del teléfono</b>: actívala en automático y vuelve a probar.<br><br>
     <b>El botón atrás del teléfono</b> ahora vuelve a la pantalla anterior en vez de cerrar la app. Y desde el navegador puedes usar “Agregar a pantalla de inicio” para dejar AdmBca como una aplicación más, con su propio ícono.<br><br>
+    <b>Empleados y Nómina</b><br>
+    <b>Ficha del empleado</b>: nombre, cédula, teléfono, banca, puesto, fecha de ingreso, salario por quincena, bono de limpieza, banco y cuenta donde se le paga. Cuando alguien se va, en vez de borrarlo márcalo como que ya no trabaja: así conservas su historial de nómina. Arriba de la lista ves cuántos son, cuánto suma la nómina de una quincena y cuánto te deben entre todos.<br><br>
+    <b>Préstamos y faltantes</b>: dentro de cada ficha. Registras el cargo cuando le prestas o cuando queda un faltante, y los abonos cuando se lo descuentas. El saldo pendiente se lleva solo y se ve en la lista al lado del nombre.<br><br>
+    <b>Nómina quincenal</b>: eliges año, mes y quincena. Cada empleado aparece ya prellenado con su salario y su bono; entras al que quieras y llenas los renglones. Los ingresos son salario, limpieza, vacaciones, feriado, préstamo, licencia y otros; los descuentos son seguro social, faltante, préstamo, avance de sueldo y otros. Los descuentos se escriben <b>en positivo</b> y se restan solos.<br><br>
+    Lo importante: <b>lo que descuentes por préstamo o faltante se abona solo al saldo del empleado</b>. No hay que llevarlo aparte como en el Excel. Si corriges la quincena, el abono se corrige también. Y al abrir a cada empleado te recuerda cuánto tiene pendiente.<br><br>
+    Abajo puedes bajar la quincena a CSV o mandar el resumen por WhatsApp.<br><br>
+    <b>Doble sueldo</b>: el botón dorado de la pantalla de empleados. Calcula la regalía del año con tu fórmula — <b>salario mensual ÷ 12 × meses trabajados</b> —, donde el salario mensual es la quincena más el bono de limpieza, por dos. Los meses salen solos de la fecha de ingreso y, si la persona se fue, de la de salida; contando completo el mes en que entró. Si algún caso no cuadra, corriges los meses a mano en la casilla y el monto se recalcula. Quien no trabajó nada ese año no aparece. Puedes ir marcando a quién ya le pagaste y bajarlo a CSV o mandarlo por WhatsApp.<br><br>
+    <b>Equipos y Mantenimiento</b><br>
+    Registras cada servicio con fecha, banca, equipo, tipo de servicio (mantenimiento, reparación, cambio o instalación), quién lo hizo, qué se hizo, el costo y, si aplica, la fecha del próximo servicio. Los vencidos salen en rojo.<br><br>
+    Se filtra por banca y por tipo de equipo, y arriba te dice cuántos servicios hay, cuánto se ha gastado y <b>qué banca ha dado más problemas en los últimos 90 días</b>.<br><br>
+    El <b>Inventario</b> es opcional pero útil: das de alta cada aire, inversor, planta, PC o TV con marca, modelo y serie, y al registrar un servicio lo vinculas. Así cada equipo lleva su propio historial y sabes cuándo se le cambiaron las baterías o cuántas veces se ha reparado antes de decidir cambiarlo.<br><br>
+    <b>Análisis</b><br>
+    Está en el inicio, al final del bloque de cierre mensual, y también en Ajustes. Es la herramienta para decidir: responde qué banca deja más, cuál deja menos, cómo va contra el período anterior y hacia dónde apunta el año.<br><br>
+    Eliges el rango con los botones rápidos (Año, 3 meses, 6 meses, Mes actual) o poniendo desde y hasta qué mes. Todo lo de abajo se recalcula y se compara automáticamente contra el mismo número de meses anteriores.<br><br>
+    • <b>Resultado</b> arriba, con el margen y la variación contra el período anterior.<br>
+    • <b>Mes a mes</b>: gráfico con ingresos, gastos y la línea del resultado.<br>
+    • <b>Rentabilidad por banca</b>: de la que más deja a la que menos, con su margen. La primera lleva 🥇 y la última 🔻.<br>
+    • <b>Resultado banca por mes</b>: la matriz completa, en verde lo que dejó y en rojo lo que perdió, más intenso mientras más grande. Ahí se ve de un vistazo qué banca viene cayendo mes tras mes.<br>
+    • <b>Ingresos por renglón</b> y <b>en qué se va el dinero</b>: el peso de cada uno y cuánto subió o bajó.<br>
+    • <b>Proyección</b>: promedio mensual, si la tendencia sube o baja y cuánto por mes, qué daría el mes próximo y el cierre del año al ritmo actual. Es una recta sobre lo que ya pasó, sirve para ver el rumbo y no para dar el número por hecho.<br><br>
+    La casilla de arriba decide si a cada banca se le carga su parte de los gastos de Administración. Con ella marcada ves lo que la banca deja de verdad después de sostener la oficina; sin ella ves cómo se defiende con sus propios gastos. El ranking puede cambiar bastante entre una y otra.<br><br>
+    <b>Cuidado con los meses sin gastos cargados.</b> Si un mes tiene ingresos pero todavía no le metiste los gastos en el Cuadre Mensual, va a aparecer como el más rentable de todos. La app te lo avisa en ámbar arriba y te dice cuáles son. Hoy solo junio, julio y agosto tienen gastos por banca.<br><br>
+    El botón de abajo baja todo a CSV, banca por banca y mes por mes, para trabajarlo en Excel.<br><br>
+    <b>Desglose de Efectivo</b><br>
+    Es el mismo conteo de billetes y monedas, pero sirve para dos cosas distintas según por dónde entres. Cada una guarda su propio conteo, así que puedes hacer los dos el mismo día sin que se pisen.<br><br>
+    • <b>Desde el inicio</b> (la tarjeta morada): cuadra el <b>fondo de Oficina</b>. Compara lo que cuentas con el saldo de caja que el sistema calcula hasta esa fecha, arrastrando todos los días anteriores. La fecha arranca en hoy.<br>
+    • <b>Desde el Corte Diario</b> (el botón dentro del corte): cuadra <b>lo recolectado de esa jornada</b>. Compara lo que cuentas con lo que el mensajero trajo de las bancas ese día. La fecha es la de la jornada del corte.<br><br>
+    El título de la pantalla te dice en cuál de los dos estás. Además te separa cuánto hay en billetes y cuánto en monedas, útil al momento de entregar.<br><br>
+    El conteo <b>del fondo de Oficina</b> cuenta como arqueo y aparece en la Revisión semanal como punto de anclaje. Así que tienes dos maneras de hacer el arqueo: escribir el total a mano allá, o contar billete por billete aquí. El del corte no cuenta como arqueo, porque mide otra cosa.<br><br>
+    <b>Cuadre de máquinas</b><br>
+    En <b>Máquinas &rsaquo; Vista global</b>, arriba de todo, aparece <b>qué falta por cargar</b> del mes: cada ruleta sin lectura y cada banca con POG sin balance. Toca la línea de una ruleta y te lleva directo a su lectura. Antes solo avisaba si una banca quedaba en cero, así que si faltaba la lectura de la ruleta pero el POG sí estaba cargado, el Bruto salía bajo y nadie lo notaba — y eso arrastra el Cuadre Mensual hacia abajo.<br><br>
+    Al guardar una lectura, la app revisa cuatro cosas y pregunta antes de seguir: que los contadores no hayan bajado sin marcar reset (un contador solo sube, si baja es un reset sin marcar o un número mal digitado), que no haya ya otra lectura de esa máquina en el mismo mes, que la fecha no quede antes de la última lectura, y que el ingreso no se salga mucho de lo que esa máquina viene produciendo. Ninguna de esas revisiones te bloquea: te avisa y tú decides.<br><br>
     <b>Si trabajas desde una PC:</b> la sesión vive solo mientras la página está abierta y el permiso se renueva solo cada cierto tiempo. Si dejas la pestaña abierta toda la noche o la máquina se duerme, esa renovación se frena y la sesión vence. Cuando eso pasa aparece una <b>barra roja abajo</b> avisándote de que lo que registres no se va a guardar, con un botón para volver a entrar. Si la ves, entra de nuevo antes de seguir registrando.<br><br>
     <b>Si un guardado falla</b>, la app te lo dice en rojo y <b>quita el movimiento de la pantalla</b>, para que no te quedes creyendo que se grabó. Si dice que venció la sesión, vuelve a entrar y regístralo otra vez; si dice que es la conexión, espera un momento y repite.<br><br>
     <b>Si son varios trabajando a la vez:</b> al volver a la app después de un rato, los movimientos se vuelven a traer solos y avisa si alguien más registró o borró algo. También puedes forzarlo desde <b>Ajustes &rsaquo; Actualizar datos</b>. Y si sales de la página con algo a medio escribir en el cuadre, el navegador te pregunta antes de perderlo.<br><br>
@@ -1675,6 +1751,140 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
   <div id="listaUsuarios"></div>
 </section>
 
+<section class="view" id="view-empleados">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="go('dash')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Empleados</div><div style="font-size:12px;color:var(--muted);">Fichas, nómina y préstamos</div></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <button onclick="openNomina()" style="flex:1;border:none;border-radius:11px;padding:12px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#1f6b4f,#2d9970);">Nómina quincenal</button>
+    <button onclick="nuevoEmpleado()" style="flex:1;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">+ Empleado</button>
+  </div>
+  <button onclick="openRegalia()" style="width:100%;border:1px solid #a37416;background:#fdf6e8;color:#a37416;border-radius:11px;padding:11px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:12px;">🎁 Doble sueldo (regalía)</button>
+  <div id="empResumen"></div>
+  <input type="search" id="empQ" placeholder="Buscar por nombre, cédula o banca…" oninput="renderEmpleados()"
+    style="width:100%;box-sizing:border-box;padding:11px 13px;border:1px solid var(--line);border-radius:11px;font-size:13px;font-family:inherit;margin-bottom:12px;background:#fff;color:var(--ink);">
+  <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-bottom:12px;cursor:pointer;">
+    <input type="checkbox" id="empVerBajas" onchange="renderEmpleados()" style="width:16px;height:16px;"> Mostrar también los que ya no están
+  </label>
+  <div id="empLista"></div>
+</section>
+
+<section class="view" id="view-empleado">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="openEmpleados()" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;"><span id="empFichaNom">Empleado</span></div><div style="font-size:12px;color:var(--muted);">Ficha del empleado</div></div>
+  </div>
+  <div id="empFicha"></div>
+</section>
+
+<section class="view" id="view-regalia">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="openEmpleados()" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Doble sueldo</div><div style="font-size:12px;color:var(--muted);">Regalía pascual del año</div></div>
+  </div>
+  <div class="fld" style="margin-bottom:12px;"><label>Año</label><select id="regAnio" onchange="renderRegalia()"></select></div>
+  <div id="regHero"></div>
+  <div id="regLista"></div>
+  <div style="display:flex;gap:8px;margin:4px 0 26px;">
+    <button onclick="exportRegaliaCSV()" style="flex:1;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">CSV</button>
+    <button onclick="enviarRegaliaWhatsApp()" style="flex:1;border:1px solid #1f9d6b;background:#eaf7f1;color:#1f9d6b;border-radius:11px;padding:12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">WhatsApp</button>
+  </div>
+</section>
+
+<section class="view" id="view-nomina">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="openEmpleados()" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Nómina</div><div style="font-size:12px;color:var(--muted);">Quincena por quincena</div></div>
+  </div>
+  <div style="display:flex;gap:6px;margin-bottom:12px;">
+    <select id="nomAnio" onchange="renderNomina()" style="flex:1;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:12.5px;font-family:inherit;background:#fff;color:var(--ink);"></select>
+    <select id="nomMes" onchange="renderNomina()" style="flex:1.4;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:12.5px;font-family:inherit;background:#fff;color:var(--ink);"></select>
+    <select id="nomQ" onchange="renderNomina()" style="flex:1.2;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:12.5px;font-family:inherit;background:#fff;color:var(--ink);">
+      <option value="1">1ra quincena</option><option value="2">2da quincena</option></select>
+  </div>
+  <div id="nomHero"></div>
+  <div id="nomLista"></div>
+  <div style="display:flex;gap:8px;margin:4px 0 26px;">
+    <button onclick="exportNominaCSV()" style="flex:1;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">CSV</button>
+    <button onclick="enviarNominaWhatsApp()" style="flex:1;border:1px solid #1f9d6b;background:#eaf7f1;color:#1f9d6b;border-radius:11px;padding:12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">WhatsApp</button>
+  </div>
+</section>
+
+<section class="view" id="view-nominaemp">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="openNomina()" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;"><span id="nomEmpNom">Empleado</span></div><div style="font-size:12px;color:var(--muted);">Renglones de la quincena</div></div>
+  </div>
+  <div id="nomEmpForm"></div>
+</section>
+
+<section class="view" id="view-equipos">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="go('dash')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Equipos y Mantenimiento</div><div style="font-size:12px;color:var(--muted);">Servicios y cambios por banca</div></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <button onclick="nuevoMantenimiento()" style="flex:1;border:none;border-radius:11px;padding:12px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#5a4a8a,#7a68b0);">+ Registrar servicio</button>
+    <button onclick="openInventario()" style="flex:1;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Inventario</button>
+  </div>
+  <div id="eqResumen"></div>
+  <div style="display:flex;gap:6px;margin-bottom:12px;">
+    <select id="eqFBanca" onchange="renderMantenimientos()" style="flex:1;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:12.5px;font-family:inherit;background:#fff;color:var(--ink);"></select>
+    <select id="eqFTipo" onchange="renderMantenimientos()" style="flex:1;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:12.5px;font-family:inherit;background:#fff;color:var(--ink);"></select>
+  </div>
+  <div id="eqLista"></div>
+</section>
+
+<section class="view" id="view-mantform">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="openEquipos()" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;"><span id="mfTitulo">Servicio</span></div><div style="font-size:12px;color:var(--muted);">Mantenimiento, reparación o cambio</div></div>
+  </div>
+  <div id="mfForm"></div>
+</section>
+
+<section class="view" id="view-inventario">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="openEquipos()" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Inventario de equipos</div><div style="font-size:12px;color:var(--muted);">Qué hay en cada banca</div></div>
+  </div>
+  <button onclick="nuevoEquipo()" style="width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:12px;">+ Agregar equipo</button>
+  <div id="invLista"></div>
+</section>
+
+<section class="view" id="view-analisis">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="go('dash')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Análisis</div><div style="font-size:12px;color:var(--muted);">Rentabilidad, tendencias y proyección</div></div>
+  </div>
+
+  <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+    <button class="an-quick" onclick="anRango('anio')">Año</button>
+    <button class="an-quick" onclick="anRango('3m')">3 meses</button>
+    <button class="an-quick" onclick="anRango('6m')">6 meses</button>
+    <button class="an-quick" onclick="anRango('mes')">Mes actual</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:8px;">
+    <div class="fld" style="flex:1;margin:0;"><label style="font-size:11px;">Desde</label><input type="month" id="anDesde" onchange="renderAnalisis()"></div>
+    <div class="fld" style="flex:1;margin:0;"><label style="font-size:11px;">Hasta</label><input type="month" id="anHasta" onchange="renderAnalisis()"></div>
+  </div>
+  <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-bottom:14px;cursor:pointer;">
+    <input type="checkbox" id="anProrrateo" checked onchange="renderAnalisis()" style="width:16px;height:16px;">
+    Cargar a cada banca su parte de los gastos de Administración
+  </label>
+
+  <div id="anAviso"></div>
+  <div id="anHero"></div>
+  <div id="anGrafico"></div>
+  <div id="anRanking"></div>
+  <div id="anMatriz"></div>
+  <div id="anRenglones"></div>
+  <div id="anGastos"></div>
+  <div id="anProyeccion"></div>
+  <button onclick="exportAnalisisCSV()" style="width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:13px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin:4px 0 26px;">Exportar a CSV</button>
+</section>
+
 <section class="view" id="view-revision">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
     <button onclick="go('dash')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
@@ -1695,6 +1905,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     <input type="text" id="revNota" placeholder="Nota (opcional)"
       style="width:100%;box-sizing:border-box;border:1px solid #283947;border-radius:10px;padding:10px 12px;font-size:13px;background:#0e1620;color:#fff;font-family:inherit;margin-bottom:12px;">
     <button id="revGuardar" onclick="guardarArqueo()" style="width:100%;border:none;border-radius:12px;padding:14px;font-size:14.5px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#0086AD,#16a8d4);">Guardar arqueo de hoy</button>
+    <button onclick="openDesglose()" style="width:100%;margin-top:8px;border:1px solid #283947;background:transparent;color:#9fb1bd;border-radius:11px;padding:11px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;">…o cuenta billete por billete en el Desglose</button>
   </div>
 
   <div class="panel" style="margin-bottom:16px;">
@@ -1753,6 +1964,11 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     <div class="set-item" id="setItemUsuarios" onclick="openUsuarios()" style="cursor:pointer;display:none;">
       <div class="si-ic" style="background:#3a3016;color:#e8c877;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
       <div class="si-txt"><div class="t">Usuarios y permisos</div><div class="d">Quién entra y qué puede hacer</div></div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" style="width:18px;height:18px;"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+    <div class="set-item" id="setItemAnalisis" onclick="openAnalisis()" style="cursor:pointer;">
+      <div class="si-ic" style="background:#2a2440;color:#b9a5e8;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg></div>
+      <div class="si-txt"><div class="t">Análisis</div><div class="d">Rentabilidad por banca, tendencias y proyección</div></div>
       <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" style="width:18px;height:18px;"><polyline points="9 18 15 12 9 6"/></svg>
     </div>
     <div class="set-item" id="setItemRevision" onclick="openRevision()" style="cursor:pointer;">
@@ -1832,7 +2048,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       <div class="si-act" style="color:var(--amber);" onclick="doLogout()">Salir</div>
     </div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v5.6 nube · Santo Domingo, RD</div>
+  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v6.2 nube · Santo Domingo, RD</div>
 </section>
 
 <!-- NAV -->
@@ -1895,7 +2111,7 @@ window.__supabase = createClient(
 window.dispatchEvent(new Event('supabase-ready'));
 </script>
 <script>
-/* ===================== AdmBca v5.6 ===================== */
+/* ===================== AdmBca v6.2 ===================== */
 function idConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.id)||null; }catch(e){ return null; } }
 function nomConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.nombre)||'AdmBca'; }catch(e){ return 'AdmBca'; } }
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -1919,7 +2135,8 @@ const DEFAULTS={
   expCats:['Local / Alquiler','Energía eléctrica','Nómina / Personal','Internet y teléfono','Mantenimiento','Suministros','Impuestos / DGII','Transporte','Publicidad','Otros gastos']
 };
 
-let state={txns:[],branches:[],incCats:[],expCats:[],officeIncCats:[],maquinas:[],lecturas:[],denoms:[],cierres:[],cierresMes:[],config:{},desgloses:[],virtRegs:[],virtConfig:null,virtProviders:[],virtSucursalesInactivas:{},virtRenglonesInactivos:{},maqGastos:[],maqPog:[],maqCfgBanca:{},cbGastos:[],cbIngresos:[],cbOficinaGastos:[]};
+let state={txns:[],branches:[],incCats:[],expCats:[],officeIncCats:[],maquinas:[],lecturas:[],denoms:[],cierres:[],cierresMes:[],config:{},desgloses:[],virtRegs:[],virtConfig:null,virtProviders:[],virtSucursalesInactivas:{},virtRenglonesInactivos:{},maqGastos:[],maqPog:[],maqCfgBanca:{},cbGastos:[],cbIngresos:[],cbOficinaGastos:[],
+  empleados:[],nomPeriodos:[],nomDetalle:[],empCuenta:[],equipos:[],mantenimientos:[],regalias:[]};
 const VIRT_EMPRESAS=['MERENGUE','VARMANEX','VG','SOLL'];
 const VIRT_SUCURSALES=['PRIME SPORT 1','PRIME SPORT 2','PRIME SPORT 3','PRIME SPORT 4','PRIME SPORT 5','PRIME SPORT 6','PRIME SPORT 7','PRIME SPORT 8','PRIME SPORT 9','PRIME SPORT 10'];
 
@@ -2157,7 +2374,7 @@ async function loadResto(){
   try{
     const dg=await fetchAllSafe('desglose_efectivo');
     if(!dg.error){
-      state.desgloses=dg.data.map(x=>({_id:x.id,fecha:x.fecha,denoms:x.denominaciones||{},totalContado:Number(x.total_contado)||0,totalEsperado:Number(x.total_esperado)||0,diferencia:Number(x.diferencia)||0,nota:x.nota,creadoPor:x.creado_por,creado:x.creado}));
+      state.desgloses=dg.data.map(x=>({_id:x.id,fecha:x.fecha,modo:x.modo||'corte',denoms:x.denominaciones||{},totalContado:Number(x.total_contado)||0,totalEsperado:Number(x.total_esperado)||0,diferencia:Number(x.diferencia)||0,nota:x.nota,creadoPor:x.creado_por,creado:x.creado}));
       state._desglosesReady=true;
     } else { state.desgloses=[]; state._desglosesReady=false; }
   }catch(e){ state.desgloses=[]; state._desglosesReady=false; }
@@ -2194,6 +2411,38 @@ async function loadResto(){
     state.virtRenglonesInactivos={};
     if(!vren.error){ vren.data.forEach(r=>{ if(r.activo===false) state.virtRenglonesInactivos[r.campo]=true; }); }
   }catch(e){ state.virtRegs=[]; state._virtReady=false; state.virtConfig=null; state.virtProviders=[]; state._providersReady=false; state.virtSucursalesInactivas={}; state.virtRenglonesInactivos={}; }
+  // Empleados, nómina y equipos
+  try{
+    const [em,np,nd,ec,eq,mt]=await Promise.all([
+      fetchAllSafe('empleados','nombre'), fetchAllSafe('nomina_periodos'), fetchAllSafe('nomina_detalle'),
+      fetchAllSafe('empleado_cuenta','fecha'), fetchAllSafe('equipos','sucursal'), fetchAllSafe('mantenimientos','fecha')
+    ]);
+    const rg=await fetchAllSafe('regalia');
+    state.regalias=rg.error?[]:rg.data.map(x=>({_id:x.id,anio:x.anio,empId:x.empleado_id,mensual:Number(x.salario_mensual)||0,
+      meses:Number(x.meses)||0,monto:Number(x.monto)||0,pagado:x.pagado===true,fechaPago:x.fecha_pago||'',nota:x.nota||''}));
+    if(!em.error){
+      state.empleados=em.data.map(x=>({_id:x.id,nombre:x.nombre,cedula:x.cedula||'',telefono:x.telefono||'',
+        sucursal:x.sucursal||'',puesto:x.puesto||'',ingreso:x.fecha_ingreso||'',salida:x.fecha_salida||'',
+        salario:Number(x.salario)||0,limpieza:Number(x.bono_limpieza)||0,banco:x.banco||'',
+        cuenta:x.cuenta_banco||'',activo:x.activo!==false,notas:x.notas||''}));
+      state._empReady=true;
+    } else { state.empleados=[]; state._empReady=false; }
+    state.nomPeriodos=np.error?[]:np.data.map(x=>({_id:x.id,anio:x.anio,mes:x.mes,quincena:x.quincena,estado:x.estado||'abierto',nota:x.nota||''}));
+    state.nomDetalle=nd.error?[]:nd.data.map(x=>({_id:x.id,periodoId:x.periodo_id,empId:x.empleado_id,sucursal:x.sucursal||'',
+      salario:Number(x.salario)||0,limpieza:Number(x.limpieza)||0,vacaciones:Number(x.vacaciones)||0,feriado:Number(x.feriado)||0,
+      prestamoIng:Number(x.prestamo_ing)||0,licencia:Number(x.licencia)||0,otrosIng:Number(x.otros_ing)||0,
+      segSocial:Number(x.seg_social)||0,faltante:Number(x.faltante)||0,prestamoDesc:Number(x.prestamo_desc)||0,
+      avSueldo:Number(x.av_sueldo)||0,otrosDesc:Number(x.otros_desc)||0,nota:x.nota||''}));
+    state.empCuenta=ec.error?[]:ec.data.map(x=>({_id:x.id,empId:x.empleado_id,tipo:x.tipo||'prestamo',fecha:x.fecha,
+      concepto:x.concepto||'',cargo:Number(x.cargo)||0,abono:Number(x.abono)||0,origen:x.origen||'manual',periodoId:x.periodo_id}));
+    state.equipos=eq.error?[]:eq.data.map(x=>({_id:x.id,sucursal:x.sucursal,tipo:x.tipo,nombre:x.nombre||'',marca:x.marca||'',
+      modelo:x.modelo||'',serie:x.serie||'',instalacion:x.fecha_instalacion||'',activo:x.activo!==false,notas:x.notas||''}));
+    state.mantenimientos=mt.error?[]:mt.data.map(x=>({_id:x.id,fecha:x.fecha,sucursal:x.sucursal,equipoId:x.equipo_id,
+      equipoTipo:x.equipo_tipo,servicio:x.servicio,proveedor:x.proveedor||'',descripcion:x.descripcion||'',
+      costo:Number(x.costo)||0,proximo:x.proximo||''}));
+    state._equiposReady=!eq.error&&!mt.error;
+  }catch(e){ console.warn('empleados/equipos',e); state._empReady=false; state._equiposReady=false; }
+
   state._restoListo=true;
   const av=document.getElementById('avisoCargando'); if(av) av.style.display='none';
   try{ renderDash(); }catch(e){}
@@ -2986,6 +3235,1088 @@ function renderHistory(){
     </div>`;
   }).join('');
 }
+/* ===================== EMPLEADOS Y NÓMINA =====================
+   Reproduce el control que se llevaba en Excel:
+   Ingresos:   salario + limpieza + vacaciones + feriado + préstamo + licencia + otros
+   Descuentos: seguro social + faltante + préstamo + avance de sueldo + otros
+   Balance = ingresos − descuentos. Los descuentos se guardan en positivo. */
+
+const NOM_ING=[['salario','Salario'],['limpieza','Limpieza'],['vacaciones','Vacaciones'],['feriado','Feriado'],
+               ['prestamoIng','Préstamo'],['licencia','Licencia'],['otrosIng','Otros']];
+const NOM_DESC=[['segSocial','Seguro social'],['faltante','Faltante'],['prestamoDesc','Préstamo'],
+                ['avSueldo','Avance de sueldo'],['otrosDesc','Otros']];
+
+function empPorId(id){ return state.empleados.find(e=>e._id===id); }
+function nomIngresos(d){ return NOM_ING.reduce((s,[k])=>s+(d[k]||0),0); }
+function nomDescuentos(d){ return NOM_DESC.reduce((s,[k])=>s+(d[k]||0),0); }
+function nomBalance(d){ return nomIngresos(d)-nomDescuentos(d); }
+
+/* Saldo vivo de préstamos y faltantes de un empleado. */
+function empSaldo(empId, tipo){
+  return state.empCuenta.filter(x=>x.empId===empId&&(!tipo||x.tipo===tipo))
+    .reduce((s,x)=>s+x.cargo-x.abono,0);
+}
+
+/* ---------- Lista de empleados ---------- */
+function openEmpleados(){
+  if(!puedeVer('empleados')){ toast('No tienes acceso a esta sección.',false); return; }
+  if(!moduloListo()) return;
+  if(!state._empReady){ toast('El módulo de empleados aún no está activo en la base de datos.',false); }
+  showOnlyView('view-empleados');
+  renderEmpleados();
+}
+function renderEmpleados(){
+  const q=(document.getElementById('empQ').value||'').trim().toLowerCase();
+  const verBajas=document.getElementById('empVerBajas').checked;
+  let lista=state.empleados.filter(e=>verBajas||e.activo);
+  if(q) lista=lista.filter(e=>[e.nombre,e.cedula,e.sucursal,e.puesto,e.telefono].join(' ').toLowerCase().includes(q));
+  const activos=state.empleados.filter(e=>e.activo);
+  const nomina=activos.reduce((s,e)=>s+e.salario+e.limpieza,0);
+  const deudas=state.empleados.reduce((s,e)=>s+Math.max(0,empSaldo(e._id)),0);
+  document.getElementById('empResumen').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
+      <div class="panel" style="padding:10px;text-align:center;"><div style="font-size:18px;font-weight:800;">${activos.length}</div><div style="font-size:10.5px;color:var(--muted);">Empleados</div></div>
+      <div class="panel" style="padding:10px;text-align:center;"><div style="font-size:15px;font-weight:800;">RD$${fmt(nomina)}</div><div style="font-size:10.5px;color:var(--muted);">Nómina/quincena</div></div>
+      <div class="panel" style="padding:10px;text-align:center;"><div style="font-size:15px;font-weight:800;color:${deudas>0?'#a37416':'var(--muted)'};">RD$${fmt(deudas)}</div><div style="font-size:10.5px;color:var(--muted);">Por cobrar</div></div>
+    </div>`;
+  const porSuc={};
+  lista.forEach(e=>{ (porSuc[e.sucursal||'Sin banca']=porSuc[e.sucursal||'Sin banca']||[]).push(e); });
+  const ordenSuc=Object.keys(porSuc).sort((a,b)=>{
+    const na=parseInt((a.match(/\d+$/)||['999'])[0]), nb=parseInt((b.match(/\d+$/)||['999'])[0]);
+    return na-nb;
+  });
+  document.getElementById('empLista').innerHTML = lista.length ? ordenSuc.map(suc=>`
+    <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:14px 2px 7px;">${suc.replace('PRIME SPORT','PRIME SPORT ')}</div>
+    ${porSuc[suc].map(e=>{
+      const saldo=empSaldo(e._id);
+      return `<div onclick="abrirEmpleado('${e._id}')" class="panel" style="padding:11px 13px;margin-bottom:7px;display:flex;align-items:center;gap:10px;cursor:pointer;${e.activo?'':'opacity:.55;'}">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13.5px;font-weight:700;">${e.nombre}${e.activo?'':' <span style="font-size:10px;color:var(--red);font-weight:800;">· BAJA</span>'}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">${e.puesto||'—'}${e.cedula?' · '+fmtCedula(e.cedula):''}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:12.5px;font-weight:800;">RD$${fmt(e.salario+e.limpieza)}</div>
+          ${saldo>0?`<div style="font-size:10.5px;color:#a37416;font-weight:700;">debe ${fmt(saldo)}</div>`:''}
+        </div>
+      </div>`;}).join('')}`).join('') : '<div class="empty-hint" style="padding:30px;">No hay empleados con ese filtro.</div>';
+}
+function fmtCedula(c){
+  const d=String(c||'').replace(/\D/g,'');
+  return d.length===11 ? d.slice(0,3)+'-'+d.slice(3,10)+'-'+d.slice(10) : c;
+}
+
+/* ---------- Ficha del empleado ---------- */
+let empCur=null;
+function nuevoEmpleado(){
+  if(!puedeEditar('empleados')){ toast('No tienes permiso para editar.',false); return; }
+  empCur=null; showOnlyView('view-empleado');
+  document.getElementById('empFichaNom').textContent='Nuevo empleado';
+  renderEmpFicha();
+}
+function abrirEmpleado(id){
+  empCur=empPorId(id); if(!empCur) return;
+  showOnlyView('view-empleado');
+  document.getElementById('empFichaNom').textContent=empCur.nombre;
+  renderEmpFicha();
+}
+function campo(id,label,val,tipo,extra){
+  return `<div class="fld"><label>${label}</label><input type="${tipo||'text'}" id="${id}" value="${(val==null?'':String(val)).replace(/"/g,'&quot;')}" ${extra||''}></div>`;
+}
+function renderEmpFicha(){
+  const e=empCur||{nombre:'',cedula:'',telefono:'',sucursal:'',puesto:'',ingreso:'',salida:'',salario:0,limpieza:0,banco:'',cuenta:'',activo:true,notas:''};
+  const bancas=state.branches.filter(b=>b.activa!==false).map(b=>b.name);
+  const saldoP=empCur?empSaldo(empCur._id,'prestamo'):0, saldoF=empCur?empSaldo(empCur._id,'faltante'):0;
+  const mov=empCur?state.empCuenta.filter(x=>x.empId===empCur._id).sort((a,b)=>a.fecha<b.fecha?1:-1):[];
+  document.getElementById('empFicha').innerHTML=`
+    <div class="panel" style="padding:14px;margin-bottom:12px;">
+      ${campo('efNombre','Nombre completo',e.nombre)}
+      <div class="row2">${campo('efCedula','Cédula',fmtCedula(e.cedula))}${campo('efTel','Teléfono',e.telefono,'tel')}</div>
+      <div class="row2">
+        <div class="fld"><label>Banca</label><select id="efSuc">${bancas.map(b=>`<option ${b===e.sucursal?'selected':''}>${b}</option>`).join('')}</select></div>
+        ${campo('efPuesto','Puesto',e.puesto)}
+      </div>
+      <div class="row2">${campo('efIngreso','Fecha de ingreso',e.ingreso,'date')}${campo('efSalida','Fecha de salida',e.salida,'date')}</div>
+      <div class="row2">${campo('efSalario','Salario por quincena',e.salario,'number','inputmode="decimal"')}${campo('efLimpieza','Bono limpieza',e.limpieza,'number','inputmode="decimal"')}</div>
+      <div class="row2">${campo('efBanco','Banco',e.banco)}${campo('efCuenta','Cuenta bancaria',e.cuenta)}</div>
+      ${campo('efNotas','Notas',e.notas)}
+      <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;margin:6px 0 12px;cursor:pointer;">
+        <input type="checkbox" id="efActivo" ${e.activo?'checked':''} style="width:16px;height:16px;"> Sigue trabajando con nosotros
+      </label>
+      <button id="btnGuardarEmp" onclick="guardarEmpleado()" class="btn-primary" style="width:100%;padding:13px;">${empCur?'Guardar cambios':'Crear empleado'}</button>
+      ${empCur?`<button onclick="borrarEmpleado()" style="width:100%;margin-top:8px;border:1px solid var(--red);background:#fff;color:var(--red);border-radius:11px;padding:11px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">Eliminar</button>`:''}
+    </div>
+    ${empCur?`
+    <div class="panel" style="padding:14px;margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span style="font-size:13px;font-weight:800;">Préstamos y faltantes</span>
+        <button onclick="nuevoCargoEmp()" style="border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:8px;padding:6px 11px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;">+ Registrar</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:11px;">
+        <div style="background:${saldoP>0?'#fdf6e8':'#f4f6f7'};border-radius:9px;padding:9px 11px;">
+          <div style="font-size:10.5px;color:var(--muted);font-weight:700;">Préstamo pendiente</div>
+          <div style="font-size:15px;font-weight:800;color:${saldoP>0?'#a37416':'var(--muted)'};">RD$${fmt(saldoP)}</div></div>
+        <div style="background:${saldoF>0?'#fdecea':'#f4f6f7'};border-radius:9px;padding:9px 11px;">
+          <div style="font-size:10.5px;color:var(--muted);font-weight:700;">Faltante pendiente</div>
+          <div style="font-size:15px;font-weight:800;color:${saldoF>0?'var(--red)':'var(--muted)'};">RD$${fmt(saldoF)}</div></div>
+      </div>
+      ${mov.length?mov.map(x=>`<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid #f2f5f6;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:12px;font-weight:700;">${x.concepto||(x.cargo?'Cargo':'Abono')}</div>
+            <div style="font-size:10.5px;color:var(--muted);">${fmtDate(x.fecha)} · ${x.tipo==='faltante'?'Faltante':'Préstamo'}${x.origen==='nomina'?' · desde nómina':''}</div>
+          </div>
+          <div style="font-size:12.5px;font-weight:800;color:${x.cargo?'var(--red)':'#1f9d6b'};">${x.cargo?'+'+fmt(x.cargo):'−'+fmt(x.abono)}</div>
+          <button onclick="borrarCargoEmp('${x._id}')" style="border:none;background:transparent;color:var(--muted);font-size:15px;cursor:pointer;padding:0 2px;">×</button>
+        </div>`).join(''):'<div style="font-size:12px;color:var(--muted);padding:6px 0;">Sin préstamos ni faltantes registrados.</div>'}
+    </div>`:''}`;
+}
+
+async function guardarEmpleado(){
+  if(!puedeEditar('empleados')){ toast('No tienes permiso para editar.',false); return; }
+  const nombre=document.getElementById('efNombre').value.trim().toUpperCase();
+  if(!nombre){ shake('efNombre'); toast('Escribe el nombre',false); return; }
+  const fila={
+    nombre, cedula:document.getElementById('efCedula').value.replace(/\D/g,'')||null,
+    telefono:document.getElementById('efTel').value.trim()||null,
+    sucursal:document.getElementById('efSuc').value, puesto:document.getElementById('efPuesto').value.trim()||null,
+    fecha_ingreso:document.getElementById('efIngreso').value||null,
+    fecha_salida:document.getElementById('efSalida').value||null,
+    salario:parseFloat(document.getElementById('efSalario').value)||0,
+    bono_limpieza:parseFloat(document.getElementById('efLimpieza').value)||0,
+    banco:document.getElementById('efBanco').value.trim()||null,
+    cuenta_banco:document.getElementById('efCuenta').value.replace(/\s/g,'')||null,
+    activo:document.getElementById('efActivo').checked,
+    notas:document.getElementById('efNotas').value.trim()||null
+  };
+  return conBloqueo('btnGuardarEmp', async()=>{
+    setSyncState('saving');
+    try{
+      if(empCur){
+        const {error}=await sb.from('empleados').update(fila).eq('id',empCur._id);
+        if(error)throw error;
+        Object.assign(empCur,{nombre,cedula:fila.cedula||'',telefono:fila.telefono||'',sucursal:fila.sucursal,
+          puesto:fila.puesto||'',ingreso:fila.fecha_ingreso||'',salida:fila.fecha_salida||'',
+          salario:fila.salario,limpieza:fila.bono_limpieza,banco:fila.banco||'',cuenta:fila.cuenta_banco||'',
+          activo:fila.activo,notas:fila.notas||''});
+      } else {
+        fila.creado_por=currentUser||null;
+        const {data,error}=await sb.from('empleados').insert(fila).select();
+        if(error)throw error;
+        state.empleados.push({_id:data[0].id,nombre,cedula:fila.cedula||'',telefono:fila.telefono||'',
+          sucursal:fila.sucursal,puesto:fila.puesto||'',ingreso:fila.fecha_ingreso||'',salida:fila.fecha_salida||'',
+          salario:fila.salario,limpieza:fila.bono_limpieza,banco:fila.banco||'',cuenta:fila.cuenta_banco||'',
+          activo:fila.activo,notas:fila.notas||''});
+      }
+      setSyncState('ok'); toast('Empleado guardado',true); openEmpleados();
+    }catch(e){ console.error(e); setSyncState('error');
+      toast(/duplicate|unique/i.test(e.message||'')?'Ya hay un empleado con esa cédula':'NO se guardó. Revisa tu conexión.',false); }
+  });
+}
+async function borrarEmpleado(){
+  if(!empCur) return;
+  const tieneNomina=state.nomDetalle.some(d=>d.empId===empCur._id);
+  if(tieneNomina){ toast('Tiene nómina registrada. Márcalo como que ya no trabaja en vez de borrarlo.',false); return; }
+  if(!confirm(`¿Eliminar a ${empCur.nombre}? Se borra también su historial de préstamos.`)) return;
+  setSyncState('saving');
+  try{
+    const {error}=await sb.from('empleados').delete().eq('id',empCur._id);
+    if(error)throw error;
+    state.empleados=state.empleados.filter(x=>x._id!==empCur._id);
+    state.empCuenta=state.empCuenta.filter(x=>x.empId!==empCur._id);
+    setSyncState('ok'); toast('Empleado eliminado',true); openEmpleados();
+  }catch(e){ console.error(e); setSyncState('error'); toast('No se pudo eliminar',false); }
+}
+
+async function nuevoCargoEmp(){
+  if(!empCur||!puedeEditar('empleados')) return;
+  const tipo=confirm('¿Es un PRÉSTAMO?\n\nAceptar = préstamo\nCancelar = faltante') ? 'prestamo' : 'faltante';
+  const esAbono=confirm(`${tipo==='prestamo'?'Préstamo':'Faltante'}\n\n¿Es un ABONO (descuento que le hiciste)?\n\nAceptar = abono\nCancelar = nuevo cargo`);
+  const montoTxt=prompt(`${esAbono?'Abono':'Cargo'} de ${tipo==='prestamo'?'préstamo':'faltante'} para ${empCur.nombre}\n\nMonto:`);
+  if(montoTxt===null) return;
+  const monto=Math.abs(leerMonto(montoTxt));
+  if(isNaN(monto)||monto<=0){ toast('Monto inválido',false); return; }
+  const concepto=prompt('Concepto (opcional):', esAbono?'Descuento de quincena':(tipo==='prestamo'?'Préstamo':'Faltante de caja'))||'';
+  setSyncState('saving');
+  try{
+    const fila={empleado_id:empCur._id,tipo,fecha:todayISO(),concepto:concepto||null,
+      cargo:esAbono?0:monto, abono:esAbono?monto:0, origen:'manual', creado_por:currentUser||null};
+    const {data,error}=await sb.from('empleado_cuenta').insert(fila).select();
+    if(error)throw error;
+    state.empCuenta.push({_id:data[0].id,empId:empCur._id,tipo,fecha:fila.fecha,concepto,
+      cargo:fila.cargo,abono:fila.abono,origen:'manual',periodoId:null});
+    setSyncState('ok'); toast('Registrado',true); renderEmpFicha();
+  }catch(e){ console.error(e); setSyncState('error'); toast('NO se guardó',false); }
+}
+async function borrarCargoEmp(id){
+  if(!confirm('¿Eliminar este movimiento?')) return;
+  setSyncState('saving');
+  try{
+    const {error}=await sb.from('empleado_cuenta').delete().eq('id',id);
+    if(error)throw error;
+    state.empCuenta=state.empCuenta.filter(x=>x._id!==id);
+    setSyncState('ok'); renderEmpFicha();
+  }catch(e){ console.error(e); setSyncState('error'); toast('No se pudo eliminar',false); }
+}
+
+/* ---------- Doble sueldo (regalía) ----------
+   Salario mensual ÷ 12 × meses trabajados del año.
+   El salario mensual es la quincena más el bono de limpieza, por dos.
+   Los meses salen de la fecha de ingreso (y de la de salida, si se fue),
+   contando completo el mes en que entró; se pueden corregir a mano. */
+let regAnioCur=new Date().getFullYear();
+
+function regMensual(e){ return (e.salario+e.limpieza)*2; }
+function regMesesTrabajados(e, anio){
+  let desde=1, hasta=12;
+  if(e.ingreso){
+    const d=new Date(e.ingreso+'T00:00:00');
+    if(d.getFullYear()>anio) return 0;
+    if(d.getFullYear()===anio) desde=d.getMonth()+1;
+  }
+  if(e.salida){
+    const h=new Date(e.salida+'T00:00:00');
+    if(h.getFullYear()<anio) return 0;
+    if(h.getFullYear()===anio) hasta=h.getMonth()+1;
+  }
+  return Math.max(0, hasta-desde+1);
+}
+function regFila(e, anio){
+  const g=state.regalias.find(x=>x.anio===anio&&x.empId===e._id);
+  if(g) return g;
+  const mensual=regMensual(e), meses=regMesesTrabajados(e,anio);
+  return {_nueva:true, anio, empId:e._id, mensual, meses,
+          monto:Math.round(mensual/12*meses*100)/100, pagado:false, fechaPago:'', nota:''};
+}
+
+function openRegalia(){
+  if(!puedeVer('empleados')){ toast('No tienes acceso a esta sección.',false); return; }
+  showOnlyView('view-regalia');
+  const sel=document.getElementById('regAnio');
+  const h=new Date().getFullYear();
+  if(!sel.options.length) sel.innerHTML=[h-2,h-1,h,h+1].map(y=>`<option ${y===h?'selected':''}>${y}</option>`).join('');
+  renderRegalia();
+}
+function renderRegalia(){
+  regAnioCur=parseInt(document.getElementById('regAnio').value);
+  const emps=state.empleados.filter(e=>e.activo||regMesesTrabajados(e,regAnioCur)>0).sort((a,b)=>{
+    const na=parseInt((a.sucursal.match(/\d+$/)||['999'])[0]), nb=parseInt((b.sucursal.match(/\d+$/)||['999'])[0]);
+    return na-nb || a.nombre.localeCompare(b.nombre);
+  });
+  const filas=emps.map(e=>({e, g:regFila(e,regAnioCur)})).filter(f=>f.g.meses>0);
+  const total=filas.reduce((s,f)=>s+f.g.monto,0);
+  const pagado=filas.filter(f=>f.g.pagado).reduce((s,f)=>s+f.g.monto,0);
+  const completos=filas.filter(f=>f.g.meses>=12).length;
+
+  document.getElementById('regHero').innerHTML=`
+    <div style="background:linear-gradient(135deg,#3a3015,#a37416);border-radius:15px;padding:16px;margin-bottom:12px;color:#fff;">
+      <div style="font-size:11px;color:rgba(255,255,255,.65);font-weight:700;text-transform:uppercase;letter-spacing:1px;">Regalía ${regAnioCur}</div>
+      <div style="font-size:27px;font-weight:800;margin:2px 0 10px;">RD$${fmt(total)}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:11px;">
+        <div style="background:rgba(255,255,255,.14);border-radius:8px;padding:9px 10px;"><div style="color:rgba(255,255,255,.75);font-weight:600;">Empleados</div><div style="font-size:14px;font-weight:800;">${filas.length}</div></div>
+        <div style="background:rgba(255,255,255,.14);border-radius:8px;padding:9px 10px;"><div style="color:rgba(255,255,255,.75);font-weight:600;">Año completo</div><div style="font-size:14px;font-weight:800;">${completos}</div></div>
+        <div style="background:rgba(255,255,255,.14);border-radius:8px;padding:9px 10px;"><div style="color:rgba(255,255,255,.75);font-weight:600;">Ya pagado</div><div style="font-size:14px;font-weight:800;">RD$${fmt(pagado)}</div></div>
+      </div>
+      <div style="font-size:10.5px;color:rgba(255,255,255,.6);margin-top:9px;">Salario mensual ÷ 12 × meses trabajados</div>
+    </div>`;
+
+  let suc='';
+  document.getElementById('regLista').innerHTML = filas.length ? filas.map(({e,g})=>{
+    let head='';
+    if(e.sucursal!==suc){ suc=e.sucursal; head=`<div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:13px 2px 6px;">${suc}</div>`; }
+    return head+`<div class="panel" style="padding:11px 13px;margin-bottom:6px;${g.pagado?'border-left:3px solid #1f9d6b;':''}">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:700;">${e.nombre}</div>
+          <div style="font-size:10.5px;color:var(--muted);margin-top:2px;">Mensual RD$${fmt(g.mensual)} · ${g.meses} mes(es)${g.pagado?' · pagado':''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="number" inputmode="decimal" value="${g.meses}" min="0" max="12" step="0.5" onchange="cambiarMesesRegalia('${e._id}',this.value)"
+            style="width:54px;padding:7px;border:1px solid var(--line);border-radius:8px;font-size:13px;text-align:center;font-family:inherit;">
+          <div style="font-size:14px;font-weight:800;min-width:78px;text-align:right;">RD$${fmt(g.monto)}</div>
+        </div>
+      </div>
+      <button onclick="marcarRegaliaPagada('${e._id}')" style="width:100%;margin-top:8px;border:1px solid ${g.pagado?'var(--line)':'#1f9d6b'};background:${g.pagado?'#f4f6f7':'#eaf7f1'};color:${g.pagado?'var(--muted)':'#1f9d6b'};border-radius:9px;padding:8px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;">${g.pagado?`Pagado el ${fmtDate(g.fechaPago)} · deshacer`:'Marcar como pagada'}</button>
+    </div>`;}).join('') : '<div class="empty-hint" style="padding:30px;">Nadie trabajó en ese año según las fechas de ingreso registradas.</div>';
+}
+
+async function guardarRegalia(e, cambios){
+  const g=regFila(e, regAnioCur);
+  const meses = cambios.meses!==undefined ? cambios.meses : g.meses;
+  const mensual = regMensual(e);
+  const monto = Math.round(mensual/12*meses*100)/100;
+  const fila={anio:regAnioCur, empleado_id:e._id, salario_mensual:mensual, meses, monto,
+    pagado: cambios.pagado!==undefined ? cambios.pagado : g.pagado,
+    fecha_pago: cambios.fechaPago!==undefined ? (cambios.fechaPago||null) : (g.fechaPago||null),
+    creado_por: currentUser||null};
+  setSyncState('saving');
+  try{
+    const {data,error}=await sb.from('regalia').upsert(fila,{onConflict:'consorcio_id,anio,empleado_id'}).select();
+    if(error)throw error;
+    const obj={_id:data[0].id,anio:regAnioCur,empId:e._id,mensual,meses,monto,
+      pagado:fila.pagado,fechaPago:fila.fecha_pago||'',nota:''};
+    const i=state.regalias.findIndex(x=>x.anio===regAnioCur&&x.empId===e._id);
+    if(i>=0) state.regalias[i]=obj; else state.regalias.push(obj);
+    setSyncState('ok'); renderRegalia();
+  }catch(err){ console.error(err); setSyncState('error'); toast('NO se guardó. Revisa tu conexión.',false); }
+}
+function cambiarMesesRegalia(empId, v){
+  if(!puedeEditar('empleados')){ toast('No tienes permiso para editar.',false); renderRegalia(); return; }
+  const e=empPorId(empId); if(!e) return;
+  let m=parseFloat(v); if(isNaN(m)||m<0) m=0; if(m>12) m=12;
+  guardarRegalia(e,{meses:m});
+}
+function marcarRegaliaPagada(empId){
+  if(!puedeEditar('empleados')){ toast('No tienes permiso para editar.',false); return; }
+  const e=empPorId(empId); if(!e) return;
+  const g=regFila(e, regAnioCur);
+  guardarRegalia(e, g.pagado ? {pagado:false, fechaPago:''} : {pagado:true, fechaPago:todayISO()});
+}
+function regFilasActuales(){
+  return state.empleados.filter(e=>e.activo||regMesesTrabajados(e,regAnioCur)>0)
+    .map(e=>({e,g:regFila(e,regAnioCur)})).filter(f=>f.g.meses>0)
+    .sort((a,b)=>{const na=parseInt((a.e.sucursal.match(/\d+$/)||['999'])[0]), nb=parseInt((b.e.sucursal.match(/\d+$/)||['999'])[0]);
+      return na-nb || a.e.nombre.localeCompare(b.e.nombre);});
+}
+function exportRegaliaCSV(){
+  const filas=[['Empleado','Cédula','Banca','Cuenta','Salario mensual','Meses','Regalía','Pagada']];
+  regFilasActuales().forEach(({e,g})=>filas.push([e.nombre,fmtCedula(e.cedula),e.sucursal,e.cuenta,g.mensual,g.meses,g.monto,g.pagado?'Sí':'No']));
+  const csv=filas.map(r=>r.map(x=>/[",;\n]/.test(String(x))?'"'+String(x).replace(/"/g,'""')+'"':x).join(',')).join('\n');
+  const url=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
+  const a=document.createElement('a'); a.href=url; a.download=`regalia_${regAnioCur}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+  toast('CSV descargado',true);
+}
+function enviarRegaliaWhatsApp(){
+  const filas=regFilasActuales();
+  let t=`*DOBLE SUELDO ${regAnioCur} · ${nomConsorcio()}*\n\n`;
+  let suc='';
+  filas.forEach(({e,g})=>{
+    if(e.sucursal!==suc){ suc=e.sucursal; t+=`\n_${suc.replace('PRIME SPORT','PS')}_\n`; }
+    t+=`${e.nombre}: RD$${fmt(g.monto)}${g.meses<12?` (${g.meses} meses)`:''}\n`;
+  });
+  t+=`\n*TOTAL: RD$${fmt(filas.reduce((s,f)=>s+f.g.monto,0))}*`;
+  window.open('https://wa.me/'+corteWaNumber()+'?text='+encodeURIComponent(t),'_blank');
+}
+
+/* ---------- Nómina quincenal ---------- */
+let nomPer=null, nomEmpCur=null;
+
+function openNomina(){
+  if(!puedeVer('empleados')){ toast('No tienes acceso a esta sección.',false); return; }
+  showOnlyView('view-nomina');
+  const h=new Date();
+  const anioSel=document.getElementById('nomAnio'), mesSel=document.getElementById('nomMes'), qSel=document.getElementById('nomQ');
+  if(!anioSel.options.length){
+    anioSel.innerHTML=[h.getFullYear()-1,h.getFullYear(),h.getFullYear()+1].map(y=>`<option ${y===h.getFullYear()?'selected':''}>${y}</option>`).join('');
+    mesSel.innerHTML=MONTHS.map((m,i)=>`<option value="${i+1}" ${i===h.getMonth()?'selected':''}>${m}</option>`).join('');
+    qSel.value = h.getDate()<=15 ? '1' : '2';
+  }
+  renderNomina();
+}
+function nomPeriodoActual(){
+  const a=parseInt(document.getElementById('nomAnio').value), m=parseInt(document.getElementById('nomMes').value), q=parseInt(document.getElementById('nomQ').value);
+  return state.nomPeriodos.find(p=>p.anio===a&&p.mes===m&&p.quincena===q)||null;
+}
+/* Fila de un empleado en la quincena; si no existe todavía se propone con su
+   salario y su bono, y con el descuento de préstamo que tenga pendiente. */
+function nomFila(emp, per){
+  const d = per ? state.nomDetalle.find(x=>x.periodoId===per._id&&x.empId===emp._id) : null;
+  if(d) return d;
+  return {periodoId:per?per._id:null, empId:emp._id, sucursal:emp.sucursal, _nueva:true,
+    salario:emp.salario, limpieza:emp.limpieza, vacaciones:0, feriado:0, prestamoIng:0, licencia:0, otrosIng:0,
+    segSocial:0, faltante:0, prestamoDesc:0, avSueldo:0, otrosDesc:0, nota:''};
+}
+function renderNomina(){
+  const per=nomPeriodoActual();
+  nomPer=per;
+  const emps=state.empleados.filter(e=>e.activo).sort((a,b)=>{
+    const na=parseInt((a.sucursal.match(/\d+$/)||['999'])[0]), nb=parseInt((b.sucursal.match(/\d+$/)||['999'])[0]);
+    return na-nb || a.nombre.localeCompare(b.nombre);
+  });
+  const filas=emps.map(e=>({e, d:nomFila(e,per)}));
+  const tIng=filas.reduce((s,f)=>s+nomIngresos(f.d),0);
+  const tDesc=filas.reduce((s,f)=>s+nomDescuentos(f.d),0);
+  const guardadas=filas.filter(f=>!f.d._nueva).length;
+  const a=document.getElementById('nomAnio').value, m=parseInt(document.getElementById('nomMes').value), q=document.getElementById('nomQ').value;
+
+  document.getElementById('nomHero').innerHTML=`
+    <div style="background:linear-gradient(135deg,#101820,#16242f);border-radius:15px;padding:16px;margin-bottom:12px;color:#fff;">
+      <div style="font-size:11px;color:#7d909e;font-weight:700;text-transform:uppercase;letter-spacing:1px;">${MONTHS[m-1]} ${a} · ${q==='1'?'1ra':'2da'} quincena</div>
+      <div style="font-size:27px;font-weight:800;color:#4cd6a0;margin:2px 0 10px;">RD$${fmt(tIng-tDesc)}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px;">
+        <div style="background:rgba(255,255,255,.07);border-radius:8px;padding:9px 11px;"><div style="color:#9fb1bd;font-weight:600;">Ingresos</div><div style="font-size:14px;font-weight:800;">RD$${fmt(tIng)}</div></div>
+        <div style="background:rgba(255,255,255,.07);border-radius:8px;padding:9px 11px;"><div style="color:#9fb1bd;font-weight:600;">− Descuentos</div><div style="font-size:14px;font-weight:800;color:#f0b46a;">RD$${fmt(tDesc)}</div></div>
+      </div>
+      <div style="font-size:10.5px;color:#7d909e;margin-top:9px;">${guardadas} de ${filas.length} guardadas${per&&per.estado==='cerrado'?' · quincena cerrada':''}</div>
+    </div>`;
+
+  let sucAnt='';
+  document.getElementById('nomLista').innerHTML = filas.length ? filas.map(({e,d})=>{
+    let head='';
+    if(e.sucursal!==sucAnt){ sucAnt=e.sucursal;
+      head=`<div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:13px 2px 6px;">${e.sucursal}</div>`; }
+    const bal=nomBalance(d), desc=nomDescuentos(d);
+    const saldo=empSaldo(e._id);
+    return head+`<div onclick="abrirNominaEmp('${e._id}')" class="panel" style="padding:11px 13px;margin-bottom:6px;display:flex;align-items:center;gap:10px;cursor:pointer;${d._nueva?'border-left:3px solid var(--line);':'border-left:3px solid #1f9d6b;'}">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;">${e.nombre}</div>
+        <div style="font-size:10.5px;color:var(--muted);margin-top:2px;">${d._nueva?'sin guardar':'guardada'}${desc?' · descuentos RD$'+fmt(desc):''}${saldo>0?' · debe RD$'+fmt(saldo):''}</div>
+      </div>
+      <div style="font-size:14px;font-weight:800;color:${bal<0?'var(--red)':'var(--ink)'};">RD$${fmt(bal)}</div>
+    </div>`;}).join('') : '<div class="empty-hint" style="padding:30px;">No hay empleados activos.</div>';
+}
+
+function abrirNominaEmp(empId){
+  const e=empPorId(empId); if(!e) return;
+  nomEmpCur=e;
+  showOnlyView('view-nominaemp');
+  document.getElementById('nomEmpNom').textContent=e.nombre;
+  renderNominaEmp();
+}
+function renderNominaEmp(){
+  const e=nomEmpCur, d=nomFila(e, nomPeriodoActual());
+  const saldoP=empSaldo(e._id,'prestamo'), saldoF=empSaldo(e._id,'faltante');
+  const inp=(k,lab)=>`<div class="fld" style="margin-bottom:9px;"><label style="font-size:11.5px;">${lab}</label>
+    <div class="amount-input"><span class="cur">RD$</span><input type="number" inputmode="decimal" id="ne_${k}" value="${d[k]||''}" placeholder="0" oninput="recalcNominaEmp()"></div></div>`;
+  document.getElementById('nomEmpForm').innerHTML=`
+    <div id="neResumen"></div>
+    ${(saldoP>0||saldoF>0)?`<div style="background:#fdf6e8;border:1px solid #ecd9ac;border-radius:11px;padding:11px 13px;margin-bottom:12px;font-size:12px;color:#a37416;line-height:1.5;">
+      Pendiente: ${saldoP>0?`préstamo RD$${fmt(saldoP)}`:''}${saldoP>0&&saldoF>0?' · ':''}${saldoF>0?`faltante RD$${fmt(saldoF)}`:''}.
+      Lo que pongas en los renglones de descuento se abona automáticamente al saldo.</div>`:''}
+    <div class="panel" style="padding:14px;margin-bottom:12px;">
+      <div style="font-size:12.5px;font-weight:800;color:#1f9d6b;margin-bottom:10px;">Ingresos</div>
+      ${NOM_ING.map(([k,l])=>inp(k,l)).join('')}
+    </div>
+    <div class="panel" style="padding:14px;margin-bottom:12px;">
+      <div style="font-size:12.5px;font-weight:800;color:var(--red);margin-bottom:4px;">Descuentos</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Escríbelos en positivo; se restan solos.</div>
+      ${NOM_DESC.map(([k,l])=>inp(k,l)).join('')}
+      <div class="fld" style="margin-bottom:0;"><label style="font-size:11.5px;">Nota</label><input type="text" id="ne_nota" value="${(d.nota||'').replace(/"/g,'&quot;')}"></div>
+    </div>
+    <button id="btnGuardarNom" onclick="guardarNominaEmp()" class="btn-primary" style="width:100%;padding:13px;margin-bottom:26px;">Guardar quincena</button>`;
+  recalcNominaEmp();
+}
+function neVal(k){ const el=document.getElementById('ne_'+k); return el?(parseFloat(el.value)||0):0; }
+function recalcNominaEmp(){
+  const ing=NOM_ING.reduce((s,[k])=>s+neVal(k),0), desc=NOM_DESC.reduce((s,[k])=>s+neVal(k),0);
+  document.getElementById('neResumen').innerHTML=`
+    <div style="background:linear-gradient(135deg,#101820,#16242f);border-radius:13px;padding:14px;margin-bottom:12px;color:#fff;">
+      <div style="font-size:11px;color:#7d909e;font-weight:700;text-transform:uppercase;letter-spacing:1px;">A pagar</div>
+      <div style="font-size:24px;font-weight:800;color:${(ing-desc)<0?'#f08980':'#4cd6a0'};">RD$${fmt(ing-desc)}</div>
+      <div style="font-size:11px;color:#9fb1bd;margin-top:3px;">Ingresos RD$${fmt(ing)} · Descuentos RD$${fmt(desc)}</div>
+    </div>`;
+}
+
+async function guardarNominaEmp(){
+  if(!puedeEditar('empleados')){ toast('No tienes permiso para editar.',false); return; }
+  const a=parseInt(document.getElementById('nomAnio').value), m=parseInt(document.getElementById('nomMes').value), q=parseInt(document.getElementById('nomQ').value);
+  const e=nomEmpCur;
+  return conBloqueo('btnGuardarNom', async()=>{
+    setSyncState('saving');
+    try{
+      let per=nomPeriodoActual();
+      if(!per){
+        const {data,error}=await sb.from('nomina_periodos').insert({anio:a,mes:m,quincena:q,creado_por:currentUser||null}).select();
+        if(error)throw error;
+        per={_id:data[0].id,anio:a,mes:m,quincena:q,estado:'abierto',nota:''};
+        state.nomPeriodos.push(per);
+      }
+      const prev=state.nomDetalle.find(x=>x.periodoId===per._id&&x.empId===e._id);
+      const fila={periodo_id:per._id, empleado_id:e._id, sucursal:e.sucursal, nota:document.getElementById('ne_nota').value.trim()||null};
+      NOM_ING.concat(NOM_DESC).forEach(([k])=>{
+        const col={salario:'salario',limpieza:'limpieza',vacaciones:'vacaciones',feriado:'feriado',prestamoIng:'prestamo_ing',
+          licencia:'licencia',otrosIng:'otros_ing',segSocial:'seg_social',faltante:'faltante',prestamoDesc:'prestamo_desc',
+          avSueldo:'av_sueldo',otrosDesc:'otros_desc'}[k];
+        fila[col]=neVal(k);
+      });
+      const {data,error}=await sb.from('nomina_detalle').upsert(fila,{onConflict:'periodo_id,empleado_id'}).select();
+      if(error)throw error;
+      const obj={_id:data[0].id,periodoId:per._id,empId:e._id,sucursal:e.sucursal,nota:fila.nota||''};
+      NOM_ING.concat(NOM_DESC).forEach(([k])=>obj[k]=neVal(k));
+      const idx=state.nomDetalle.findIndex(x=>x.periodoId===per._id&&x.empId===e._id);
+      if(idx>=0) state.nomDetalle[idx]=obj; else state.nomDetalle.push(obj);
+
+      /* Los descuentos de préstamo y faltante se abonan al saldo del empleado,
+         para no tener que llevarlo aparte. Se reemplaza el abono anterior de
+         esta misma quincena si se está corrigiendo. */
+      await sincronizarAbonos(per, e, prev, obj);
+
+      setSyncState('ok'); toast('Quincena guardada',true); openNomina();
+    }catch(err){ console.error(err); setSyncState('error'); toast('NO se guardó. Revisa tu conexión.',false); }
+  });
+}
+async function sincronizarAbonos(per, emp, prev, obj){
+  const fecha = new Date(per.anio, per.mes-1, per.quincena===1?15:0);
+  const fISO = per.quincena===1 ? `${per.anio}-${String(per.mes).padStart(2,'0')}-15`
+                                : isoLocal(new Date(per.anio, per.mes, 0));
+  const pares=[['prestamo','prestamoDesc'],['faltante','faltante']];
+  for(const [tipo,campo] of pares){
+    const viejos=state.empCuenta.filter(x=>x.empId===emp._id&&x.tipo===tipo&&x.origen==='nomina'&&x.periodoId===per._id);
+    for(const v of viejos){
+      await sb.from('empleado_cuenta').delete().eq('id',v._id);
+      state.empCuenta=state.empCuenta.filter(x=>x._id!==v._id);
+    }
+    const monto=obj[campo]||0;
+    if(monto>0){
+      const fila={empleado_id:emp._id,tipo,fecha:fISO,concepto:`Descuento de nómina · ${MONTHS[per.mes-1]} Q${per.quincena}`,
+        cargo:0,abono:monto,origen:'nomina',periodo_id:per._id,creado_por:currentUser||null};
+      const {data,error}=await sb.from('empleado_cuenta').insert(fila).select();
+      if(!error&&data&&data[0]) state.empCuenta.push({_id:data[0].id,empId:emp._id,tipo,fecha:fISO,
+        concepto:fila.concepto,cargo:0,abono:monto,origen:'nomina',periodoId:per._id});
+    }
+  }
+}
+
+function nomFilasActuales(){
+  const per=nomPeriodoActual();
+  return state.empleados.filter(e=>e.activo).map(e=>({e,d:nomFila(e,per)}));
+}
+function exportNominaCSV(){
+  const a=document.getElementById('nomAnio').value, m=parseInt(document.getElementById('nomMes').value), q=document.getElementById('nomQ').value;
+  const filas=[['Cuenta','Empleado','Cédula','Banca'].concat(NOM_ING.map(x=>x[1]), NOM_DESC.map(x=>'− '+x[1]), ['Balance'])];
+  nomFilasActuales().forEach(({e,d})=>{
+    filas.push([e.cuenta,e.nombre,fmtCedula(e.cedula),e.sucursal]
+      .concat(NOM_ING.map(([k])=>d[k]||0), NOM_DESC.map(([k])=>d[k]||0), [nomBalance(d)]));
+  });
+  const csv=filas.map(r=>r.map(x=>/[",;\n]/.test(String(x))?'"'+String(x).replace(/"/g,'""')+'"':x).join(',')).join('\n');
+  const url=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
+  const el=document.createElement('a'); el.href=url; el.download=`nomina_${a}_${String(m).padStart(2,'0')}_Q${q}.csv`;
+  document.body.appendChild(el); el.click(); el.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+  toast('CSV descargado',true);
+}
+function enviarNominaWhatsApp(){
+  const a=document.getElementById('nomAnio').value, m=parseInt(document.getElementById('nomMes').value), q=document.getElementById('nomQ').value;
+  const filas=nomFilasActuales();
+  let t=`*NÓMINA ${nomConsorcio()}*\n${MONTHS[m-1]} ${a} · ${q==='1'?'1ra':'2da'} quincena\n\n`;
+  let suc='';
+  filas.forEach(({e,d})=>{
+    if(e.sucursal!==suc){ suc=e.sucursal; t+=`\n_${suc.replace('PRIME SPORT','PS')}_\n`; }
+    const desc=nomDescuentos(d);
+    t+=`${e.nombre}: RD$${fmt(nomBalance(d))}${desc?` (desc. ${fmt(desc)})`:''}\n`;
+  });
+  const tIng=filas.reduce((s,f)=>s+nomIngresos(f.d),0), tDesc=filas.reduce((s,f)=>s+nomDescuentos(f.d),0);
+  t+=`\n*TOTAL A PAGAR: RD$${fmt(tIng-tDesc)}*\nIngresos RD$${fmt(tIng)} · Descuentos RD$${fmt(tDesc)}`;
+  window.open('https://wa.me/'+corteWaNumber()+'?text='+encodeURIComponent(t),'_blank');
+}
+
+/* ===================== EQUIPOS Y MANTENIMIENTO ===================== */
+const EQ_TIPOS=['Aire acondicionado','Inversor','Baterías','Planta','PC','TV','Cámaras','Impresora','Router / Internet','Mobiliario','General'];
+const EQ_SERVICIOS=['Mantenimiento','Reparación','Cambio','Instalación'];
+let mantCur=null, eqCur=null;
+
+function openEquipos(){
+  if(!puedeVer('equipos')){ toast('No tienes acceso a esta sección.',false); return; }
+  if(!moduloListo()) return;
+  showOnlyView('view-equipos');
+  const bs=document.getElementById('eqFBanca');
+  if(!bs.options.length){
+    bs.innerHTML='<option value="">Todas las bancas</option>'+state.branches.filter(b=>b.activa!==false).map(b=>`<option>${b.name}</option>`).join('');
+    document.getElementById('eqFTipo').innerHTML='<option value="">Todos los equipos</option>'+EQ_TIPOS.map(t=>`<option>${t}</option>`).join('');
+  }
+  renderMantenimientos();
+}
+function renderMantenimientos(){
+  const fb=document.getElementById('eqFBanca').value, ft=document.getElementById('eqFTipo').value;
+  let lista=state.mantenimientos.slice().sort((a,b)=>a.fecha<b.fecha?1:-1);
+  if(fb) lista=lista.filter(x=>x.sucursal===fb);
+  if(ft) lista=lista.filter(x=>x.equipoTipo===ft);
+
+  // resumen: cuánto se gastó y qué banca da más problemas
+  const hace90=isoLocal(new Date(Date.now()-90*86400000));
+  const recientes=state.mantenimientos.filter(x=>x.fecha>=hace90);
+  const porBanca={};
+  recientes.forEach(x=>porBanca[x.sucursal]=(porBanca[x.sucursal]||0)+1);
+  const peor=Object.entries(porBanca).sort((a,b)=>b[1]-a[1])[0];
+  const costo=lista.reduce((s,x)=>s+x.costo,0);
+  document.getElementById('eqResumen').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
+      <div class="panel" style="padding:10px;text-align:center;"><div style="font-size:18px;font-weight:800;">${lista.length}</div><div style="font-size:10.5px;color:var(--muted);">Servicios</div></div>
+      <div class="panel" style="padding:10px;text-align:center;"><div style="font-size:15px;font-weight:800;">RD$${fmt(costo)}</div><div style="font-size:10.5px;color:var(--muted);">Costo registrado</div></div>
+      <div class="panel" style="padding:10px;text-align:center;"><div style="font-size:15px;font-weight:800;color:${peor?'#a37416':'var(--muted)'};">${peor?peor[0].replace('PRIME SPORT','PS'):'—'}</div><div style="font-size:10.5px;color:var(--muted);">Más servicios (90d)</div></div>
+    </div>`;
+
+  const colSrv={'Mantenimiento':'#0086AD','Reparación':'#d3564b','Cambio':'#a37416','Instalación':'#1f9d6b'};
+  document.getElementById('eqLista').innerHTML = lista.length ? lista.map(x=>`
+    <div onclick="editarMantenimiento('${x._id}')" class="panel" style="padding:11px 13px;margin-bottom:7px;display:flex;align-items:center;gap:11px;cursor:pointer;border-left:3px solid ${colSrv[x.servicio]||'var(--line)'};">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;">${x.equipoTipo} <span style="font-size:10.5px;color:${colSrv[x.servicio]||'var(--muted)'};font-weight:800;">· ${x.servicio}</span></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">${fmtDate(x.fecha)} · ${x.sucursal.replace('PRIME SPORT','PS')}${x.proveedor?' · '+x.proveedor:''}${x.descripcion?' · '+x.descripcion:''}</div>
+        ${x.proximo?`<div style="font-size:10.5px;color:${x.proximo<todayISO()?'var(--red)':'#0086AD'};font-weight:700;margin-top:2px;">Próximo: ${fmtDate(x.proximo)}${x.proximo<todayISO()?' · vencido':''}</div>`:''}
+      </div>
+      ${x.costo?`<div style="font-size:12.5px;font-weight:800;">RD$${fmt(x.costo)}</div>`:''}
+    </div>`).join('') : '<div class="empty-hint" style="padding:30px;">No hay servicios con ese filtro.</div>';
+}
+
+function nuevoMantenimiento(){
+  if(!puedeEditar('equipos')){ toast('No tienes permiso para editar.',false); return; }
+  mantCur=null; showOnlyView('view-mantform');
+  document.getElementById('mfTitulo').textContent='Nuevo servicio';
+  renderMantForm();
+}
+function editarMantenimiento(id){
+  mantCur=state.mantenimientos.find(x=>x._id===id); if(!mantCur) return;
+  showOnlyView('view-mantform');
+  document.getElementById('mfTitulo').textContent=mantCur.equipoTipo;
+  renderMantForm();
+}
+function renderMantForm(){
+  const x=mantCur||{fecha:todayISO(),sucursal:'',equipoTipo:'Aire acondicionado',servicio:'Mantenimiento',
+                    proveedor:'',descripcion:'',costo:0,proximo:'',equipoId:null};
+  const bancas=state.branches.filter(b=>b.activa!==false).map(b=>b.name);
+  const equiposBanca=state.equipos.filter(q=>q.activo&&(!x.sucursal||q.sucursal===x.sucursal));
+  document.getElementById('mfForm').innerHTML=`
+    <div class="panel" style="padding:14px;margin-bottom:12px;">
+      <div class="row2">
+        <div class="fld"><label>Fecha</label><input type="date" id="mfFecha" value="${x.fecha}" onchange="pintarDia('mfFecha')"><div id="mfFecha_dia" class="dia-hint"></div></div>
+        <div class="fld"><label>Banca</label><select id="mfSuc" onchange="renderMantForm2()">${bancas.map(b=>`<option ${b===x.sucursal?'selected':''}>${b}</option>`).join('')}</select></div>
+      </div>
+      <div class="row2">
+        <div class="fld"><label>Equipo</label><select id="mfTipo">${EQ_TIPOS.map(t=>`<option ${t===x.equipoTipo?'selected':''}>${t}</option>`).join('')}</select></div>
+        <div class="fld"><label>Servicio</label><select id="mfServicio">${EQ_SERVICIOS.map(t=>`<option ${t===x.servicio?'selected':''}>${t}</option>`).join('')}</select></div>
+      </div>
+      <div class="fld"><label>Equipo del inventario <span style="font-weight:500;color:var(--muted);font-size:11px;">· opcional</span></label>
+        <select id="mfEquipo"><option value="">— sin vincular —</option>${equiposBanca.map(q=>`<option value="${q._id}" ${q._id===x.equipoId?'selected':''}>${q.tipo}${q.nombre?' · '+q.nombre:''}${q.marca?' · '+q.marca:''}</option>`).join('')}</select></div>
+      <div class="fld"><label>Quién lo hizo <span style="font-weight:500;color:var(--muted);font-size:11px;">· técnico o compañía</span></label><input type="text" id="mfProv" value="${(x.proveedor||'').replace(/"/g,'&quot;')}" placeholder="Ej. JDD, Darwin…"></div>
+      <div class="fld"><label>Qué se hizo</label><input type="text" id="mfDesc" value="${(x.descripcion||'').replace(/"/g,'&quot;')}" placeholder="Ej. cambio de baterías, limpieza…"></div>
+      <div class="row2">
+        <div class="fld"><label>Costo</label><div class="amount-input"><span class="cur">RD$</span><input type="number" inputmode="decimal" id="mfCosto" value="${x.costo||''}" placeholder="0"></div></div>
+        <div class="fld"><label>Próximo servicio</label><input type="date" id="mfProximo" value="${x.proximo||''}"></div>
+      </div>
+      <button id="btnGuardarMant" onclick="guardarMantenimiento()" class="btn-primary" style="width:100%;padding:13px;">${mantCur?'Guardar cambios':'Registrar servicio'}</button>
+      ${mantCur?`<button onclick="borrarMantenimiento()" style="width:100%;margin-top:8px;border:1px solid var(--red);background:#fff;color:var(--red);border-radius:11px;padding:11px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">Eliminar</button>`:''}
+    </div>`;
+  pintarDia('mfFecha');
+}
+function renderMantForm2(){
+  const suc=document.getElementById('mfSuc').value;
+  const sel=document.getElementById('mfEquipo');
+  const eqs=state.equipos.filter(q=>q.activo&&q.sucursal===suc);
+  sel.innerHTML='<option value="">— sin vincular —</option>'+eqs.map(q=>`<option value="${q._id}">${q.tipo}${q.nombre?' · '+q.nombre:''}${q.marca?' · '+q.marca:''}</option>`).join('');
+}
+async function guardarMantenimiento(){
+  if(!puedeEditar('equipos')){ toast('No tienes permiso para editar.',false); return; }
+  const fila={fecha:document.getElementById('mfFecha').value, sucursal:document.getElementById('mfSuc').value,
+    equipo_tipo:document.getElementById('mfTipo').value, servicio:document.getElementById('mfServicio').value,
+    equipo_id:document.getElementById('mfEquipo').value||null,
+    proveedor:document.getElementById('mfProv').value.trim()||null,
+    descripcion:document.getElementById('mfDesc').value.trim()||null,
+    costo:parseFloat(document.getElementById('mfCosto').value)||0,
+    proximo:document.getElementById('mfProximo').value||null};
+  if(!fila.fecha||!fila.sucursal){ toast('Falta la fecha o la banca',false); return; }
+  return conBloqueo('btnGuardarMant', async()=>{
+    setSyncState('saving');
+    try{
+      if(mantCur){
+        const {error}=await sb.from('mantenimientos').update(fila).eq('id',mantCur._id);
+        if(error)throw error;
+        Object.assign(mantCur,{fecha:fila.fecha,sucursal:fila.sucursal,equipoTipo:fila.equipo_tipo,servicio:fila.servicio,
+          equipoId:fila.equipo_id,proveedor:fila.proveedor||'',descripcion:fila.descripcion||'',costo:fila.costo,proximo:fila.proximo||''});
+      } else {
+        fila.creado_por=currentUser||null;
+        const {data,error}=await sb.from('mantenimientos').insert(fila).select();
+        if(error)throw error;
+        state.mantenimientos.push({_id:data[0].id,fecha:fila.fecha,sucursal:fila.sucursal,equipoTipo:fila.equipo_tipo,
+          servicio:fila.servicio,equipoId:fila.equipo_id,proveedor:fila.proveedor||'',descripcion:fila.descripcion||'',
+          costo:fila.costo,proximo:fila.proximo||''});
+      }
+      setSyncState('ok'); toast('Servicio registrado',true); openEquipos();
+    }catch(e){ console.error(e); setSyncState('error'); toast('NO se guardó. Revisa tu conexión.',false); }
+  });
+}
+async function borrarMantenimiento(){
+  if(!mantCur||!confirm('¿Eliminar este servicio?')) return;
+  setSyncState('saving');
+  try{
+    const {error}=await sb.from('mantenimientos').delete().eq('id',mantCur._id);
+    if(error)throw error;
+    state.mantenimientos=state.mantenimientos.filter(x=>x._id!==mantCur._id);
+    setSyncState('ok'); toast('Eliminado',true); openEquipos();
+  }catch(e){ console.error(e); setSyncState('error'); toast('No se pudo eliminar',false); }
+}
+
+/* ---------- Inventario ---------- */
+function openInventario(){ showOnlyView('view-inventario'); renderInventario(); }
+function renderInventario(){
+  const porSuc={};
+  state.equipos.forEach(q=>{ (porSuc[q.sucursal]=porSuc[q.sucursal]||[]).push(q); });
+  const sucs=Object.keys(porSuc).sort((a,b)=>{
+    const na=parseInt((a.match(/\d+$/)||['999'])[0]), nb=parseInt((b.match(/\d+$/)||['999'])[0]); return na-nb; });
+  document.getElementById('invLista').innerHTML = sucs.length ? sucs.map(suc=>`
+    <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:13px 2px 6px;">${suc}</div>
+    ${porSuc[suc].map(q=>{
+      const ult=state.mantenimientos.filter(x=>x.equipoId===q._id).sort((a,b)=>a.fecha<b.fecha?1:-1)[0];
+      return `<div onclick="editarEquipo('${q._id}')" class="panel" style="padding:11px 13px;margin-bottom:6px;cursor:pointer;${q.activo?'':'opacity:.55;'}">
+        <div style="font-size:13px;font-weight:700;">${q.tipo}${q.nombre?' · '+q.nombre:''}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">${[q.marca,q.modelo,q.serie&&('serie '+q.serie)].filter(Boolean).join(' · ')||'sin detalles'}</div>
+        <div style="font-size:10.5px;color:var(--muted);margin-top:2px;">${ult?`Último servicio: ${fmtDate(ult.fecha)} · ${ult.servicio}`:'Sin servicios registrados'}</div>
+      </div>`;}).join('')}`).join('') : '<div class="empty-hint" style="padding:30px;">Todavía no hay equipos en el inventario. Agrégalos para llevar marca, modelo, serie y su historial de servicios.</div>';
+}
+function nuevoEquipo(){ eqCur=null; formEquipo(); }
+function editarEquipo(id){ eqCur=state.equipos.find(q=>q._id===id); if(eqCur) formEquipo(); }
+async function formEquipo(){
+  if(!puedeEditar('equipos')){ toast('No tienes permiso para editar.',false); return; }
+  const q=eqCur||{sucursal:'',tipo:'Aire acondicionado',nombre:'',marca:'',modelo:'',serie:'',instalacion:'',activo:true};
+  const bancas=state.branches.filter(b=>b.activa!==false).map(b=>b.name);
+  const suc=prompt('Banca:\n\n'+bancas.map((b,i)=>`${i+1}. ${b}`).join('\n'), q.sucursal||bancas[0]);
+  if(suc===null) return;
+  const sucFinal = /^\d+$/.test(suc.trim()) ? bancas[parseInt(suc)-1] : suc.trim();
+  if(!bancas.includes(sucFinal)){ toast('Banca no válida',false); return; }
+  const tipo=prompt('Tipo de equipo:\n\n'+EQ_TIPOS.join(', '), q.tipo);
+  if(tipo===null) return;
+  const nombre=prompt('Nombre o identificación (opcional):', q.nombre)||'';
+  const marca=prompt('Marca (opcional):', q.marca)||'';
+  const modelo=prompt('Modelo (opcional):', q.modelo)||'';
+  const serie=prompt('Serie (opcional):', q.serie)||'';
+  setSyncState('saving');
+  try{
+    const fila={sucursal:sucFinal,tipo:tipo.trim(),nombre:nombre.trim()||null,marca:marca.trim()||null,
+      modelo:modelo.trim()||null,serie:serie.trim()||null};
+    if(eqCur){
+      const {error}=await sb.from('equipos').update(fila).eq('id',eqCur._id);
+      if(error)throw error;
+      Object.assign(eqCur,{sucursal:fila.sucursal,tipo:fila.tipo,nombre:fila.nombre||'',marca:fila.marca||'',modelo:fila.modelo||'',serie:fila.serie||''});
+    } else {
+      fila.creado_por=currentUser||null;
+      const {data,error}=await sb.from('equipos').insert(fila).select();
+      if(error)throw error;
+      state.equipos.push({_id:data[0].id,sucursal:fila.sucursal,tipo:fila.tipo,nombre:fila.nombre||'',
+        marca:fila.marca||'',modelo:fila.modelo||'',serie:fila.serie||'',instalacion:'',activo:true,notas:''});
+    }
+    setSyncState('ok'); toast('Equipo guardado',true); renderInventario();
+  }catch(e){ console.error(e); setSyncState('error'); toast('NO se guardó',false); }
+}
+
+/* ===================== ANÁLISIS (BI) =====================
+   Junta en un solo sitio lo que hace falta para decidir: qué banca deja más,
+   cuál menos, cómo va el mes contra el anterior, en qué se va el dinero y
+   hacia dónde apunta el año.
+
+   De dónde salen los números:
+   · Ingresos  → movimientos tipo 'income', por banca y renglón (Deportiva,
+                 Virtuales, Máquinas, PinBet, Otros). Es el dato diario.
+   · Gastos    → cuadre_banca_gasto, que es el libro real de gastos por banca.
+                 El renglón 'Administración' con origen 'prorrateo' es la parte
+                 de la oficina repartida; se puede incluir o no. */
+
+let anDesdeCur='', anHastaCur='';
+
+function mesClave(anio,mes){ return anio+'-'+String(mes).padStart(2,'0'); }
+function mesesDelRango(){
+  if(!anDesdeCur||!anHastaCur) return [];
+  const [a1,m1]=anDesdeCur.split('-').map(Number), [a2,m2]=anHastaCur.split('-').map(Number);
+  const out=[];
+  let a=a1, m=m1, guard=0;
+  while((a<a2||(a===a2&&m<=m2)) && guard++<120){ out.push({anio:a,mes:m,clave:mesClave(a,m)}); m++; if(m>12){m=1;a++;} }
+  return out;
+}
+function bancasActivas(){ return sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false)).map(b=>b.name); }
+function anIncluyeProrrateo(){ const el=document.getElementById('anProrrateo'); return !el||el.checked; }
+
+/* Ingresos de una banca en un mes, abiertos por renglón. */
+function anIngresos(branch, anio, mes){
+  const r={total:0, cats:{}};
+  state.txns.forEach(t=>{
+    if(t.type!=='income'||t.branch!==branch) return;
+    const d=new Date(monthDate(t)+'T00:00:00');
+    if(d.getFullYear()!==anio||d.getMonth()+1!==mes) return;
+    const c=t.category||'Otros';
+    r.cats[c]=(r.cats[c]||0)+t.amount;
+    r.total+=t.amount;
+  });
+  return r;
+}
+/* Gastos de una banca en un mes, abiertos por categoría. */
+function anGastos(branch, anio, mes){
+  const r={total:0, cats:{}, prorrateo:0};
+  const inclPro=anIncluyeProrrateo();
+  state.cbGastos.forEach(g=>{
+    if(g.sucursal!==branch||g.anio!==anio||g.mes!==mes) return;
+    const esPro = g.origen==='prorrateo';
+    if(esPro){ r.prorrateo+=g.monto; if(!inclPro) return; }
+    const c=g.categoria||'Otros';
+    r.cats[c]=(r.cats[c]||0)+g.monto;
+    r.total+=g.monto;
+  });
+  return r;
+}
+/* Una fila banca × mes. */
+function anCelda(branch, anio, mes){
+  const i=anIngresos(branch,anio,mes), g=anGastos(branch,anio,mes);
+  const res=i.total-g.total;
+  return {ingresos:i.total, catsIng:i.cats, gastos:g.total, catsGas:g.cats, prorrateo:g.prorrateo,
+          resultado:res, margen: i.total>0 ? res/i.total : null};
+}
+/* Agrega todo el rango: por banca, por mes, por renglón y por categoría de gasto. */
+function anDatos(){
+  const meses=mesesDelRango(), bancas=bancasActivas();
+  const porBanca={}, porMes={}, renglones={}, gastosCat={};
+  let tIng=0, tGas=0;
+  bancas.forEach(b=>porBanca[b]={ingresos:0,gastos:0,resultado:0,meses:{}});
+  meses.forEach(mm=>porMes[mm.clave]={ingresos:0,gastos:0,resultado:0,anio:mm.anio,mes:mm.mes,sinGastos:true});
+  bancas.forEach(b=>{
+    meses.forEach(mm=>{
+      const c=anCelda(b,mm.anio,mm.mes);
+      porBanca[b].ingresos+=c.ingresos; porBanca[b].gastos+=c.gastos; porBanca[b].resultado+=c.resultado;
+      porBanca[b].meses[mm.clave]=c;
+      porMes[mm.clave].ingresos+=c.ingresos; porMes[mm.clave].gastos+=c.gastos; porMes[mm.clave].resultado+=c.resultado;
+      if(c.gastos>0) porMes[mm.clave].sinGastos=false;
+      Object.keys(c.catsIng).forEach(k=>renglones[k]=(renglones[k]||0)+c.catsIng[k]);
+      Object.keys(c.catsGas).forEach(k=>gastosCat[k]=(gastosCat[k]||0)+c.catsGas[k]);
+      tIng+=c.ingresos; tGas+=c.gastos;
+    });
+  });
+  bancas.forEach(b=>{ const x=porBanca[b]; x.margen = x.ingresos>0 ? x.resultado/x.ingresos : null; });
+  return {meses,bancas,porBanca,porMes,renglones,gastosCat,
+          totIngresos:tIng, totGastos:tGas, totResultado:tIng-tGas,
+          margen: tIng>0 ? (tIng-tGas)/tIng : null};
+}
+/* El mismo rango, corrido hacia atrás, para comparar. */
+function anDatosPrevios(){
+  const meses=mesesDelRango(); if(!meses.length) return null;
+  const n=meses.length;
+  const d0=new Date(meses[0].anio, meses[0].mes-1-n, 1);
+  const d1=new Date(meses[0].anio, meses[0].mes-1-1, 1);
+  const de=anDesdeCur, ha=anHastaCur;
+  anDesdeCur=mesClave(d0.getFullYear(),d0.getMonth()+1);
+  anHastaCur=mesClave(d1.getFullYear(),d1.getMonth()+1);
+  const prev=anDatos();
+  anDesdeCur=de; anHastaCur=ha;
+  return prev;
+}
+
+/* ---------- Apertura y rangos ---------- */
+function openAnalisis(){
+  if(!puedeVer('cuadre')){ toast('No tienes acceso a esta sección.',false); return; }
+  if(!moduloListo()) return;
+  showOnlyView('view-analisis');
+  if(!anDesdeCur) anRango('anio'); else renderAnalisis();
+}
+function anRango(tipo){
+  const h=new Date();
+  let d;
+  if(tipo==='anio'){ d=new Date(h.getFullYear(),0,1); }
+  else if(tipo==='3m'){ d=new Date(h.getFullYear(),h.getMonth()-2,1); }
+  else if(tipo==='6m'){ d=new Date(h.getFullYear(),h.getMonth()-5,1); }
+  else { d=new Date(h.getFullYear(),h.getMonth(),1); }
+  document.getElementById('anDesde').value=mesClave(d.getFullYear(),d.getMonth()+1);
+  document.getElementById('anHasta').value=mesClave(h.getFullYear(),h.getMonth()+1);
+  document.querySelectorAll('.an-quick').forEach(b=>b.classList.remove('on'));
+  const idx={anio:0,'3m':1,'6m':2,mes:3}[tipo];
+  const btns=document.querySelectorAll('.an-quick');
+  if(btns[idx]) btns[idx].classList.add('on');
+  renderAnalisis();
+}
+
+function anPct(a,b){
+  if(!b||Math.abs(b)<1) return '';
+  const p=Math.round((a-b)/Math.abs(b)*100);
+  const up=p>=0;
+  return `<span style="font-size:11px;font-weight:800;color:${up?'#4cd6a0':'#f08980'};">${up?'▲':'▼'} ${Math.abs(p)}%</span>`;
+}
+function colorRes(v){ return v<0?'var(--red)':'#1f9d6b'; }
+
+/* ---------- Gráfico de barras por mes ---------- */
+function anGraficoBarras(meses, porMes){
+  if(!meses.length) return '';
+  const W=Math.max(300, meses.length*62), H=180, pad=26, base=H-24;
+  const vals=meses.map(m=>[porMes[m.clave].ingresos, porMes[m.clave].gastos]).flat().concat([0]);
+  const max=Math.max(...vals.map(Math.abs))||1;
+  const esc=v=>(v/max)*(base-pad);
+  const anchoGrupo=(W-16)/meses.length, bw=Math.min(16, anchoGrupo/3);
+  let barras='', linea=[], etiquetas='';
+  meses.forEach((m,i)=>{
+    const x=8+i*anchoGrupo+anchoGrupo/2;
+    const ing=porMes[m.clave].ingresos, gas=porMes[m.clave].gastos, res=porMes[m.clave].resultado;
+    barras+=`<rect x="${x-bw-2}" y="${base-esc(ing)}" width="${bw}" height="${Math.max(1,esc(ing))}" rx="2" fill="#0086AD"/>`;
+    barras+=`<rect x="${x+2}" y="${base-esc(gas)}" width="${bw}" height="${Math.max(1,esc(gas))}" rx="2" fill="#e07a2b"/>`;
+    linea.push([x, base-esc(res)]);
+    etiquetas+=`<text x="${x}" y="${H-8}" font-size="9" fill="#7d909e" text-anchor="middle" font-weight="700">${MONTHS_SHORT[m.mes-1]}</text>`;
+  });
+  const path=linea.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const puntos=linea.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3" fill="#101820" stroke="#fff" stroke-width="1.5"/>`).join('');
+  return `<div class="panel" style="padding:14px 10px;margin-bottom:12px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:0 5px 8px;">
+      <span style="font-size:13px;font-weight:800;">Mes a mes</span>
+      <span style="font-size:10px;color:var(--muted);"><b style="color:#0086AD;">■</b> Ingresos <b style="color:#e07a2b;">■</b> Gastos <b>—</b> Resultado</span>
+    </div>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+      <svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:${W}px;height:${H}px;display:block;">
+        <line x1="0" y1="${base}" x2="${W}" y2="${base}" stroke="#e3e9ec" stroke-width="1"/>
+        ${barras}<path d="${path}" fill="none" stroke="#101820" stroke-width="2"/>${puntos}${etiquetas}
+      </svg>
+    </div>
+  </div>`;
+}
+
+/* ---------- Barras horizontales (renglones y gastos) ---------- */
+function anBarrasH(titulo, obj, color, prevObj){
+  const items=Object.entries(obj).filter(([,v])=>Math.abs(v)>0.5).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1]));
+  if(!items.length) return '';
+  const total=items.reduce((s,[,v])=>s+Math.abs(v),0)||1;
+  const max=Math.max(...items.map(([,v])=>Math.abs(v)))||1;
+  return `<div class="panel" style="padding:14px;margin-bottom:12px;">
+    <div style="font-size:13px;font-weight:800;margin-bottom:10px;">${titulo}</div>
+    ${items.map(([k,v])=>{
+      const pct=Math.abs(v)/total*100;
+      const ancho=Math.abs(v)/max*100;
+      const prev=prevObj?(prevObj[k]||0):null;
+      return `<div style="margin-bottom:9px;">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;font-size:12px;margin-bottom:3px;gap:8px;">
+          <span style="font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${k}</span>
+          ${prev!==null?anPct(v,prev):''}
+          <span style="font-weight:800;color:${v<0?'var(--red)':'var(--ink)'};white-space:nowrap;">RD$${fmt(v)}</span>
+          <span style="color:var(--muted);font-size:10.5px;width:34px;text-align:right;">${pct.toFixed(0)}%</span>
+        </div>
+        <div style="height:6px;background:#f2f5f6;border-radius:3px;overflow:hidden;"><div style="height:100%;width:${ancho}%;background:${color};border-radius:3px;"></div></div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+/* ---------- Render principal ---------- */
+function renderAnalisis(){
+  anDesdeCur=document.getElementById('anDesde').value;
+  anHastaCur=document.getElementById('anHasta').value;
+  if(!anDesdeCur||!anHastaCur) return;
+  if(anDesdeCur>anHastaCur){ const t=anDesdeCur; anDesdeCur=anHastaCur; anHastaCur=t;
+    document.getElementById('anDesde').value=anDesdeCur; document.getElementById('anHasta').value=anHastaCur; }
+  const D=anDatos(), P=anDatosPrevios();
+
+  // aviso: meses sin gastos cargados distorsionan la rentabilidad
+  const sinGastos=D.meses.filter(m=>D.porMes[m.clave].sinGastos && D.porMes[m.clave].ingresos>0);
+  document.getElementById('anAviso').innerHTML = sinGastos.length
+    ? `<div style="background:#fdf6e8;border:1px solid #ecd9ac;border-radius:11px;padding:11px 13px;margin-bottom:12px;">
+        <div style="font-size:12.5px;font-weight:800;color:#a37416;">${sinGastos.length} mes(es) sin gastos cargados</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.45;">${sinGastos.map(m=>MONTHS_SHORT[m.mes-1]+' '+m.anio).join(' · ')} tienen ingresos pero ningún gasto en el Cuadre Mensual, así que aparecen más rentables de lo que son. Cárgalos antes de comparar.</div>
+      </div>` : '';
+
+  // hero
+  document.getElementById('anHero').innerHTML=`
+    <div style="background:linear-gradient(135deg,#101820,#16242f);border-radius:15px;padding:16px;margin-bottom:12px;color:#fff;">
+      <div style="display:flex;justify-content:space-between;align-items:start;">
+        <div style="font-size:11px;color:#7d909e;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Resultado · ${D.meses.length} mes(es)</div>
+        ${P?anPct(D.totResultado,P.totResultado):''}
+      </div>
+      <div style="font-size:27px;font-weight:800;color:${D.totResultado<0?'#f08980':'#4cd6a0'};margin:2px 0 4px;">RD$${fmt(D.totResultado)}</div>
+      <div style="font-size:11.5px;color:#9fb1bd;margin-bottom:12px;">Margen ${D.margen!==null?(D.margen*100).toFixed(1)+'%':'—'}${P&&P.margen!==null?` · antes ${(P.margen*100).toFixed(1)}%`:''}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px;">
+        <div style="background:rgba(255,255,255,.07);border-radius:8px;padding:9px 11px;">
+          <div style="color:#9fb1bd;font-weight:600;display:flex;justify-content:space-between;">Ingresos ${P?anPct(D.totIngresos,P.totIngresos):''}</div>
+          <div style="font-size:14px;font-weight:800;">RD$${fmt(D.totIngresos)}</div></div>
+        <div style="background:rgba(255,255,255,.07);border-radius:8px;padding:9px 11px;">
+          <div style="color:#9fb1bd;font-weight:600;display:flex;justify-content:space-between;">Gastos ${P?anPct(D.totGastos,P.totGastos):''}</div>
+          <div style="font-size:14px;font-weight:800;color:#f0b46a;">RD$${fmt(D.totGastos)}</div></div>
+      </div>
+    </div>`;
+
+  document.getElementById('anGrafico').innerHTML=anGraficoBarras(D.meses, D.porMes);
+
+  // ranking de bancas
+  const rank=D.bancas.map(b=>Object.assign({banca:b},D.porBanca[b]))
+    .filter(r=>r.ingresos!==0||r.gastos!==0)
+    .sort((a,b)=>b.resultado-a.resultado);
+  document.getElementById('anRanking').innerHTML = rank.length ? `
+    <div class="panel" style="padding:14px;margin-bottom:12px;">
+      <div style="font-size:13px;font-weight:800;margin-bottom:4px;">Rentabilidad por banca</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">De la que más deja a la que menos${anIncluyeProrrateo()?' · con Administración prorrateada':' · sin cargar Administración'}</div>
+      <table class="an-tbl"><thead><tr><th>Banca</th><th>Ingresos</th><th>Gastos</th><th>Resultado</th><th>Margen</th></tr></thead><tbody>
+      ${rank.map((r,i)=>{
+        const medalla = i===0?'🥇' : (i===rank.length-1?'🔻':'');
+        const prevR = P&&P.porBanca[r.banca] ? P.porBanca[r.banca].resultado : null;
+        return `<tr>
+          <td>${medalla} ${r.banca.replace('PRIME SPORT','PS')}${prevR!==null?' '+anPct(r.resultado,prevR):''}</td>
+          <td>${fmt(r.ingresos)}</td>
+          <td style="color:var(--muted);">${fmt(r.gastos)}</td>
+          <td style="font-weight:800;color:${colorRes(r.resultado)};">${fmt(r.resultado)}</td>
+          <td style="color:${r.margen!==null?colorRes(r.margen):'var(--muted)'};font-weight:700;">${r.margen!==null?(r.margen*100).toFixed(0)+'%':'—'}</td>
+        </tr>`;}).join('')}
+      <tr style="border-top:2px solid var(--navy);"><td>TOTAL</td><td>${fmt(D.totIngresos)}</td><td style="color:var(--muted);">${fmt(D.totGastos)}</td>
+        <td style="font-weight:800;color:${colorRes(D.totResultado)};">${fmt(D.totResultado)}</td>
+        <td style="font-weight:700;">${D.margen!==null?(D.margen*100).toFixed(0)+'%':'—'}</td></tr>
+      </tbody></table>
+    </div>` : '<div class="empty-hint" style="padding:26px;">No hay datos en este rango.</div>';
+
+  // matriz banca x mes
+  if(D.meses.length>1 && rank.length){
+    const maxAbs=Math.max(...rank.map(r=>Math.max(...D.meses.map(m=>Math.abs(r.meses[m.clave].resultado)))),1);
+    document.getElementById('anMatriz').innerHTML=`
+      <div class="panel" style="padding:14px 10px;margin-bottom:12px;">
+        <div style="font-size:13px;font-weight:800;padding:0 4px 4px;">Resultado banca por mes</div>
+        <div style="font-size:11px;color:var(--muted);padding:0 4px 9px;">Verde arriba de cero, rojo abajo. Mientras más intenso, más grande.</div>
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+        <table class="an-tbl" style="min-width:${120+D.meses.length*58}px;">
+          <thead><tr><th>Banca</th>${D.meses.map(m=>`<th>${MONTHS_SHORT[m.mes-1]}</th>`).join('')}</tr></thead>
+          <tbody>${rank.map(r=>`<tr><td>${r.banca.replace('PRIME SPORT','PS')}</td>${D.meses.map(m=>{
+            const v=r.meses[m.clave].resultado;
+            const inten=Math.min(0.85, Math.abs(v)/maxAbs);
+            const bg = Math.abs(v)<1 ? 'transparent' : (v>0?`rgba(31,157,107,${inten*0.32})`:`rgba(211,86,75,${inten*0.32})`);
+            return `<td style="background:${bg};font-weight:${Math.abs(v)>maxAbs*0.5?'800':'600'};color:${Math.abs(v)<1?'var(--muted)':colorRes(v)};">${Math.abs(v)<1?'—':fmt(v)}</td>`;
+          }).join('')}</tr>`).join('')}</tbody>
+        </table></div>
+      </div>`;
+  } else { document.getElementById('anMatriz').innerHTML=''; }
+
+  document.getElementById('anRenglones').innerHTML=anBarrasH('Ingresos por renglón', D.renglones, '#0086AD', P?P.renglones:null);
+  document.getElementById('anGastos').innerHTML=anBarrasH('En qué se va el dinero', D.gastosCat, '#e07a2b', P?P.gastosCat:null);
+  document.getElementById('anProyeccion').innerHTML=anProyeccionHtml(D);
+}
+
+/* ---------- Proyección ----------
+   Tendencia lineal simple (mínimos cuadrados) sobre los meses COMPLETOS del
+   rango. El mes en curso se excluye porque va a medias y tiraría la línea. */
+function anProyeccionHtml(D){
+  const hoy=new Date();
+  const completos=D.meses.filter(m=>!(m.anio===hoy.getFullYear()&&m.mes===hoy.getMonth()+1))
+                         .filter(m=>D.porMes[m.clave].ingresos!==0||D.porMes[m.clave].gastos!==0);
+  if(completos.length<3) return `<div class="panel" style="padding:14px;margin-bottom:12px;">
+      <div style="font-size:13px;font-weight:800;margin-bottom:4px;">Proyección</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.5;">Hacen falta al menos 3 meses cerrados en el rango para trazar una tendencia. Ahora hay ${completos.length}.</div></div>`;
+  const ys=completos.map(m=>D.porMes[m.clave].resultado);
+  const n=ys.length;
+  const sx=(n-1)*n/2, sxx=(n-1)*n*(2*n-1)/6;
+  const sy=ys.reduce((a,b)=>a+b,0), sxy=ys.reduce((a,b,i)=>a+b*i,0);
+  const den=n*sxx-sx*sx;
+  const pend=den?((n*sxy-sx*sy)/den):0, orig=(sy-pend*sx)/n;
+  const prom=sy/n;
+  const prox=orig+pend*n;
+  // cuánto faltaría para cerrar el año al ritmo actual
+  const ultimo=completos[completos.length-1];
+  const mesesRestantes=Math.max(0, 12-ultimo.mes);
+  let acum=0;
+  for(let k=0;k<mesesRestantes;k++) acum+=orig+pend*(n+k);
+  const cierreAnio=sy+acum;
+  const dir = pend>0?'subiendo':(pend<0?'bajando':'plana');
+  const col = pend>0?'#1f9d6b':(pend<0?'var(--red)':'var(--muted)');
+  return `<div class="panel" style="padding:14px;margin-bottom:12px;">
+    <div style="font-size:13px;font-weight:800;margin-bottom:4px;">Proyección</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:11px;line-height:1.45;">Tendencia sobre ${n} mes(es) cerrado(s). Es una línea recta sobre lo que ya pasó, no una bola de cristal: sirve para ver el rumbo, no para dar por hecho el número.</div>
+    <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:12.5px;border-bottom:1px solid #f2f5f6;"><span style="color:var(--muted);">Promedio mensual</span><span style="font-weight:800;color:${colorRes(prom)};">RD$${fmt(prom)}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:12.5px;border-bottom:1px solid #f2f5f6;"><span style="color:var(--muted);">Tendencia</span><span style="font-weight:800;color:${col};">${dir} RD$${fmt(Math.abs(pend))} por mes</span></div>
+    <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:12.5px;border-bottom:1px solid #f2f5f6;"><span style="color:var(--muted);">Próximo mes, al ritmo actual</span><span style="font-weight:800;color:${colorRes(prox)};">RD$${fmt(prox)}</span></div>
+    ${mesesRestantes?`<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:12.5px;"><span style="color:var(--muted);">Cierre de ${ultimo.anio} si sigue así</span><span style="font-weight:800;color:${colorRes(cierreAnio)};">RD$${fmt(cierreAnio)}</span></div>`:''}
+  </div>`;
+}
+
+function exportAnalisisCSV(){
+  const D=anDatos();
+  if(!D.bancas.length){ toast('No hay datos que exportar',false); return; }
+  const filas=[['Banca','Mes','Ingresos','Gastos','Resultado','Margen %']];
+  D.bancas.forEach(b=>D.meses.forEach(m=>{
+    const c=D.porBanca[b].meses[m.clave];
+    if(!c.ingresos&&!c.gastos) return;
+    filas.push([b, MONTHS[m.mes-1]+' '+m.anio, c.ingresos.toFixed(2), c.gastos.toFixed(2),
+                c.resultado.toFixed(2), c.margen!==null?(c.margen*100).toFixed(1):'']);
+  }));
+  const csv=filas.map(r=>r.map(x=>/[",;\n]/.test(String(x))?'"'+String(x).replace(/"/g,'""')+'"':x).join(',')).join('\n');
+  const url=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
+  const a=document.createElement('a');
+  a.href=url; a.download=`analisis_${anDesdeCur}_a_${anHastaCur}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+  toast('CSV descargado',true);
+}
+
 /* ===================== REVISIÓN SEMANAL =====================
    Dos cosas distintas en una sola pantalla:
    1) El ARQUEO: contar el efectivo de Oficina y compararlo con el sistema.
@@ -4427,6 +5758,61 @@ function openMaqGlobal(){
 }
 
 // Compute the financial breakdown for a given branch in a given month
+/* Qué falta por cargar este mes.
+   Antes, si faltaba la lectura de una ruleta pero el POG de esa banca sí estaba,
+   el Bruto salía bajo y nada lo avisaba: el aviso solo aparecía cuando la banca
+   quedaba en cero. Esto lo revisa máquina por máquina. */
+function maqFaltantes(mes, anio){
+  const bancas=sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false)).map(b=>b.name);
+  const lecturasFaltan=[], pogFaltan=[];
+  state.maquinas.filter(m=>m.activa!==false&&m.tipo!=='pog'&&bancas.includes(m.branch)).forEach(m=>{
+    const tiene=state.lecturas.some(l=>{
+      if(l.maqId!==m._id) return false;
+      const d=new Date(l.date+'T00:00:00');
+      return d.getMonth()+1===mes && d.getFullYear()===anio;
+    });
+    if(!tiene) lecturasFaltan.push(m);
+  });
+  bancas.forEach(b=>{
+    const tienePog=state.maquinas.some(m=>m.branch===b&&m.tipo==='pog'&&m.activa!==false);
+    if(!tienePog) return;
+    const row=state.maqPog.find(p=>p.anio===anio&&p.mes===mes&&p.sucursal===b);
+    if(!row||(!row.balance&&!row.venta)) pogFaltan.push(b);
+  });
+  return {lecturasFaltan, pogFaltan};
+}
+
+function renderMaqPendientes(mes, anio){
+  const el=document.getElementById('maqGlobalPendientes');
+  if(!el) return;
+  const hoy=new Date();
+  const esMesEnCurso = (mes===hoy.getMonth()+1 && anio===hoy.getFullYear());
+  const {lecturasFaltan, pogFaltan}=maqFaltantes(mes, anio);
+  const total=lecturasFaltan.length+pogFaltan.length;
+  if(!total){
+    el.innerHTML=`<div class="panel" style="padding:11px 13px;margin-bottom:12px;border-left:3px solid #1f9d6b;">
+      <div style="font-size:12.5px;font-weight:700;color:#1f9d6b;">✅ ${MONTHS[mes-1]} está completo</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px;">Todas las máquinas tienen lectura y todas las bancas con POG tienen su balance.</div>
+    </div>`;
+    return;
+  }
+  const col=esMesEnCurso?'#0086AD':'#a37416';
+  const fondo=esMesEnCurso?'#eef6fb':'#fdf6e8';
+  el.innerHTML=`<div class="panel" style="padding:12px 13px;margin-bottom:12px;border-left:3px solid ${col};background:${fondo};">
+    <div style="font-size:12.5px;font-weight:800;color:${col};margin-bottom:3px;">Falta cargar ${total} dato(s) de ${MONTHS[mes-1]}</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.45;">${esMesEnCurso
+      ? 'El mes está en curso, es normal que falten.'
+      : 'Mientras falten, el Bruto de esas bancas sale por debajo de lo real y eso baja el Cuadre Mensual.'}</div>
+    ${lecturasFaltan.map(m=>`<div onclick="openLectura('${m._id}')" style="display:flex;align-items:center;gap:8px;padding:7px 9px;background:#fff;border:1px solid var(--line);border-radius:8px;margin-bottom:5px;cursor:pointer;">
+      <span style="flex:1;font-size:12px;"><b>${m.name}</b> <span style="color:var(--muted);">· ${m.branch.replace('PRIME SPORT','PS')} · sin lectura</span></span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" style="width:14px;height:14px;"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>`).join('')}
+    ${pogFaltan.map(b=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 9px;background:#fff;border:1px solid var(--line);border-radius:8px;margin-bottom:5px;">
+      <span style="flex:1;font-size:12px;"><b>POG ${b.replace('PRIME SPORT','PS')}</b> <span style="color:var(--muted);">· sin balance del mes</span></span>
+    </div>`).join('')}
+  </div>`;
+}
+
 function maqGlobalRow(branch, mes, anio){
   // Ruletas = sum of incomes from all machines (Bergman + Ruleta) of this branch for the month
   const machinesActive=state.maquinas.filter(m=>m.branch===branch && m.activa!==false && m.tipo!=='pog');
@@ -4494,6 +5880,8 @@ function renderMaqGlobal(){
         </div>
       </div>
     </div>`;
+
+  renderMaqPendientes(maqGlobalMesCur, maqGlobalAnioCur);
 
   // Alerts: bancas con Neto Real negativo, sin lecturas, comisión muy alta vs neto
   const alerts=[];
@@ -5487,19 +6875,29 @@ function exportCuadreBancasWhatsApp(){
 const DENOMS_DR=[2000,1000,500,200,100,50,25,10,5,1];
 let dgFechaCur=null;
 
-function openDesglose(fecha){
+/* Dos usos del mismo conteo:
+   'general' — desde el inicio: cuadra el FONDO DE OFICINA.
+   'corte'   — desde el Corte Diario: cuadra lo RECOLECTADO de esa jornada. */
+let dgModo='general';
+
+function openDesglose(fecha, modo){
   if(!moduloListo()) return;
   showOnlyView('view-desglose');
-  dgFechaCur = fecha || corteDateVal || yesterdayISO();
+  dgModo = modo || 'general';
+  dgFechaCur = fecha || (dgModo==='corte' ? (corteDateVal||yesterdayISO()) : todayISO());
   document.getElementById('dgFecha').value=dgFechaCur;
   document.getElementById('dgNota').value='';
+  const esCorte = dgModo==='corte';
+  document.getElementById('dgTitulo').textContent = esCorte ? 'Desglose del Corte' : 'Desglose de Efectivo';
+  document.getElementById('dgSubtitulo').textContent = esCorte ? 'Cuadrar lo recolectado de la jornada' : 'Cuadrar el fondo de Oficina';
+  document.getElementById('dgFechaLabel').textContent = esCorte ? 'Jornada del corte' : 'Fecha del conteo · se compara con el fondo de Oficina a ese día';
   renderDesglose();
 }
 
 function renderDesglose(){
   dgFechaCur=document.getElementById('dgFecha').value;
   // Load existing desglose for this date, if any
-  const existing=state.desgloses.find(d=>d.fecha===dgFechaCur);
+  const existing=state.desgloses.find(d=>d.fecha===dgFechaCur && (d.modo||'corte')===dgModo);
   const denoms=existing?existing.denoms:{};
   // Render denomination inputs
   const rows=DENOMS_DR.map(den=>{
@@ -5525,6 +6923,14 @@ function renderDesglose(){
   calcDesglose();
 }
 
+/* Contra qué se compara el conteo, según el modo. */
+function dgEsperado(){
+  if(dgModo==='corte'){
+    return state.txns.filter(t=>t.type==='collect'&&((t.jornada||t.date)===dgFechaCur)).reduce((s,t)=>s+t.moved,0);
+  }
+  return saldoCajaAl(officeName(), dgFechaCur);
+}
+
 function calcDesglose(){
   let total=0;
   DENOMS_DR.forEach(den=>{
@@ -5536,21 +6942,29 @@ function calcDesglose(){
     if(subEl) subEl.textContent='RD$'+fmt(sub);
   });
   document.getElementById('dgTotalContado').textContent='RD$'+fmt(total);
-  // Comparación con lo recolectado (movido) del corte de esa fecha
-  const esperado=state.txns.filter(t=>t.type==='collect'&&(t.jornada===dgFechaCur||(!t.jornada&&t.date===dgFechaCur))).reduce((s,t)=>s+t.moved,0);
+  // Billetes y monedas por separado, útil al entregar el efectivo
+  const enBilletes=DENOMS_DR.filter(d=>d>25).reduce((s,d)=>{const el=document.getElementById('dg_'+d);return s+(el?(parseInt(el.value)||0)*d:0);},0);
+  const enMonedas=total-enBilletes;
+
+  const esperado=dgEsperado();
   const dif=total-esperado;
   const compDiv=document.getElementById('dgComparacion');
   let color, label, icon;
-  if(Math.abs(dif)<1){ color='var(--green)'; label='Cuadra exacto'; icon='✅'; }
-  else if(dif>0){ color='#d9822b'; label='Sobra efectivo'; icon='⚠️'; }
-  else { color='var(--red)'; label='Falta efectivo'; icon='🔻'; }
+  if(Math.abs(dif)<1){ color='var(--green)'; label='Cuadra'; icon='✅'; }
+  else if(dif>0){ color='#a37416'; label='Sobra en caja'; icon='⚠️'; }
+  else { color='var(--red)'; label='Falta en caja'; icon='🔻'; }
   compDiv.innerHTML=`<div class="panel" style="padding:14px;margin-bottom:14px;">
-    <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;"><span style="color:var(--muted);">Total recolectado (esperado)</span><span style="font-weight:700;color:var(--ink);">RD$${fmt(esperado)}</span></div>
-    <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;"><span style="color:var(--muted);">Total contado</span><span style="font-weight:700;color:var(--ink);">RD$${fmt(total)}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;"><span style="color:var(--muted);">En billetes</span><span style="font-weight:600;color:var(--muted);">RD$${fmt(enBilletes)}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px dashed var(--line);margin-bottom:5px;"><span style="color:var(--muted);">En monedas</span><span style="font-weight:600;color:var(--muted);">RD$${fmt(enMonedas)}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;"><span style="color:var(--muted);">${dgModo==='corte'?'Recolectado en la jornada':'Fondo de Oficina según el sistema'}</span><span style="font-weight:700;color:var(--ink);">RD$${fmt(esperado)}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;"><span style="color:var(--muted);">Efectivo contado</span><span style="font-weight:700;color:var(--ink);">RD$${fmt(total)}</span></div>
     <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0 2px;margin-top:5px;border-top:1px dashed var(--line);">
       <span style="font-size:13px;font-weight:800;color:${color};">${icon} ${label}</span>
       <span style="font-size:16px;font-weight:800;color:${color};">RD$${fmt(Math.abs(dif))}</span>
     </div>
+    ${Math.abs(dif)>=1?`<div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.45;">${dgModo==='corte'
+      ? 'Compara con lo que el mensajero trajo de las bancas en esta jornada.'
+      : 'Revisa los movimientos de Oficina de los últimos días. Si el conteo es correcto, la diferencia es algo que entró o salió sin registrarse.'}</div>`:''}
   </div>`;
 }
 
@@ -5563,20 +6977,36 @@ async function guardarDesglose(){
     if(cant>0) denoms[den]=cant;
   });
   let total=0; Object.keys(denoms).forEach(den=>{ total+=denoms[den]*parseInt(den); });
-  const esperado=state.txns.filter(t=>t.type==='collect'&&(t.jornada===dgFechaCur||(!t.jornada&&t.date===dgFechaCur))).reduce((s,t)=>s+t.moved,0);
+  if(!total){ toast('Cuenta el efectivo antes de guardar',false); return; }
+  const esperado=dgEsperado();
   const dif=total-esperado;
   const nota=document.getElementById('dgNota').value.trim();
+  const contra = dgModo==='corte' ? 'Recolectado en la jornada' : 'Fondo de Oficina según el sistema';
+  const aviso = Math.abs(dif)<1 ? '✅ Cuadra.' : (dif>0?`Sobran RD$${fmt(dif)}.`:`Faltan RD$${fmt(Math.abs(dif))}.`);
+  if(!confirm(`Conteo del ${dgFechaCur}\n\n${contra}: RD$${fmt(esperado)}\nEfectivo contado: RD$${fmt(total)}\n${aviso}\n\n¿Guardar?`)) return;
   setSyncState('saving');
   try{
-    const row={fecha:dgFechaCur,denominaciones:denoms,total_contado:total,total_esperado:esperado,diferencia:dif,nota:nota||null,creado_por:currentUser||null};
-    const {data,error}=await sb.from('desglose_efectivo').upsert(Object.assign({consorcio_id:idConsorcio()},row),{onConflict:'consorcio_id,fecha'}).select();
+    const row={fecha:dgFechaCur,modo:dgModo,denominaciones:denoms,total_contado:total,total_esperado:esperado,diferencia:dif,nota:nota||null,creado_por:currentUser||null};
+    const {data,error}=await sb.from('desglose_efectivo').upsert(Object.assign({consorcio_id:idConsorcio()},row),{onConflict:'consorcio_id,fecha,modo'}).select();
     if(error)throw error;
     // Update local state
-    const idx=state.desgloses.findIndex(d=>d.fecha===dgFechaCur);
-    const obj={_id:data[0].id,fecha:dgFechaCur,denoms,totalContado:total,totalEsperado:esperado,diferencia:dif,nota,creadoPor:currentUser||null,creado:new Date().toISOString()};
+    const idx=state.desgloses.findIndex(d=>d.fecha===dgFechaCur && (d.modo||'corte')===dgModo);
+    const obj={_id:data[0].id,fecha:dgFechaCur,modo:dgModo,denoms,totalContado:total,totalEsperado:esperado,diferencia:dif,nota,creadoPor:currentUser||null,creado:new Date().toISOString()};
     if(idx>=0) state.desgloses[idx]=obj; else state.desgloses.push(obj);
+
+    /* Solo el conteo general vale como arqueo del fondo: queda de punto de
+       anclaje en la Revisión semanal. El del corte mide otra cosa. */
+    if(dgModo==='general'){
+      try{
+        await sb.from('arqueos_caja').upsert({
+          fecha:dgFechaCur, caja:officeName(), saldo_sistema:esperado, efectivo_real:total,
+          diferencia:dif, nota:(nota||'Contado por denominación'), creado_por:currentUser||null
+        },{onConflict:'consorcio_id,fecha,caja'});
+      }catch(e2){ console.warn('arqueo desde desglose',e2); }
+    }
+
     setSyncState('ok');
-    toast('Desglose guardado',true);
+    toast(Math.abs(dif)<1?(dgModo==='corte'?'Conteo guardado · la jornada cuadra':'Conteo guardado · el fondo cuadra'):'Conteo guardado',true);
   }catch(e){ console.error(e); setSyncState('error'); toast('Error al guardar: '+(e.message||''),false); }
 }
 
@@ -5976,7 +7406,8 @@ function calcLectura(){
   document.getElementById('lecCalc').style.display='block';
 }
 
-async function saveLectura(){
+function saveLectura(){ return conBloqueo('btnSaveLectura',_saveLectura); }
+async function _saveLectura(){
   const m=state.maquinas.find(x=>x._id===curMaqId);
   if(!m)return;
   const date=document.getElementById('lecDate').value;
@@ -5992,6 +7423,20 @@ async function saveLectura(){
   const eAc=parseFloat(document.getElementById('lecEntrada').value);
   const sAc=parseFloat(document.getElementById('lecSalida').value);
   if(isNaN(eAc)||isNaN(sAc)){ toast('Ingresa los contadores de entrada y salida',false); return; }
+
+  /* Revisiones antes de guardar. Los contadores de una máquina solo suben:
+     si bajan, o es un reset sin marcar o es un número mal digitado. */
+  const avisos=[];
+  if(!isReset && last){
+    if(eAc<prevE) avisos.push(`El contador de ENTRADA bajó: antes ${fmt(prevE)}, ahora ${fmt(eAc)}.`);
+    if(sAc<prevS) avisos.push(`El contador de SALIDA bajó: antes ${fmt(prevS)}, ahora ${fmt(sAc)}.`);
+  }
+  // ¿ya hay una lectura de esta máquina en el mismo mes?
+  const mismoMes=readingsOf(curMaqId).filter(l=>l.date.slice(0,7)===date.slice(0,7));
+  if(mismoMes.length) avisos.push(`Esta máquina ya tiene ${mismoMes.length} lectura(s) en ${MONTHS[parseInt(date.slice(5,7))-1]}.`);
+  // ¿la lectura queda fuera de orden?
+  if(last && date < last.date) avisos.push(`La fecha es anterior a la última lectura (${fmtDate(last.date)}); los contadores se comparan contra esa.`);
+
   const difE=eAc-prevE, difS=sAc-prevS;
   const benMon=difE-difS;
   const benDin=benMon*m.denom;
@@ -6004,6 +7449,19 @@ async function saveLectura(){
     ingreso=difCash*m.denom + (isReset?resetGain:0);
   } else {
     ingreso=benDin + (isReset?resetGain:0);
+  }
+
+  // ¿se sale mucho de lo que esta máquina suele producir?
+  const previos=readingsOf(curMaqId).slice(-4).map(l=>l.ingreso||0).filter(v=>v!==0);
+  if(previos.length>=2){
+    const prom=previos.reduce((a,b)=>a+b,0)/previos.length;
+    if(prom>0 && (ingreso>prom*3 || ingreso<prom/3)){
+      avisos.push(`El ingreso da RD$${fmt(ingreso)} y esta máquina viene promediando RD$${fmt(prom)}.`);
+    }
+  }
+  if(ingreso===0) avisos.push('El ingreso calculado da RD$0.');
+  if(avisos.length){
+    if(!confirm(`⚠️ Revisa antes de guardar:\n\n${avisos.map(a=>'• '+a).join('\n')}\n\nIngreso que se va a registrar: RD$${fmt(ingreso)}\n\n¿Guardar de todos modos?`)) return;
   }
 
   setSyncState('saving');
@@ -6026,8 +7484,8 @@ async function saveLectura(){
     // Machines are their own separate cuadre by default.
     if(sumar){
       const tx={id:uid(),type:'income',amount:ingreso,branch:m.branch,date,note:`Máquina ${m.name}`,category:'Máquinas',subtype:m.name};
-      state.txns.push(tx); cloudInsertTxn(tx);
-      toast('Lectura guardada y sumada al cuadre diario',true);
+      if(await guardarTxn(tx)) toast('Lectura guardada y sumada al cuadre diario',true);
+      else toast('Lectura guardada, pero NO se pudo sumar al cuadre diario',false);
     } else {
       setSyncState('ok');
       toast('Lectura guardada (cuadre de máquinas)',true);
@@ -7626,11 +9084,13 @@ async function startEnroll(){
 const MODULOS = [
   ['operaciones','Operaciones','Registrar ingresos, gastos y salidas'],
   ['corte','Corte Diario','Recolección del día'],
-  ['desglose','Desglose de Efectivo','Conteo de billetes'],
+  ['desglose','Desglose de Efectivo','Cuadrar el fondo de Oficina'],
   ['cuadre','Cuadre Mensual','Matriz de bancas y oficina'],
   ['cierremes','Cierre de Mes','Cerrar mes y arrastrar saldo'],
   ['maquinas','Máquinas','Ruletas y lecturas'],
   ['virtuales','Virtuales','Resumen y reparto'],
+  ['empleados','Empleados y Nómina','Fichas, nómina quincenal y préstamos'],
+  ['equipos','Equipos y Mantenimiento','Inventario y servicios por banca'],
   ['ajustes','Ajustes','Bancas, categorías y configuración']
 ];
 const NIVELES = [['no','Sin acceso'],['ver','Solo ver'],['editar','Ver y editar']];
@@ -7662,6 +9122,8 @@ function aplicarPermisos(){
   if(bit) bit.style.display = esAdmin() ? '' : 'none';
   const rev=document.getElementById('setItemRevision');
   if(rev) rev.style.display = puedeVer('corte') ? '' : 'none';
+  const an=document.getElementById('setItemAnalisis');
+  if(an) an.style.display = puedeVer('cuadre') ? '' : 'none';
   const rt=document.getElementById('miRolTxt');
   if(rt) rt.textContent = esAdmin() ? 'Administrador' : 'Usuario';
 }
