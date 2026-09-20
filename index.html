@@ -1824,7 +1824,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       <div class="si-act" style="color:var(--amber);" onclick="doLogout()">Salir</div>
     </div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v5.2 nube · Santo Domingo, RD</div>
+  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v5.3 nube · Santo Domingo, RD</div>
 </section>
 
 <!-- NAV -->
@@ -1887,7 +1887,7 @@ window.__supabase = createClient(
 window.dispatchEvent(new Event('supabase-ready'));
 </script>
 <script>
-/* ===================== AdmBca v5.2 ===================== */
+/* ===================== AdmBca v5.3 ===================== */
 function idConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.id)||null; }catch(e){ return null; } }
 function nomConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.nombre)||'AdmBca'; }catch(e){ return 'AdmBca'; } }
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -3305,6 +3305,21 @@ async function cloudUpdateTxn(id,cambios){
   catch(e){ console.error('update txn failed',e); setSyncState('error'); return false; }
 }
 
+/* Lee un monto escrito a mano: tolera RD$, espacios y separadores de miles.
+   En República Dominicana el punto también se usa para los miles, así que
+   "4.500" se entiende como cuatro mil quinientos, no como 4 con 50. */
+function leerMonto(txt){
+  let t=String(txt).replace(/[^0-9.,\-]/g,'').trim();
+  if(!t) return NaN;
+  const neg=t.startsWith('-');
+  t=t.replace(/-/g,'');
+  if(/^\d{1,3}(\.\d{3})+$/.test(t)) t=t.replace(/\./g,'');   // 1.234.567 -> 1234567
+  else if(/^\d{1,3}(,\d{3})+(\.\d+)?$/.test(t)) t=t.replace(/,/g,''); // 1,234.56
+  else t=t.replace(/,/g,'.');                                  // 1234,56 -> 1234.56
+  const v=parseFloat(t);
+  return isNaN(v)?NaN:(neg?-v:v);
+}
+
 /* ---------- Corregir el monto de un movimiento ----------
    Antes, para arreglar una recolección mal digitada había que meter el mismo
    monto en negativo y luego el correcto, y el histórico quedaba con tres
@@ -3315,16 +3330,21 @@ async function editarMonto(id){
   if(isDayClosed(t.date)){ toast('Ese día está cerrado. Reábrelo para corregir.',false); return; }
   if(!puedeEditar('operaciones')){ toast('No tienes permiso para editar.',false); return; }
   const esCollect=t.type==='collect';
+  // Un INGRESO puede ser negativo: es el día en que la banca perdió.
+  // Una RECOLECCIÓN negativa es cobertura de la oficina hacia la banca.
+  // Los gastos y las salidas sí tienen que ser positivos.
+  const aceptaNegativo = esCollect || t.type==='income';
   const actual=esCollect?(t.moved||0):(t.amount||0);
   const etiqueta=esCollect
     ? `Recolección de ${t.branch}\n\nMonto actual: RD$${fmt(actual)}\n(en negativo = cobertura hacia la banca)`
-    : `${t.category||t.type} · ${t.branch}\n\nMonto actual: RD$${fmt(actual)}`;
-  const entrada=prompt(`Corregir monto\n\n${etiqueta}\n\nEscribe el monto correcto:`,String(actual));
+    : `${t.category||t.type} · ${t.branch}\n\nMonto actual: RD$${fmt(actual)}`
+      + (t.type==='income' ? '\n(en negativo = la banca perdió ese día)' : '');
+  const entrada=prompt(`Corregir monto\n\n${etiqueta}\n\nEscribe el monto correcto${aceptaNegativo?' (positivo o negativo)':''}:`,String(actual));
   if(entrada===null) return;
-  const nuevo=parseFloat(String(entrada).replace(/,/g,''));
+  const nuevo=leerMonto(entrada);
   if(isNaN(nuevo)){ toast('Monto inválido',false); return; }
-  if(!esCollect&&nuevo<=0){ toast('El monto debe ser mayor que cero',false); return; }
-  if(esCollect&&nuevo===0){ toast('El monto no puede ser cero',false); return; }
+  if(nuevo===0){ toast('El monto no puede ser cero',false); return; }
+  if(!aceptaNegativo&&nuevo<0){ toast('Un gasto o una salida no puede ser negativo',false); return; }
   if(Math.abs(nuevo-actual)<0.01){ toast('No hubo cambios',false); return; }
   if(!confirm(`¿Cambiar de RD$${fmt(actual)} a RD$${fmt(nuevo)}?`)) return;
   const cambios = esCollect ? {movido:nuevo} : {monto:nuevo};
