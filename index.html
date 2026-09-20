@@ -27,6 +27,7 @@
   .header-row{display:flex;justify-content:space-between;align-items:center;}
   .brand{display:flex;align-items:center;gap:11px;}
   .logo-img{height:46px;width:auto;display:block;flex-shrink:0;}
+  .dia-hint{font-size:11.5px;font-weight:700;margin-top:5px;color:var(--muted);}
   .brand h1{font-size:17px;font-weight:700;letter-spacing:.3px;line-height:1.1;}
   .brand .sub{font-size:9.5px;color:var(--muted-light);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-top:1px;line-height:1.25;padding-left:9px;border-left:1px solid var(--navy-line);}
   .month-pill{background:var(--navy-soft);border:1px solid var(--navy-line);padding:7px 13px;border-radius:20px;font-size:12.5px;font-weight:600;color:var(--muted-light);display:flex;align-items:center;gap:6px;cursor:pointer;}
@@ -543,7 +544,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
         </div>
       </div>
 
-      <div class="fld"><label>Fecha <span style="font-weight:500;color:var(--muted);font-size:11px;">· jornada de la banca (por defecto ayer)</span></label><input type="date" id="fDateInc"></div>
+      <div class="fld"><label>Fecha <span style="font-weight:500;color:var(--muted);font-size:11px;">· jornada de la banca (por defecto ayer)</span></label><input type="date" id="fDateInc" onchange="pintarDia('fDateInc')"><div id="fDateInc_dia" class="dia-hint"></div></div>
       <div class="fld"><label>Nota (opcional)</label><input type="text" id="fNoteInc" placeholder="Detalle o referencia…"></div>
       <button class="btn-primary green" id="saveBtnInc" onclick="saveIncome()">Guardar y seguir con la próxima banca</button>
       <button onclick="go('dash')" style="width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px;font-size:13.5px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;margin-top:9px;">Terminar</button>
@@ -578,7 +579,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       <div class="ncf-field" id="ncfField">
         <div class="fld" style="margin-bottom:0;"><label>Número de NCF</label><input type="text" id="fNcf" placeholder="B0100000001" maxlength="19" style="text-transform:uppercase;"></div>
       </div>
-      <div class="fld"><label>Fecha</label><input type="date" id="fDateExp"></div>
+      <div class="fld"><label>Fecha</label><input type="date" id="fDateExp" onchange="pintarDia('fDateExp')"><div id="fDateExp_dia" class="dia-hint"></div></div>
       <div class="fld"><label>Nota (opcional)</label><input type="text" id="fNoteExp" placeholder="Proveedor o detalle…"></div>
       <button class="btn-primary red" id="saveBtnExp" onclick="saveExpense()">Guardar gasto</button>
     </div>
@@ -627,7 +628,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
           <option>Otro</option>
         </select>
       </div>
-      <div class="fld"><label>Fecha</label><input type="date" id="fDateOut"></div>
+      <div class="fld"><label>Fecha</label><input type="date" id="fDateOut" onchange="pintarDia('fDateOut')"><div id="fDateOut_dia" class="dia-hint"></div></div>
       <div class="fld"><label>Nota (opcional)</label><input type="text" id="fNoteOut" placeholder="Detalle o referencia…"></div>
       <button class="btn-primary amber" id="saveBtnOut" onclick="saveOut()">Registrar salida</button>
     </div>
@@ -663,6 +664,13 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
   <div class="fld" style="margin-bottom:12px;">
     <select id="histCatFilter" onchange="setHistCat(this.value)" style="width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:11px;font-size:13px;font-family:inherit;background:#fff;color:var(--ink);">
       <option value="all">Todas las categorías</option>
+    </select>
+  </div>
+
+  <!-- subtype filter: solo aparece si la categoría tiene tipos (Virtuales, Máquinas) -->
+  <div class="fld" id="histSubWrap" style="margin-bottom:12px;display:none;">
+    <select id="histSubFilter" onchange="setHistSub(this.value)" style="width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:11px;font-size:13px;font-family:inherit;background:#fff;color:var(--ink);">
+      <option value="all">Todos los tipos</option>
     </select>
   </div>
 
@@ -1824,7 +1832,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       <div class="si-act" style="color:var(--amber);" onclick="doLogout()">Salir</div>
     </div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v5.3 nube · Santo Domingo, RD</div>
+  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v5.6 nube · Santo Domingo, RD</div>
 </section>
 
 <!-- NAV -->
@@ -1887,7 +1895,7 @@ window.__supabase = createClient(
 window.dispatchEvent(new Event('supabase-ready'));
 </script>
 <script>
-/* ===================== AdmBca v5.3 ===================== */
+/* ===================== AdmBca v5.6 ===================== */
 function idConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.id)||null; }catch(e){ return null; } }
 function nomConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.nombre)||'AdmBca'; }catch(e){ return 'AdmBca'; } }
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -1935,7 +1943,7 @@ const VIRT_CAMPOS=[
 let curType='income', incMode='single', outMode='withdraw';
 let selIncCat=null;
 let curMonth=new Date().getMonth(), curYear=new Date().getFullYear(), modalYr=curYear;
-let histFilter='all', repView='branch', histCat='all';
+let histFilter='all', repView='branch', histCat='all', histSub='all';
 let histBranches=null;            // null = all branches; otherwise array of selected names
 let histSort='date-desc';         // date-desc | date-asc | amount-desc | amount-asc
 let _histBranchTmp=null;          // temp selection while panel open
@@ -1944,9 +1952,15 @@ let fundEditIdx=null;
 
 const fmt=n=>new Intl.NumberFormat('es-DO',{minimumFractionDigits:0,maximumFractionDigits:0}).format(Math.round(n));
 // Date helpers — "operaciones" default to yesterday (jornada anterior); everything else to today
-function todayISO(){ return new Date().toISOString().slice(0,10); }
-function yesterdayISO(){ const d=new Date(); d.setDate(d.getDate()-1); return d.toISOString().slice(0,10); }
-function dayBefore(iso){ const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()-1); return d.toISOString().slice(0,10); }
+/* Fecha en hora LOCAL. Con toISOString() se usaba la hora de Londres, así que
+   todo lo registrado a partir de las 8 de la noche quedaba con la fecha del día
+   siguiente — y a fin de mes se pasaba al mes equivocado. */
+function isoLocal(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function todayISO(){ return isoLocal(new Date()); }
+function yesterdayISO(){ const d=new Date(); d.setDate(d.getDate()-1); return isoLocal(d); }
+function dayBefore(iso){ const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()-1); return isoLocal(d); }
 // Normaliza el nombre de banca: "PRIME SPORT 01" -> "PRIME SPORT 1" (quita cero inicial del número)
 // Evita descuadres cuando un registro se guarda con formato distinto al de la banca.
 function normBranchName(name){
@@ -2474,7 +2488,7 @@ function renderAlertas(){
     const faltan=[];
     for(let i=1;i<=7;i++){
       const d=new Date(); d.setDate(d.getDate()-i);
-      const iso=d.toISOString().slice(0,10);
+      const iso=isoLocal(d);
       if(!state.cierres.includes(iso)) faltan.push(d.getDate()+' '+MONTHS_SHORT[d.getMonth()]);
     }
     if(faltan.length) avisos.push({c:'#a37416',bg:'#fdf6e8',bd:'#ecd9ac',t:`${faltan.length} día(s) sin cerrar el corte`,d:faltan.join(' · '),go:'openCorte()'});
@@ -2677,6 +2691,26 @@ function updateMultiTotal(){
 
 function toggleNcf(){ document.getElementById('ncfField').classList.toggle('show',document.getElementById('fHasNcf').checked); }
 
+const DIAS_SEM=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+/* Escribe en palabras la fecha elegida, para que un día equivocado salte a la
+   vista antes de guardar. Marca en ámbar cualquier fecha que no sea hoy ni ayer. */
+function pintarDia(id){
+  const inp=document.getElementById(id), out=document.getElementById(id+'_dia');
+  if(!inp||!out) return;
+  const v=inp.value;
+  if(!v){ out.textContent=''; return; }
+  const d=new Date(v+'T00:00:00');
+  let txt=`${DIAS_SEM[d.getDay()]} ${d.getDate()} de ${MONTHS[d.getMonth()].toLowerCase()}`;
+  let col='var(--muted)';
+  if(v===todayISO()) txt+=' · hoy';
+  else if(v===yesterdayISO()) txt+=' · ayer';
+  else { const dif=Math.round((new Date(todayISO()+'T00:00:00')-d)/86400000);
+         txt+= dif>0 ? ` · hace ${dif} días` : ` · dentro de ${Math.abs(dif)} días`;
+         col='#a37416'; }
+  out.textContent=txt; out.style.color=col;
+}
+function pintarDias(){ ['fDateInc','fDateExp','fDateOut'].forEach(pintarDia); }
+
 function resetForms(){
   renderFormOptions();
   setType('income'); setOutMode('withdraw');
@@ -2687,6 +2721,7 @@ function resetForms(){
   document.getElementById('fDateInc').value=yesterdayISO();
   document.getElementById('fDateExp').value=todayISO();
   document.getElementById('fDateOut').value=todayISO();
+  pintarDias();
   updateFundBanner('inc'); updateFundBanner('exp'); updateFundBanner('out');
   setIncMode('single');
 }
@@ -2695,7 +2730,7 @@ function resetForms(){
 function saveIncome(){ return conBloqueo('saveBtnInc',_saveIncome); }
 async function _saveIncome(){
   const branch=document.getElementById('fBranchInc').value;
-  const date=document.getElementById('fDateInc').value||new Date().toISOString().slice(0,10);
+  const date=document.getElementById('fDateInc').value||todayISO();
   const note=document.getElementById('fNoteInc').value.trim();
   if(isDayClosed(date)){ toast('El corte de ese día está cerrado. Reábrelo para registrar.',false); return; }
 
@@ -2734,7 +2769,7 @@ async function _saveExpense(){
   const amount=parseFloat(document.getElementById('fAmountExp').value);
   if(!amount||amount<=0){ shake('fAmountExp'); toast('Ingresa un monto válido',false); return; }
   const branch=document.getElementById('fBranchExp').value;
-  const date=document.getElementById('fDateExp').value||new Date().toISOString().slice(0,10);
+  const date=document.getElementById('fDateExp').value||todayISO();
   const note=document.getElementById('fNoteExp').value.trim();
   if(isDayClosed(date)){ toast('El corte de ese día está cerrado. Reábrelo para registrar.',false); return; }
   const hasNcf=document.getElementById('fHasNcf').checked;
@@ -2753,7 +2788,7 @@ async function _saveOut(){
   const amount=parseFloat(document.getElementById('fAmountOut').value);
   if(!amount||amount<=0){ shake('fAmountOut'); toast('Ingresa un monto válido',false); return; }
   const branch=document.getElementById('fBranchOut').value;
-  const date=document.getElementById('fDateOut').value||new Date().toISOString().slice(0,10);
+  const date=document.getElementById('fDateOut').value||todayISO();
   const note=document.getElementById('fNoteOut').value.trim();
   if(isDayClosed(date)){ toast('El corte de ese día está cerrado. Reábrelo para registrar.',false); return; }
   if(outMode==='transfer'){
@@ -2870,6 +2905,17 @@ function renderHistory(){
     catSel.innerHTML='<option value="all">Todas las categorías</option>'+uniqueCats.map(c=>`<option value="${c}" ${histCat===c?'selected':''}>${c}</option>`).join('');
     catSel.value=histCat;
   }
+  // tipos de la categoría elegida (Virtuales, Máquinas…)
+  const subWrap=document.getElementById('histSubWrap'), subSel=document.getElementById('histSubFilter');
+  if(subWrap&&subSel){
+    const subs = histCat==='all' ? [] : subtiposDeCategoria(histCat);
+    if(subs.length){
+      if(histSub!=='all'&&!subs.includes(histSub)) histSub='all';
+      subSel.innerHTML=`<option value="all">Todos los tipos de ${histCat}</option>`+subs.map(x=>`<option value="${x}">${x}</option>`).join('');
+      subSel.value=histSub;
+      subWrap.style.display='';
+    } else { histSub='all'; subWrap.style.display='none'; }
+  }
   syncHistControls();
   // source: date range if set, otherwise current month
   let baseTxns;
@@ -2887,6 +2933,8 @@ function renderHistory(){
   else if(histFilter==='noncf')txns=txns.filter(t=>t.type==='expense'&&!t.hasNcf);
   // category filter (null/all = all)
   if(histCat!=='all') txns=txns.filter(t=>t.category===histCat);
+  // tipo dentro de la categoría (Varmanex, POG, …)
+  if(histSub!=='all') txns=txns.filter(t=>t.subtype===histSub);
   // branch filter (null = all)
   if(histBranches!==null) txns=txns.filter(t=>histBranches.includes(t.branch)||(t.type==='collect'&&histBranches.includes(t.office)));
   // buscador: texto libre o monto exacto
@@ -2976,8 +3024,8 @@ async function openRevision(){
   // por defecto: desde el día siguiente al último arqueo que cuadró
   const ancla=revArqueos.find(a=>Math.abs(a.diferencia)<1);
   let desde;
-  if(ancla){ const d=new Date(ancla.fecha+'T00:00:00'); d.setDate(d.getDate()+1); desde=d.toISOString().slice(0,10); }
-  else { const d=new Date(); d.setDate(d.getDate()-7); desde=d.toISOString().slice(0,10); }
+  if(ancla){ const d=new Date(ancla.fecha+'T00:00:00'); d.setDate(d.getDate()+1); desde=isoLocal(d); }
+  else { const d=new Date(); d.setDate(d.getDate()-7); desde=isoLocal(d); }
   document.getElementById('revDesde').value=desde;
   document.getElementById('revHasta').value=todayISO();
   renderRevision();
@@ -3125,7 +3173,7 @@ function revChequeos(){
   if(state._cierresReady && d1 && d2){
     const cur=new Date(d1+'T00:00:00'), fin=new Date(d2+'T00:00:00'), hoy=new Date(todayISO()+'T00:00:00');
     while(cur<=fin){
-      const iso=cur.toISOString().slice(0,10);
+      const iso=isoLocal(cur);
       if(cur<hoy && !state.cierres.includes(iso)) faltan.push(cur.getDate()+' '+MONTHS_SHORT[cur.getMonth()]);
       cur.setDate(cur.getDate()+1);
     }
@@ -3355,7 +3403,19 @@ async function editarMonto(id){
 }
 
 function setHistFilter(k){ histFilter=k; renderHistory(); }
-function setHistCat(c){ histCat=c; renderHistory(); }
+function setHistCat(c){ histCat=c; histSub='all'; renderHistory(); }
+function setHistSub(v){ histSub=v; renderHistory(); }
+
+/* Tipos dentro de una categoría (Virtuales: Varmanex, Merengue, VG;
+   Máquinas: POG, Tragamonedas, Ruleta electrónica). Se toman de la configuración
+   y se completan con los que aparezcan en los movimientos, por si hay alguno
+   viejo que ya no esté en la lista. */
+function subtiposDeCategoria(cat){
+  const c=state.incCats.find(x=>x.name===cat);
+  const base=(c&&Array.isArray(c.subs))?c.subs.slice():[];
+  state.txns.forEach(t=>{ if(t.category===cat&&t.subtype&&!base.includes(t.subtype)) base.push(t.subtype); });
+  return base;
+}
 
 // ---- branch filter + sort controls ----
 function allBranchNames(){ return state.branches.map(b=>b.name); }
@@ -3392,8 +3452,9 @@ function toggleHistDatePanel(){
   if(open){ panel.style.display='none'; return; }
   // init inputs with current values or month bounds
   const from=document.getElementById('histDateFrom'), to=document.getElementById('histDateTo');
-  if(histDateFrom) from.value=histDateFrom; else { const d=new Date(curYear,curMonth,1); from.value=d.toISOString().slice(0,10); }
-  if(histDateTo) to.value=histDateTo; else { const d=new Date(curYear,curMonth+1,0); to.value=d.toISOString().slice(0,10); }
+  // arranca en el día de hoy, no en el 1ro del mes
+  if(histDateFrom) from.value=histDateFrom; else from.value=todayISO();
+  if(histDateTo) to.value=histDateTo; else to.value=todayISO();
   panel.style.display='block';
 }
 function applyHistDate(){
@@ -3577,7 +3638,7 @@ function openAuditBranch(){
   sel.innerHTML=banks.map(b=>`<option>${b.name}</option>`).join('');
   // default: 30 days back
   const d=new Date(); d.setDate(d.getDate()-30);
-  document.getElementById('auditFrom').value=d.toISOString().slice(0,10);
+  document.getElementById('auditFrom').value=isoLocal(d);
   renderAudit();
 }
 
@@ -3768,7 +3829,7 @@ function enviarResumenTotales(){
 }
 
 function renderCorte(){
-  corteDateVal=document.getElementById('corteDate').value||new Date().toISOString().slice(0,10);
+  corteDateVal=document.getElementById('corteDate').value||todayISO();
   const d=new Date(corteDateVal+'T00:00:00');
   const isYesterday = corteDateVal===yesterdayISO();
   const isToday = corteDateVal===todayISO();
@@ -4709,6 +4770,21 @@ function cbIngresoGlobalTotal(){
 }
 
 // Suma de gastos manuales de una banca (todas las categorías)
+/* Gastos de oficina del mes y cuánto de eso ya se repartió entre las bancas.
+   Lo repartido YA está descontado dentro de "Total Bancas" (renglón
+   Administración de cada una), así que volver a restarlo lo contaría dos veces.
+   Solo se resta aparte lo que todavía no se ha repartido. */
+function cbOficinaGastoTotal(){
+  return state.cbOficinaGastos.filter(o=>o.anio===cbAnioCur&&o.mes===cbMesCur).reduce((s,o)=>s+o.monto,0);
+}
+function cbOficinaProrrateado(){
+  return state.cbGastos.filter(g=>g.anio===cbAnioCur&&g.mes===cbMesCur&&g.origen==='prorrateo').reduce((s,g)=>s+g.monto,0);
+}
+function cbOficinaPendiente(){
+  const r=cbOficinaGastoTotal()-cbOficinaProrrateado();
+  return Math.abs(r)<0.5 ? 0 : Math.max(0,r);   // tolera los centavos del redondeo
+}
+
 function cbGastosBranchTotal(branch){
   return state.cbGastos.filter(g=>g.anio===cbAnioCur&&g.mes===cbMesCur&&g.sucursal===branch).reduce((s,g)=>s+g.monto,0);
 }
@@ -4849,10 +4925,12 @@ function renderCbConsolidado(){
   });
   // Ingresos globales (Pin Bet, Pase Jugada, Tk x Pagar, Lotedom)
   const ingresoGlobal=cbIngresoGlobalTotal();
-  // Oficina gastos
-  const oficGastos=state.cbOficinaGastos.filter(o=>o.anio===cbAnioCur&&o.mes===cbMesCur).reduce((s,o)=>s+o.monto,0);
-  // BCE TOTAL = Total bancas + Ingresos globales − Gastos oficina
-  const bceTotal=totalBancas+ingresoGlobal-oficGastos;
+  // Oficina: solo lo que NO se ha repartido ya entre las bancas
+  const oficGastos=cbOficinaGastoTotal();
+  const oficRepartido=cbOficinaProrrateado();
+  const oficPendiente=cbOficinaPendiente();
+  // BCE TOTAL = Total bancas + Ingresos globales − Gastos de oficina sin repartir
+  const bceTotal=totalBancas+ingresoGlobal-oficPendiente;
   const promBanca=branches.length?totalBancas/branches.length:0;
   document.getElementById('cbConsolidado').innerHTML=`
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px;">
@@ -4868,14 +4946,15 @@ function renderCbConsolidado(){
         <div style="font-size:10px;color:var(--cerulean);font-weight:700;text-transform:uppercase;">+ Ingresos globales</div>
         <div style="font-size:14.5px;font-weight:800;color:var(--cerulean);margin-top:2px;">RD$${fmt(ingresoGlobal)}</div>
       </div>
-      <div style="background:#fdecea;border-radius:8px;padding:9px 11px;">
-        <div style="font-size:10px;color:var(--red);font-weight:700;text-transform:uppercase;">− Gastos Oficina</div>
-        <div style="font-size:14.5px;font-weight:800;color:var(--red);margin-top:2px;">RD$${fmt(oficGastos)}</div>
+      <div style="background:${oficRepartido?'#f4f6f7':'#fdecea'};border-radius:8px;padding:9px 11px;">
+        <div style="font-size:10px;color:${oficRepartido?'var(--muted)':'var(--red)'};font-weight:700;text-transform:uppercase;">− Gastos Oficina</div>
+        <div style="font-size:14.5px;font-weight:800;color:${oficPendiente?'var(--red)':'var(--muted)'};margin-top:2px;">RD$${fmt(oficPendiente)}</div>
+        ${oficRepartido?`<div style="font-size:9.5px;color:var(--muted);margin-top:3px;line-height:1.35;">RD$${fmt(oficRepartido)} ya repartidos entre las bancas</div>`:''}
       </div>
       <div style="background:linear-gradient(135deg,#101820,#16242f);border-radius:8px;padding:11px 13px;color:#fff;grid-column:1/-1;">
         <div style="font-size:11px;opacity:.85;font-weight:700;text-transform:uppercase;">BCE TOTAL</div>
         <div style="font-size:20px;font-weight:800;color:${bceTotal<0?'#f08980':'#7ce6b3'};margin-top:2px;">RD$${fmt(bceTotal)}</div>
-        <div style="font-size:10px;opacity:.7;margin-top:3px;">Total Bancas + Globales − Oficina</div>
+        <div style="font-size:10px;opacity:.7;margin-top:3px;">Total Bancas + Globales ${oficRepartido?'· oficina ya prorrateada':'− Oficina'}</div>
       </div>
     </div>`;
 }
@@ -4892,8 +4971,7 @@ function renderCbHero(){
     totalBancas+=(ing-cbGastosBranchTotal(b.name));
   });
   const ingresoGlobal=cbIngresoGlobalTotal();
-  const oficGastos=state.cbOficinaGastos.filter(o=>o.anio===cbAnioCur&&o.mes===cbMesCur).reduce((s,o)=>s+o.monto,0);
-  const bceTotal=totalBancas+ingresoGlobal-oficGastos;
+  const bceTotal=totalBancas+ingresoGlobal-cbOficinaPendiente();
   document.getElementById('cbHero').innerHTML=`
     <div style="background:linear-gradient(135deg,#3a3015,#a37416);border-radius:15px;padding:16px;margin-bottom:14px;color:#fff;">
       <div style="font-size:11px;color:rgba(255,255,255,.78);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">BCE Total · ${MONTHS[cbMesCur-1]} ${cbAnioCur}</div>
@@ -5323,7 +5401,8 @@ async function cbProrratearOficina(){
   if(!bancas.length){ toast('No hay bancas activas',false); return; }
   const totalOf=state.cbOficinaGastos.filter(o=>o.anio===cbAnioCur&&o.mes===cbMesCur).reduce((s,o)=>s+o.monto,0);
   if(!totalOf){ toast('No hay gastos de oficina en este mes',false); return; }
-  const parte=Math.round((totalOf/bancas.length)*100)/100;
+  const parte=Math.floor((totalOf/bancas.length)*100)/100;
+  const resto=Math.round((totalOf-parte*bancas.length)*100)/100;   // centavos sobrantes
   if(!confirm(`Repartir RD$${fmt(totalOf)} de gastos de oficina entre ${bancas.length} bancas.\n\nCada banca recibe RD$${fmt(parte)} en el renglón "Administración".\n\n¿Continuar?`)) return;
   setSyncState('saving');
   try{
@@ -5331,14 +5410,16 @@ async function cbProrratearOficina(){
     const prev=state.cbGastos.filter(g=>g.anio===cbAnioCur&&g.mes===cbMesCur&&g.origen==='prorrateo');
     for(const p of prev){ await sb.from('cuadre_banca_gasto').delete().eq('id',p._id); }
     state.cbGastos=state.cbGastos.filter(g=>!(g.anio===cbAnioCur&&g.mes===cbMesCur&&g.origen==='prorrateo'));
-    for(const b of bancas){
+    for(let i=0;i<bancas.length;i++){
+      const b=bancas[i];
+      const monto=Math.round((parte+(i===bancas.length-1?resto:0))*100)/100;  // la última lleva los centavos
       const ref=(crypto&&crypto.randomUUID)?crypto.randomUUID():uid();
       const {data,error}=await sb.from('cuadre_banca_gasto').insert({
-        anio:cbAnioCur, mes:cbMesCur, sucursal:b, categoria:'Administración', monto:parte,
+        anio:cbAnioCur, mes:cbMesCur, sucursal:b, categoria:'Administración', monto,
         origen:'prorrateo', ref_txn_id:ref, creado_por:currentUser||null
       }).select();
       if(error) throw error;
-      state.cbGastos.push({_id:data[0].id,anio:cbAnioCur,mes:cbMesCur,sucursal:b,categoria:'Administración',monto:parte,origen:'prorrateo',refTxnId:ref});
+      state.cbGastos.push({_id:data[0].id,anio:cbAnioCur,mes:cbMesCur,sucursal:b,categoria:'Administración',monto,origen:'prorrateo',refTxnId:ref});
     }
     setSyncState('ok');
     toast(`Prorrateado: RD$${fmt(parte)} a cada una de las ${bancas.length} bancas`,true);
@@ -5816,7 +5897,7 @@ function openLectura(maqId){
     document.getElementById('lecPrevBox').style.display='block';
   }
   // reset inputs
-  document.getElementById('lecDate').value=new Date().toISOString().slice(0,10);
+  document.getElementById('lecDate').value=todayISO();
   document.getElementById('lecEntrada').value='';
   document.getElementById('lecSalida').value='';
   document.getElementById('lecCash').value='';
@@ -7149,10 +7230,9 @@ function openHelp(){
 
 /* ================= HISTÓRICO POR DÍA ================= */
 function openHistoric(){
-  const t=new Date();
-  const first=new Date(t.getFullYear(),t.getMonth(),1).toISOString().slice(0,10);
-  document.getElementById('histFrom').value=first;
-  document.getElementById('histTo').value=t.toISOString().slice(0,10);
+  // arranca en el día de hoy, no en el 1ro del mes
+  document.getElementById('histFrom').value=todayISO();
+  document.getElementById('histTo').value=todayISO();
   document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
   document.getElementById('view-historic').classList.add('active');
   apilarVista('view-historic');
@@ -7161,16 +7241,15 @@ function openHistoric(){
   renderHistoric();
 }
 function histQuick(days){
-  const t=new Date();
   const from=new Date(); from.setDate(from.getDate()-(days-1));
-  document.getElementById('histFrom').value=from.toISOString().slice(0,10);
-  document.getElementById('histTo').value=t.toISOString().slice(0,10);
+  document.getElementById('histFrom').value=isoLocal(from);
+  document.getElementById('histTo').value=todayISO();
   renderHistoric();
 }
 function histQuickMonth(){
   const t=new Date();
-  document.getElementById('histFrom').value=new Date(t.getFullYear(),t.getMonth(),1).toISOString().slice(0,10);
-  document.getElementById('histTo').value=t.toISOString().slice(0,10);
+  document.getElementById('histFrom').value=isoLocal(new Date(t.getFullYear(),t.getMonth(),1));
+  document.getElementById('histTo').value=isoLocal(t);
   renderHistoric();
 }
 function histRangeTxns(){
@@ -7438,7 +7517,7 @@ function openFundModal(i){ fundEditIdx=i; document.getElementById('fundModalTitl
 function closeFundModal(){ document.getElementById('fundModal').classList.remove('show'); fundEditIdx=null; }
 function saveFund(){ if(fundEditIdx===null)return; const v=parseFloat(document.getElementById('fundInput').value)||0; state.branches[fundEditIdx].fund=v; saveState(); closeFundModal(); renderSettings(); toast('Fondo actualizado',true); }
 
-function backupData(){ const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`PrimeSport_Respaldo_${new Date().toISOString().slice(0,10)}.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); toast('Respaldo descargado',true); }
+function backupData(){ const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`PrimeSport_Respaldo_${todayISO()}.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); toast('Respaldo descargado',true); }
 async function wipeData(){
   if(!esAdmin()){ toast('Solo un administrador puede hacer esto.',false); return; }
   const n=state.txns.length;
