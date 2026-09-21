@@ -590,7 +590,8 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       <div class="fld"><label>Fecha <span style="font-weight:500;color:var(--muted);font-size:11px;">· jornada de la banca (por defecto ayer)</span></label><input type="date" id="fDateInc" onchange="pintarDia('fDateInc')"><div id="fDateInc_dia" class="dia-hint"></div></div>
       <div class="fld"><label>Nota (opcional)</label><input type="text" id="fNoteInc" placeholder="Detalle o referencia…"></div>
       <button class="btn-primary green" id="saveBtnInc" onclick="saveIncome()">Guardar y seguir con la próxima banca</button>
-      <button onclick="go('dash')" style="width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px;font-size:13.5px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;margin-top:9px;">Terminar</button>
+      <button id="saveBtnIncFin" onclick="saveIncome(true)" style="width:100%;border:1.5px solid #1f9d6b;background:#eaf7f1;border-radius:12px;padding:12px;font-size:13.5px;font-weight:700;color:#1f9d6b;cursor:pointer;font-family:inherit;margin-top:9px;">Guardar y terminar</button>
+      <button onclick="go('dash')" style="width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px;font-size:13.5px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;margin-top:9px;">Salir sin guardar</button>
     </div>
 
     <!-- ===== EXPENSE ===== -->
@@ -624,7 +625,8 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       </div>
       <div class="fld"><label>Fecha</label><input type="date" id="fDateExp" onchange="pintarDia('fDateExp')"><div id="fDateExp_dia" class="dia-hint"></div></div>
       <div class="fld"><label>Nota (opcional)</label><input type="text" id="fNoteExp" placeholder="Proveedor o detalle…"></div>
-      <button class="btn-primary red" id="saveBtnExp" onclick="saveExpense()">Guardar gasto</button>
+      <button class="btn-primary red" id="saveBtnExp" onclick="saveExpense()">Guardar y seguir registrando</button>
+      <button id="saveBtnExpFin" onclick="saveExpense(true)" style="width:100%;border:1.5px solid var(--red);background:#fdecea;border-radius:12px;padding:12px;font-size:13.5px;font-weight:700;color:var(--red);cursor:pointer;font-family:inherit;margin-top:9px;">Guardar y terminar</button>
     </div>
 
     <!-- ===== SALIDA ===== -->
@@ -673,7 +675,8 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       </div>
       <div class="fld"><label>Fecha</label><input type="date" id="fDateOut" onchange="pintarDia('fDateOut')"><div id="fDateOut_dia" class="dia-hint"></div></div>
       <div class="fld"><label>Nota (opcional)</label><input type="text" id="fNoteOut" placeholder="Detalle o referencia…"></div>
-      <button class="btn-primary amber" id="saveBtnOut" onclick="saveOut()">Registrar salida</button>
+      <button class="btn-primary amber" id="saveBtnOut" onclick="saveOut()">Guardar y seguir registrando</button>
+      <button id="saveBtnOutFin" onclick="saveOut(true)" style="width:100%;border:1.5px solid #a37416;background:#fdf6e8;border-radius:12px;padding:12px;font-size:13.5px;font-weight:700;color:#a37416;cursor:pointer;font-family:inherit;margin-top:9px;">Guardar y terminar</button>
     </div>
   </div>
 </section>
@@ -1561,6 +1564,9 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     <b>Nómina quincenal</b>: eliges año, mes y quincena. Cada empleado aparece ya prellenado con su salario y su bono; entras al que quieras y llenas los renglones. Los ingresos son salario, limpieza, vacaciones, feriado, préstamo, licencia y otros; los descuentos son seguro social, faltante, préstamo, avance de sueldo y otros. Los descuentos se escriben <b>en positivo</b> y se restan solos.<br><br>
     Lo importante: <b>lo que descuentes por préstamo o faltante se abona solo al saldo del empleado</b>. No hay que llevarlo aparte como en el Excel. Si corriges la quincena, el abono se corrige también. Y al abrir a cada empleado te recuerda cuánto tiene pendiente.<br><br>
     Abajo puedes bajar la quincena a CSV o mandar el resumen por WhatsApp.<br><br>
+    <b>Incentivos</b>: el botón azul de la pantalla de empleados. Se pagan del 25 al 28 de cada mes. Eliges el mes, escribes el incentivo de cada empleado (Enter salta al siguiente) y guardas. Debajo de cada nombre ves lo que cobró el mes pasado, y el botón <b>Copiar los montos del mes anterior</b> llena los vacíos con esos montos para que solo ajustes lo que cambió.<br><br>
+    Con todo guardado, <b>Archivo del banco</b> genera el TXT en el mismo formato de la nómina, con descripción <code>INCENTIVO P1</code>, <code>INCENTIVO OFICINA</code>, etc. Te avisa quién queda fuera por no tener cuenta y, al final, te pregunta si los marcas como pagados: así no se vuelven a incluir si generas el archivo otra vez, y quedan bloqueados para que nadie los cambie después de pagados.<br><br>
+    Del 23 al 28 el inicio te recuerda los incentivos: si todavía no los cargaste, o cuántos quedan sin pagar.<br><br>
     <b>Doble sueldo</b>: el botón dorado de la pantalla de empleados. Calcula la regalía del año con tu fórmula — <b>salario mensual ÷ 12 × meses trabajados</b> —, donde el salario mensual es la quincena más el bono de limpieza, por dos. Los meses salen solos de la fecha de ingreso y, si la persona se fue, de la de salida; contando completo el mes en que entró. Si algún caso no cuadra, corriges los meses a mano en la casilla y el monto se recalcula. Quien no trabajó nada ese año no aparece. Puedes ir marcando a quién ya le pagaste y bajarlo a CSV o mandarlo por WhatsApp.<br><br>
     <b>Equipos y Mantenimiento</b><br>
     Registras cada servicio con fecha, banca, equipo, tipo de servicio (mantenimiento, reparación, cambio o instalación), quién lo hizo, qué se hizo, el costo y, si aplica, la fecha del próximo servicio. Los vencidos salen en rojo.<br><br>
@@ -1760,7 +1766,10 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     <button onclick="openNomina()" style="flex:1;border:none;border-radius:11px;padding:12px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#1f6b4f,#2d9970);">Nómina quincenal</button>
     <button onclick="nuevoEmpleado()" style="flex:1;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">+ Empleado</button>
   </div>
-  <button onclick="openRegalia()" style="width:100%;border:1px solid #a37416;background:#fdf6e8;color:#a37416;border-radius:11px;padding:11px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:12px;">🎁 Doble sueldo (regalía)</button>
+  <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <button onclick="openIncentivos()" style="flex:1;border:1px solid #0086AD;background:#eef6fb;color:#0086AD;border-radius:11px;padding:11px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">⭐ Incentivos del mes</button>
+    <button onclick="openRegalia()" style="flex:1;border:1px solid #a37416;background:#fdf6e8;color:#a37416;border-radius:11px;padding:11px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">🎁 Doble sueldo</button>
+  </div>
   <div id="empResumen"></div>
   <input type="search" id="empQ" placeholder="Buscar por nombre, cédula o banca…" oninput="renderEmpleados()"
     style="width:100%;box-sizing:border-box;padding:11px 13px;border:1px solid var(--line);border-radius:11px;font-size:13px;font-family:inherit;margin-bottom:12px;background:#fff;color:var(--ink);">
@@ -1778,6 +1787,25 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
   <div id="empFicha"></div>
 </section>
 
+<section class="view" id="view-incentivos">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="openEmpleados()" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Incentivos</div><div style="font-size:12px;color:var(--muted);">Se pagan del 25 al 28 de cada mes</div></div>
+  </div>
+  <div style="display:flex;gap:6px;margin-bottom:12px;">
+    <select id="incAnio" onchange="renderIncentivos()" style="flex:1;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:12.5px;font-family:inherit;background:#fff;color:var(--ink);"></select>
+    <select id="incMes" onchange="renderIncentivos()" style="flex:1.6;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:12.5px;font-family:inherit;background:#fff;color:var(--ink);"></select>
+  </div>
+  <div id="incHero"></div>
+  <button onclick="copiarIncentivosAnteriores()" id="incCopiar" style="width:100%;border:1px dashed var(--line);background:#fff;color:var(--muted);border-radius:11px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:12px;">Copiar los montos del mes anterior</button>
+  <div id="incLista"></div>
+  <button id="btnGuardarInc" onclick="guardarIncentivos()" class="btn-primary" style="width:100%;padding:13px;margin-top:4px;">Guardar incentivos</button>
+  <div style="display:flex;gap:8px;margin:9px 0 26px;">
+    <button onclick="exportIncentivosBanco()" style="flex:1;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">Archivo del banco</button>
+    <button onclick="enviarIncentivosWhatsApp()" style="flex:1;border:1px solid #1f9d6b;background:#eaf7f1;color:#1f9d6b;border-radius:11px;padding:12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">WhatsApp</button>
+  </div>
+</section>
+
 <section class="view" id="view-regalia">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
     <button onclick="openEmpleados()" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
@@ -1787,7 +1815,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
   <div id="regHero"></div>
   <div id="regLista"></div>
   <div style="display:flex;gap:8px;margin:4px 0 26px;">
-    <button onclick="exportRegaliaCSV()" style="flex:1;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">CSV</button>
+    <button onclick="exportRegaliaCSV()" style="flex:1;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">Archivo del banco</button>
     <button onclick="enviarRegaliaWhatsApp()" style="flex:1;border:1px solid #1f9d6b;background:#eaf7f1;color:#1f9d6b;border-radius:11px;padding:12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">WhatsApp</button>
   </div>
 </section>
@@ -1806,7 +1834,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
   <div id="nomHero"></div>
   <div id="nomLista"></div>
   <div style="display:flex;gap:8px;margin:4px 0 26px;">
-    <button onclick="exportNominaCSV()" style="flex:1;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">CSV</button>
+    <button onclick="exportNominaCSV()" style="flex:1;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">Archivo del banco</button>
     <button onclick="enviarNominaWhatsApp()" style="flex:1;border:1px solid #1f9d6b;background:#eaf7f1;color:#1f9d6b;border-radius:11px;padding:12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">WhatsApp</button>
   </div>
 </section>
@@ -2048,7 +2076,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       <div class="si-act" style="color:var(--amber);" onclick="doLogout()">Salir</div>
     </div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v6.2 nube · Santo Domingo, RD</div>
+  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v6.5 nube · Santo Domingo, RD</div>
 </section>
 
 <!-- NAV -->
@@ -2111,7 +2139,7 @@ window.__supabase = createClient(
 window.dispatchEvent(new Event('supabase-ready'));
 </script>
 <script>
-/* ===================== AdmBca v6.2 ===================== */
+/* ===================== AdmBca v6.5 ===================== */
 function idConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.id)||null; }catch(e){ return null; } }
 function nomConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.nombre)||'AdmBca'; }catch(e){ return 'AdmBca'; } }
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -2136,7 +2164,7 @@ const DEFAULTS={
 };
 
 let state={txns:[],branches:[],incCats:[],expCats:[],officeIncCats:[],maquinas:[],lecturas:[],denoms:[],cierres:[],cierresMes:[],config:{},desgloses:[],virtRegs:[],virtConfig:null,virtProviders:[],virtSucursalesInactivas:{},virtRenglonesInactivos:{},maqGastos:[],maqPog:[],maqCfgBanca:{},cbGastos:[],cbIngresos:[],cbOficinaGastos:[],
-  empleados:[],nomPeriodos:[],nomDetalle:[],empCuenta:[],equipos:[],mantenimientos:[],regalias:[]};
+  empleados:[],nomPeriodos:[],nomDetalle:[],empCuenta:[],equipos:[],mantenimientos:[],regalias:[],incentivos:[]};
 const VIRT_EMPRESAS=['MERENGUE','VARMANEX','VG','SOLL'];
 const VIRT_SUCURSALES=['PRIME SPORT 1','PRIME SPORT 2','PRIME SPORT 3','PRIME SPORT 4','PRIME SPORT 5','PRIME SPORT 6','PRIME SPORT 7','PRIME SPORT 8','PRIME SPORT 9','PRIME SPORT 10'];
 
@@ -2417,6 +2445,10 @@ async function loadResto(){
       fetchAllSafe('empleados','nombre'), fetchAllSafe('nomina_periodos'), fetchAllSafe('nomina_detalle'),
       fetchAllSafe('empleado_cuenta','fecha'), fetchAllSafe('equipos','sucursal'), fetchAllSafe('mantenimientos','fecha')
     ]);
+    const inc=await fetchAllSafe('incentivos');
+    state.incentivos=inc.error?[]:inc.data.map(x=>({_id:x.id,anio:x.anio,mes:x.mes,empId:x.empleado_id,
+      monto:Number(x.monto)||0,nota:x.nota||'',pagado:x.pagado===true,fechaPago:x.fecha_pago||''}));
+    state._incReady=!inc.error;
     const rg=await fetchAllSafe('regalia');
     state.regalias=rg.error?[]:rg.data.map(x=>({_id:x.id,anio:x.anio,empId:x.empleado_id,mensual:Number(x.salario_mensual)||0,
       meses:Number(x.meses)||0,monto:Number(x.monto)||0,pagado:x.pagado===true,fechaPago:x.fecha_pago||'',nota:x.nota||''}));
@@ -2755,6 +2787,16 @@ function renderAlertas(){
     if(abiertos.length) avisos.push({c:'#2d6a4f',bg:'#eef7f2',bd:'#c8e2d5',t:`${abiertos.length} mes(es) sin cerrar`,d:abiertos.map(([a,m])=>MONTHS_SHORT[m]+' '+a).join(' · '),go:'openCierreMes()'});
   }
 
+  // 4) incentivos: del 25 al 28 de cada mes
+  const hoyD=new Date();
+  if(state._incReady && puedeVer('empleados') && hoyD.getDate()>=23 && hoyD.getDate()<=28){
+    const a=hoyD.getFullYear(), m=hoyD.getMonth()+1;
+    const del=state.incentivos.filter(x=>x.anio===a&&x.mes===m&&x.monto>0);
+    const pend=del.filter(x=>!x.pagado);
+    if(!del.length) avisos.push({c:'#0086AD',bg:'#eef6fb',bd:'#cfe3ee',t:'Toca pagar los incentivos',d:`Se pagan del 25 al 28 · todavía no hay incentivos cargados para ${MONTHS[m-1]}`,go:'openIncentivos()'});
+    else if(pend.length) avisos.push({c:'#0086AD',bg:'#eef6fb',bd:'#cfe3ee',t:`${pend.length} incentivo(s) sin pagar`,d:`RD$${fmt(pend.reduce((s,x)=>s+x.monto,0))} de ${MONTHS[m-1]} · genera el archivo del banco`,go:'openIncentivos()'});
+  }
+
   if(!avisos.length){ el.innerHTML=''; return; }
   el.innerHTML='<div style="margin-bottom:16px;display:flex;flex-direction:column;gap:8px;">'+avisos.map(a=>`
     <div onclick="${a.go}" style="background:${a.bg};border:1px solid ${a.bd};border-radius:12px;padding:11px 13px;cursor:pointer;display:flex;align-items:center;gap:11px;">
@@ -2976,7 +3018,8 @@ function resetForms(){
 }
 
 /* ---------- SAVE INCOME ---------- */
-function saveIncome(){ return conBloqueo('saveBtnInc',_saveIncome); }
+let __terminarTrasGuardar=false;
+function saveIncome(fin){ __terminarTrasGuardar=!!fin; return conBloqueo(fin?'saveBtnIncFin':'saveBtnInc',_saveIncome); }
 async function _saveIncome(){
   const branch=document.getElementById('fBranchInc').value;
   const date=document.getElementById('fDateInc').value||todayISO();
@@ -3013,7 +3056,7 @@ async function _saveIncome(){
 }
 
 /* ---------- SAVE EXPENSE ---------- */
-function saveExpense(){ return conBloqueo('saveBtnExp',_saveExpense); }
+function saveExpense(fin){ __terminarTrasGuardar=!!fin; return conBloqueo(fin?'saveBtnExpFin':'saveBtnExp',_saveExpense); }
 async function _saveExpense(){
   const amount=parseFloat(document.getElementById('fAmountExp').value);
   if(!amount||amount<=0){ shake('fAmountExp'); toast('Ingresa un monto válido',false); return; }
@@ -3032,7 +3075,7 @@ async function _saveExpense(){
 }
 
 /* ---------- SAVE SALIDA ---------- */
-function saveOut(){ return conBloqueo('saveBtnOut',_saveOut); }
+function saveOut(fin){ __terminarTrasGuardar=!!fin; return conBloqueo(fin?'saveBtnOutFin':'saveBtnOut',_saveOut); }
 async function _saveOut(){
   const amount=parseFloat(document.getElementById('fAmountOut').value);
   if(!amount||amount<=0){ shake('fAmountOut'); toast('Ingresa un monto válido',false); return; }
@@ -3097,6 +3140,7 @@ function siguienteBanca(){
 // se conservan fecha y categoría, y salta a la siguiente banca.
 function afterSaveIncome(date,msg){
   const d=new Date(date+'T00:00:00'); curMonth=d.getMonth(); curYear=d.getFullYear(); updateMonthLabel();
+  if(__terminarTrasGuardar){ __terminarTrasGuardar=false; toast(msg,true); go('dash'); return; }
   document.getElementById('fAmountInc').value='';
   document.getElementById('fNoteInc').value='';
   document.querySelectorAll('#multiList input').forEach(i=>i.value='');
@@ -3114,7 +3158,16 @@ function afterSaveIncome(date,msg){
 
 function afterSave(date,msg){
   const d=new Date(date+'T00:00:00'); curMonth=d.getMonth(); curYear=d.getFullYear(); updateMonthLabel();
-  toast(msg,true); go('dash');
+  toast(msg,true);
+  if(__terminarTrasGuardar){ __terminarTrasGuardar=false; go('dash'); return; }
+  // se queda en el formulario: limpia montos y notas, conserva fecha y categoría
+  ['fAmountExp','fNoteExp','fNcf','fAmountOut','fNoteOut'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  const act=document.querySelector('.view.active');
+  if(act){
+    const primero=act.querySelector('#fAmountExp:not([disabled]), #fAmountOut:not([disabled])');
+    if(primero && primero.offsetParent!==null) primero.focus();
+  }
+  renderDash();
 }
 function uid(){ return Date.now()+''+Math.floor(Math.random()*99999); }
 function shake(id){ const el=document.getElementById(id); el.style.borderColor='var(--red)'; setTimeout(()=>el.style.borderColor='',1200); }
@@ -3276,7 +3329,7 @@ function renderEmpleados(){
   document.getElementById('empResumen').innerHTML=`
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
       <div class="panel" style="padding:10px;text-align:center;"><div style="font-size:18px;font-weight:800;">${activos.length}</div><div style="font-size:10.5px;color:var(--muted);">Empleados</div></div>
-      <div class="panel" style="padding:10px;text-align:center;"><div style="font-size:15px;font-weight:800;">RD$${fmt(nomina)}</div><div style="font-size:10.5px;color:var(--muted);">Nómina/quincena</div></div>
+      <div class="panel" style="padding:10px;text-align:center;"><div style="font-size:15px;font-weight:800;">RD$${fmt(nomina*2)}</div><div style="font-size:10.5px;color:var(--muted);">Nómina al mes</div><div style="font-size:9.5px;color:var(--muted);margin-top:1px;">RD$${fmt(nomina)} /quincena</div></div>
       <div class="panel" style="padding:10px;text-align:center;"><div style="font-size:15px;font-weight:800;color:${deudas>0?'#a37416':'var(--muted)'};">RD$${fmt(deudas)}</div><div style="font-size:10.5px;color:var(--muted);">Por cobrar</div></div>
     </div>`;
   const porSuc={};
@@ -3295,7 +3348,8 @@ function renderEmpleados(){
           <div style="font-size:11px;color:var(--muted);margin-top:2px;">${e.puesto||'—'}${e.cedula?' · '+fmtCedula(e.cedula):''}</div>
         </div>
         <div style="text-align:right;">
-          <div style="font-size:12.5px;font-weight:800;">RD$${fmt(e.salario+e.limpieza)}</div>
+          <div style="font-size:13px;font-weight:800;">RD$${fmt((e.salario+e.limpieza)*2)}<span style="font-size:9.5px;color:var(--muted);font-weight:700;"> /mes</span></div>
+          <div style="font-size:10.5px;color:var(--muted);">RD$${fmt(e.salario+e.limpieza)} por quincena</div>
           ${saldo>0?`<div style="font-size:10.5px;color:#a37416;font-weight:700;">debe ${fmt(saldo)}</div>`:''}
         </div>
       </div>`;}).join('')}`).join('') : '<div class="empty-hint" style="padding:30px;">No hay empleados con ese filtro.</div>';
@@ -3336,7 +3390,11 @@ function renderEmpFicha(){
         ${campo('efPuesto','Puesto',e.puesto)}
       </div>
       <div class="row2">${campo('efIngreso','Fecha de ingreso',e.ingreso,'date')}${campo('efSalida','Fecha de salida',e.salida,'date')}</div>
-      <div class="row2">${campo('efSalario','Salario por quincena',e.salario,'number','inputmode="decimal"')}${campo('efLimpieza','Bono limpieza',e.limpieza,'number','inputmode="decimal"')}</div>
+      <div class="row2">${campo('efSalario','Salario por quincena',e.salario,'number','inputmode="decimal" oninput="calcMensualFicha()"')}${campo('efLimpieza','Bono limpieza',e.limpieza,'number','inputmode="decimal" oninput="calcMensualFicha()"')}</div>
+      <div id="efMensual" style="background:#eef6fb;border:1px solid #cfe3ee;border-radius:10px;padding:10px 12px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:12px;color:#2f6f86;font-weight:600;">Salario mensual</span>
+        <span id="efMensualVal" style="font-size:16px;font-weight:800;color:#0086AD;">RD$0</span>
+      </div>
       <div class="row2">${campo('efBanco','Banco',e.banco)}${campo('efCuenta','Cuenta bancaria',e.cuenta)}</div>
       ${campo('efNotas','Notas',e.notas)}
       <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;margin:6px 0 12px;cursor:pointer;">
@@ -3368,6 +3426,16 @@ function renderEmpFicha(){
           <button onclick="borrarCargoEmp('${x._id}')" style="border:none;background:transparent;color:var(--muted);font-size:15px;cursor:pointer;padding:0 2px;">×</button>
         </div>`).join(''):'<div style="font-size:12px;color:var(--muted);padding:6px 0;">Sin préstamos ni faltantes registrados.</div>'}
     </div>`:''}`;
+  calcMensualFicha();
+}
+/* El salario mensual no se guarda: es la quincena más el bono, por dos.
+   Se muestra para que no haya que sacar la cuenta al vuelo. */
+function calcMensualFicha(){
+  const el=document.getElementById('efMensualVal');
+  if(!el) return;
+  const q=parseFloat((document.getElementById('efSalario')||{}).value)||0;
+  const l=parseFloat((document.getElementById('efLimpieza')||{}).value)||0;
+  el.textContent='RD$'+fmt((q+l)*2);
 }
 
 async function guardarEmpleado(){
@@ -3455,6 +3523,141 @@ async function borrarCargoEmp(id){
     state.empCuenta=state.empCuenta.filter(x=>x._id!==id);
     setSyncState('ok'); renderEmpFicha();
   }catch(e){ console.error(e); setSyncState('error'); toast('No se pudo eliminar',false); }
+}
+
+/* ---------- Incentivos del mes ----------
+   Monto variable por empleado, se pagan del 25 al 28. Se escriben a mano (se
+   puede copiar lo del mes anterior como punto de partida), se guardan y se
+   genera el archivo del banco. Al descargarlo se pueden marcar como pagados. */
+function incMesSel(){ return {a:parseInt(document.getElementById('incAnio').value), m:parseInt(document.getElementById('incMes').value)}; }
+function incDe(empId,a,m){ return state.incentivos.find(x=>x.anio===a&&x.mes===m&&x.empId===empId); }
+function incEmpleados(){
+  const orden=e=>{ const n=(e.sucursal||'').match(/\d+$/); return n?parseInt(n[0]):999; };
+  return state.empleados.filter(e=>e.activo).sort((a,b)=>orden(a)-orden(b)||a.nombre.localeCompare(b.nombre));
+}
+function openIncentivos(){
+  if(!puedeVer('empleados')){ toast('No tienes acceso a esta sección.',false); return; }
+  showOnlyView('view-incentivos');
+  const h=new Date();
+  const as=document.getElementById('incAnio'), ms=document.getElementById('incMes');
+  if(!as.options.length){
+    as.innerHTML=[h.getFullYear()-1,h.getFullYear(),h.getFullYear()+1].map(y=>`<option ${y===h.getFullYear()?'selected':''}>${y}</option>`).join('');
+    ms.innerHTML=MONTHS.map((x,i)=>`<option value="${i+1}" ${i===h.getMonth()?'selected':''}>${x}</option>`).join('');
+  }
+  renderIncentivos();
+}
+function renderIncentivos(){
+  const {a,m}=incMesSel();
+  const emps=incEmpleados();
+  const regs=emps.map(e=>incDe(e._id,a,m)).filter(Boolean);
+  const total=regs.reduce((s,x)=>s+x.monto,0);
+  const pagados=regs.filter(x=>x.pagado);
+  document.getElementById('incHero').innerHTML=`
+    <div style="background:linear-gradient(135deg,#0d3a4a,#0086AD);border-radius:15px;padding:16px;margin-bottom:12px;color:#fff;">
+      <div style="font-size:11px;color:rgba(255,255,255,.7);font-weight:700;text-transform:uppercase;letter-spacing:1px;">Incentivos · ${MONTHS[m-1]} ${a}</div>
+      <div style="font-size:27px;font-weight:800;margin:2px 0 6px;" id="incTotalVivo">RD$${fmt(total)}</div>
+      <div style="font-size:11.5px;color:rgba(255,255,255,.8);">${regs.filter(x=>x.monto>0).length} empleado(s) con incentivo${pagados.length?` · ${pagados.length} pagado(s)`:''}</div>
+    </div>`;
+  const pm=m===1?12:m-1, pa=m===1?a-1:a;
+  let suc='';
+  document.getElementById('incLista').innerHTML = emps.length ? emps.map(e=>{
+    const r=incDe(e._id,a,m), ant=incDe(e._id,pa,pm);
+    let head='';
+    if(e.sucursal!==suc){ suc=e.sucursal; head=`<div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:12px 2px 6px;">${suc}</div>`; }
+    return head+`<div class="panel" style="padding:10px 13px;margin-bottom:6px;display:flex;align-items:center;gap:10px;${r&&r.pagado?'border-left:3px solid #1f9d6b;':''}">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;">${e.nombre}</div>
+        <div style="font-size:10.5px;color:var(--muted);margin-top:2px;">${ant?`${MONTHS_SHORT[pm-1]}: RD$${fmt(ant.monto)}`:'sin incentivo el mes pasado'}${r&&r.pagado?` · pagado ${fmtDate(r.fechaPago)}`:''}${e.cuenta?'':' · <span style="color:var(--red);">sin cuenta</span>'}</div>
+      </div>
+      <div class="amount-input" style="width:120px;"><span class="cur">RD$</span>
+        <input type="number" inputmode="decimal" class="inc-monto" data-emp="${e._id}" value="${r&&r.monto?r.monto:''}" placeholder="0" oninput="incTotalVivo()" ${r&&r.pagado?'disabled':''}></div>
+    </div>`;}).join('') : '<div class="empty-hint" style="padding:30px;">No hay empleados activos.</div>';
+}
+function incTotalVivo(){
+  let t=0; document.querySelectorAll('.inc-monto').forEach(i=>t+=parseFloat(i.value)||0);
+  const el=document.getElementById('incTotalVivo'); if(el) el.textContent='RD$'+fmt(t);
+}
+function copiarIncentivosAnteriores(){
+  const {a,m}=incMesSel(); const pm=m===1?12:m-1, pa=m===1?a-1:a;
+  let n=0;
+  document.querySelectorAll('.inc-monto').forEach(i=>{
+    if(i.disabled||i.value) return;
+    const ant=incDe(i.dataset.emp,pa,pm);
+    if(ant&&ant.monto){ i.value=ant.monto; n++; }
+  });
+  incTotalVivo();
+  toast(n?`${n} monto(s) copiados de ${MONTHS[pm-1]}. Revísalos y guarda.`:'No hay montos del mes anterior para copiar',!!n);
+}
+async function guardarIncentivos(){
+  if(!puedeEditar('empleados')){ toast('No tienes permiso para editar.',false); return; }
+  const {a,m}=incMesSel();
+  return conBloqueo('btnGuardarInc', async()=>{
+    setSyncState('saving');
+    try{
+      const filas=[], borrar=[];
+      document.querySelectorAll('.inc-monto').forEach(i=>{
+        if(i.disabled) return;
+        const v=parseFloat(i.value)||0, prev=incDe(i.dataset.emp,a,m);
+        if(v>0) filas.push({anio:a,mes:m,empleado_id:i.dataset.emp,monto:v,creado_por:currentUser||null});
+        else if(prev) borrar.push(prev._id);
+      });
+      if(filas.length){
+        const {data,error}=await sb.from('incentivos').upsert(filas,{onConflict:'consorcio_id,anio,mes,empleado_id'}).select();
+        if(error)throw error;
+        data.forEach(x=>{
+          const o={_id:x.id,anio:x.anio,mes:x.mes,empId:x.empleado_id,monto:Number(x.monto)||0,nota:x.nota||'',pagado:x.pagado===true,fechaPago:x.fecha_pago||''};
+          const k=state.incentivos.findIndex(y=>y.anio===o.anio&&y.mes===o.mes&&y.empId===o.empId);
+          if(k>=0) state.incentivos[k]=o; else state.incentivos.push(o);
+        });
+      }
+      for(const id of borrar){
+        await sb.from('incentivos').delete().eq('id',id);
+        state.incentivos=state.incentivos.filter(x=>x._id!==id);
+      }
+      setSyncState('ok'); toast(`Incentivos guardados · ${filas.length} empleado(s)`,true); renderIncentivos();
+    }catch(e){ console.error(e); setSyncState('error'); toast('NO se guardaron. Revisa tu conexión.',false); }
+  });
+}
+async function exportIncentivosBanco(){
+  const {a,m}=incMesSel();
+  // si hay cambios sin guardar, avisar primero
+  const sinGuardar=[...document.querySelectorAll('.inc-monto')].some(i=>{
+    if(i.disabled) return false;
+    const r=incDe(i.dataset.emp,a,m); return (parseFloat(i.value)||0)!==(r?r.monto:0);
+  });
+  if(sinGuardar){ toast('Guarda los incentivos antes de generar el archivo',false); return; }
+  const orig=ctaOrigenNomina(), lineas=[], faltan=[], incluidos=[]; let total=0;
+  incEmpleados().forEach(e=>{
+    const r=incDe(e._id,a,m);
+    if(!r||r.pagado||r.monto<=0) return;
+    const cta=ctaDestino(e.cuenta);
+    if(!cta){ faltan.push(`${e.nombre} (RD$${fmt(r.monto)})`); return; }
+    lineas.push(['CC','DOP',orig,'CA','DOP',cta,(Math.round(r.monto*100)/100).toFixed(2),descPago(e,'INCENTIVO')].join(','));
+    incluidos.push(r); total+=r.monto;
+  });
+  bajarArchivoBanco(lineas, `PAGO_INCENTIVO_${MONTHS[m-1].toUpperCase()}_PRIME.txt`, faltan, total);
+  if(!lineas.length) return;
+  if(confirm(`¿Marcar estos ${incluidos.length} incentivos como pagados hoy?\n\nAsí no se vuelven a incluir si generas el archivo otra vez.`)){
+    setSyncState('saving');
+    try{
+      const ids=incluidos.map(x=>x._id), hoy=todayISO();
+      const {error}=await sb.from('incentivos').update({pagado:true,fecha_pago:hoy}).in('id',ids);
+      if(error)throw error;
+      incluidos.forEach(x=>{ x.pagado=true; x.fechaPago=hoy; });
+      setSyncState('ok'); renderIncentivos();
+    }catch(e){ console.error(e); setSyncState('error'); toast('El archivo se bajó, pero no se pudieron marcar como pagados',false); }
+  }
+}
+function enviarIncentivosWhatsApp(){
+  const {a,m}=incMesSel();
+  let t=`*INCENTIVOS ${MONTHS[m-1].toUpperCase()} ${a} · ${nomConsorcio()}*\n`, suc='', tot=0;
+  incEmpleados().forEach(e=>{
+    const r=incDe(e._id,a,m); if(!r||r.monto<=0) return;
+    if(e.sucursal!==suc){ suc=e.sucursal; t+=`\n_${suc.replace('PRIME SPORT','PS')}_\n`; }
+    t+=`${e.nombre}: RD$${fmt(r.monto)}\n`; tot+=r.monto;
+  });
+  t+=`\n*TOTAL: RD$${fmt(tot)}*`;
+  window.open('https://wa.me/'+corteWaNumber()+'?text='+encodeURIComponent(t),'_blank');
 }
 
 /* ---------- Doble sueldo (regalía) ----------
@@ -3577,14 +3780,17 @@ function regFilasActuales(){
       return na-nb || a.e.nombre.localeCompare(b.e.nombre);});
 }
 function exportRegaliaCSV(){
-  const filas=[['Empleado','Cédula','Banca','Cuenta','Salario mensual','Meses','Regalía','Pagada']];
-  regFilasActuales().forEach(({e,g})=>filas.push([e.nombre,fmtCedula(e.cedula),e.sucursal,e.cuenta,g.mensual,g.meses,g.monto,g.pagado?'Sí':'No']));
-  const csv=filas.map(r=>r.map(x=>/[",;\n]/.test(String(x))?'"'+String(x).replace(/"/g,'""')+'"':x).join(',')).join('\n');
-  const url=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
-  const a=document.createElement('a'); a.href=url; a.download=`regalia_${regAnioCur}.csv`;
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),1500);
-  toast('CSV descargado',true);
+  const orig=ctaOrigenNomina(), lineas=[], faltan=[]; let total=0;
+  regFilasActuales().forEach(({e,g})=>{
+    if(g.pagado) return;
+    const monto=Math.round(g.monto*100)/100;
+    if(monto<=0) return;
+    const cta=ctaDestino(e.cuenta);
+    if(!cta){ faltan.push(`${e.nombre} (RD$${fmt(monto)})`); return; }
+    lineas.push(['CC','DOP',orig,'CA','DOP',cta,monto.toFixed(2),descPago(e,'DOBLE SUELDO')].join(','));
+    total+=monto;
+  });
+  bajarArchivoBanco(lineas, `PAGO_DOBLE_SUELDO_${regAnioCur}_PRIME.txt`, faltan, total);
 }
 function enviarRegaliaWhatsApp(){
   const filas=regFilasActuales();
@@ -3660,7 +3866,7 @@ function renderNomina(){
     return head+`<div onclick="abrirNominaEmp('${e._id}')" class="panel" style="padding:11px 13px;margin-bottom:6px;display:flex;align-items:center;gap:10px;cursor:pointer;${d._nueva?'border-left:3px solid var(--line);':'border-left:3px solid #1f9d6b;'}">
       <div style="flex:1;min-width:0;">
         <div style="font-size:13px;font-weight:700;">${e.nombre}</div>
-        <div style="font-size:10.5px;color:var(--muted);margin-top:2px;">${d._nueva?'sin guardar':'guardada'}${desc?' · descuentos RD$'+fmt(desc):''}${saldo>0?' · debe RD$'+fmt(saldo):''}</div>
+        <div style="font-size:10.5px;color:var(--muted);margin-top:2px;">Mensual RD$${fmt((e.salario+e.limpieza)*2)} · ${d._nueva?'sin guardar':'guardada'}${desc?' · descuentos RD$'+fmt(desc):''}${saldo>0?' · debe RD$'+fmt(saldo):''}</div>
       </div>
       <div style="font-size:14px;font-weight:800;color:${bal<0?'var(--red)':'var(--ink)'};">RD$${fmt(bal)}</div>
     </div>`;}).join('') : '<div class="empty-hint" style="padding:30px;">No hay empleados activos.</div>';
@@ -3693,7 +3899,8 @@ function renderNominaEmp(){
       ${NOM_DESC.map(([k,l])=>inp(k,l)).join('')}
       <div class="fld" style="margin-bottom:0;"><label style="font-size:11.5px;">Nota</label><input type="text" id="ne_nota" value="${(d.nota||'').replace(/"/g,'&quot;')}"></div>
     </div>
-    <button id="btnGuardarNom" onclick="guardarNominaEmp()" class="btn-primary" style="width:100%;padding:13px;margin-bottom:26px;">Guardar quincena</button>`;
+    <button id="btnGuardarNom" onclick="guardarNominaEmp(false)" class="btn-primary" style="width:100%;padding:13px;">Guardar y seguir con el próximo</button>
+    <button id="btnGuardarNomFin" onclick="guardarNominaEmp(true)" style="width:100%;margin-top:9px;margin-bottom:26px;border:1.5px solid #1f9d6b;background:#eaf7f1;border-radius:12px;padding:12px;font-size:13.5px;font-weight:700;color:#1f9d6b;cursor:pointer;font-family:inherit;">Guardar y terminar</button>`;
   recalcNominaEmp();
 }
 function neVal(k){ const el=document.getElementById('ne_'+k); return el?(parseFloat(el.value)||0):0; }
@@ -3707,11 +3914,19 @@ function recalcNominaEmp(){
     </div>`;
 }
 
-async function guardarNominaEmp(){
+function nomSiguienteEmp(){
+  const lista=state.empleados.filter(x=>x.activo).sort((a,b)=>{
+    const na=parseInt((a.sucursal.match(/\d+$/)||['999'])[0]), nb=parseInt((b.sucursal.match(/\d+$/)||['999'])[0]);
+    return na-nb || a.nombre.localeCompare(b.nombre);
+  });
+  const i=lista.findIndex(x=>x._id===nomEmpCur._id);
+  return (i>=0 && i+1<lista.length) ? lista[i+1] : null;
+}
+async function guardarNominaEmp(terminar){
   if(!puedeEditar('empleados')){ toast('No tienes permiso para editar.',false); return; }
   const a=parseInt(document.getElementById('nomAnio').value), m=parseInt(document.getElementById('nomMes').value), q=parseInt(document.getElementById('nomQ').value);
   const e=nomEmpCur;
-  return conBloqueo('btnGuardarNom', async()=>{
+  return conBloqueo(terminar?'btnGuardarNomFin':'btnGuardarNom', async()=>{
     setSyncState('saving');
     try{
       let per=nomPeriodoActual();
@@ -3741,7 +3956,11 @@ async function guardarNominaEmp(){
          esta misma quincena si se está corrigiendo. */
       await sincronizarAbonos(per, e, prev, obj);
 
-      setSyncState('ok'); toast('Quincena guardada',true); openNomina();
+      setSyncState('ok');
+      if(terminar){ toast('Quincena guardada',true); openNomina(); return; }
+      const sig=nomSiguienteEmp();
+      if(sig){ toast(`Guardada · sigue ${sig.nombre}`,true); abrirNominaEmp(sig._id); }
+      else { toast('Guardada · era el último',true); openNomina(); }
     }catch(err){ console.error(err); setSyncState('error'); toast('NO se guardó. Revisa tu conexión.',false); }
   });
 }
@@ -3769,21 +3988,55 @@ async function sincronizarAbonos(per, emp, prev, obj){
 
 function nomFilasActuales(){
   const per=nomPeriodoActual();
-  return state.empleados.filter(e=>e.activo).map(e=>({e,d:nomFila(e,per)}));
+  // por banca (P1, P2…) y la oficina al final, igual que el archivo del banco
+  const orden=e=>{ const n=(e.sucursal||'').match(/\d+$/); return n?parseInt(n[0]):999; };
+  return state.empleados.filter(e=>e.activo)
+    .sort((a,b)=>orden(a)-orden(b)||a.nombre.localeCompare(b.nombre))
+    .map(e=>({e,d:nomFila(e,per)}));
+}
+/* ---------- Archivo de pago para el banco ----------
+   Mismo formato del archivo que se sube al banco, separado por comas, sin
+   encabezado, una línea por empleado:
+   CC,DOP,<cuenta origen>,CA,DOP,<cuenta destino>,<monto>,<descripción>
+   La cuenta destino son los últimos 10 dígitos de la cuenta registrada en la
+   ficha. Sin BOM ni comillas: el banco lee el archivo tal cual. */
+const CTA_ORIGEN_DEFECTO='9606998817';
+function ctaOrigenNomina(){ return String((state.config&&state.config.cuenta_nomina_origen)||CTA_ORIGEN_DEFECTO).replace(/\D/g,''); }
+function ctaDestino(c){ const d=String(c||'').replace(/\D/g,''); return d.length>10 ? d.slice(-10) : d; }
+function descPago(e, prefijo){
+  const p=(e.puesto||'').toLowerCase();
+  // en la nómina van solas, como en el archivo del banco; en incentivo y
+  // doble sueldo llevan el prefijo para distinguirlas en el estado de cuenta
+  const pre = prefijo==='PAGO NOMINA' ? '' : prefijo+' ';
+  if(/ruta|mensaj/.test(p)) return pre+'RUTA';
+  if(!e.sucursal || /oficina|administ/i.test(e.sucursal)) return pre+'OFICINA';
+  const n=(e.sucursal.match(/\d+$/)||[''])[0];
+  return `${prefijo} P${n}`;
+}
+function bajarArchivoBanco(lineas, nombre, faltan, total){
+  if(!lineas.length){ toast('No hay pagos que incluir en el archivo',false); return; }
+  let msg=`Archivo del banco\n\n${lineas.length} pago(s) · RD$${fmt(total)}\nCuenta origen: ${ctaOrigenNomina()}`;
+  if(faltan.length) msg+=`\n\n⚠️ Quedan FUERA por no tener cuenta registrada:\n${faltan.map(n=>'• '+n).join('\n')}\n\nA esos hay que pagarles aparte o completar su ficha.`;
+  if(!confirm(msg+'\n\n¿Descargar?')) return;
+  const txt=lineas.join('\r\n')+'\r\n';
+  const url=URL.createObjectURL(new Blob([txt],{type:'text/plain'}));
+  const el=document.createElement('a'); el.href=url; el.download=nombre;
+  document.body.appendChild(el); el.click(); el.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+  toast('Archivo del banco descargado',true);
 }
 function exportNominaCSV(){
   const a=document.getElementById('nomAnio').value, m=parseInt(document.getElementById('nomMes').value), q=document.getElementById('nomQ').value;
-  const filas=[['Cuenta','Empleado','Cédula','Banca'].concat(NOM_ING.map(x=>x[1]), NOM_DESC.map(x=>'− '+x[1]), ['Balance'])];
+  const orig=ctaOrigenNomina(), lineas=[], faltan=[]; let total=0;
   nomFilasActuales().forEach(({e,d})=>{
-    filas.push([e.cuenta,e.nombre,fmtCedula(e.cedula),e.sucursal]
-      .concat(NOM_ING.map(([k])=>d[k]||0), NOM_DESC.map(([k])=>d[k]||0), [nomBalance(d)]));
+    const monto=Math.round(nomBalance(d)*100)/100;
+    if(monto<=0) return;
+    const cta=ctaDestino(e.cuenta);
+    if(!cta){ faltan.push(`${e.nombre} (RD$${fmt(monto)})`); return; }
+    lineas.push(['CC','DOP',orig,'CA','DOP',cta,monto.toFixed(2),descPago(e,'PAGO NOMINA')].join(','));
+    total+=monto;
   });
-  const csv=filas.map(r=>r.map(x=>/[",;\n]/.test(String(x))?'"'+String(x).replace(/"/g,'""')+'"':x).join(',')).join('\n');
-  const url=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
-  const el=document.createElement('a'); el.href=url; el.download=`nomina_${a}_${String(m).padStart(2,'0')}_Q${q}.csv`;
-  document.body.appendChild(el); el.click(); el.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),1500);
-  toast('CSV descargado',true);
+  bajarArchivoBanco(lineas, `PAGO_NOMINA_${MONTHS[m-1].toUpperCase()}_Q${q}_PRIME.txt`, faltan, total);
 }
 function enviarNominaWhatsApp(){
   const a=document.getElementById('nomAnio').value, m=parseInt(document.getElementById('nomMes').value), q=document.getElementById('nomQ').value;
@@ -9441,6 +9694,32 @@ setInterval(async ()=>{
   if(document.getElementById('appRoot').style.display==='none') return;
   mostrarBarraSesion(!(await sesionActiva()));
 }, 300000);
+
+/* ---------- Enter avanza de campo, igual que el Tab ----------
+   Al registrar desde la PC se teclea seguido; parar a dar Tab rompe el ritmo.
+   Enter salta al siguiente campo y, cuando ya no hay más, al botón de guardar
+   (sin apretarlo: hay que confirmarlo a propósito). Shift+Enter va hacia atrás. */
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Enter'||e.altKey||e.ctrlKey||e.metaKey) return;
+  const el=e.target;
+  if(!el||!el.tagName) return;
+  const tag=el.tagName.toLowerCase();
+  if(tag==='textarea'||tag==='button'||el.isContentEditable) return;
+  if(tag==='input'&&['checkbox','radio','submit','button','file'].includes((el.type||'').toLowerCase())) return;
+  if(tag!=='input'&&tag!=='select') return;
+  const vista=el.closest('.view')||document;
+  // visible = ni el campo ni ninguno de sus contenedores está oculto
+  const visible=x=>{ for(let n=x;n&&n!==vista;n=n.parentElement){ if(getComputedStyle(n).display==='none'||n.hidden) return false; } return true; };
+  const campos=Array.from(vista.querySelectorAll('input,select,button'))
+    .filter(x=>!x.disabled && visible(x)
+      && !['checkbox','radio','hidden','file'].includes((x.type||'').toLowerCase()));
+  const i=campos.indexOf(el);
+  if(i<0) return;
+  e.preventDefault();
+  const sig = e.shiftKey ? campos[i-1] : campos[i+1];
+  if(sig){ sig.focus(); if(sig.select) try{ sig.select(); }catch(_){} }
+  else el.blur();
+});
 
 /* ---------- Aviso antes de perder lo que se está escribiendo ---------- */
 let __sinGuardar=false;
