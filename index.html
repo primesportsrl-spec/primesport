@@ -661,17 +661,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       </div>
       <div class="fld" id="outReasonBlock">
         <label>Motivo del retiro</label>
-        <select id="fOutReason">
-          <option>Retiro de socio</option>
-          <option>Depósito a banco</option>
-          <option>Pago de premio</option>
-          <option>Pago a proveedor / merengue</option>
-          <option>Impuestos (DGII / TSS)</option>
-          <option>Gasto de oficina</option>
-          <option>Capitalización de fondo de banca</option>
-          <option>Recolección central</option>
-          <option>Otro</option>
-        </select>
+        <select id="fOutReason"></select>
       </div>
       <div class="fld"><label>Fecha</label><input type="date" id="fDateOut" onchange="pintarDia('fDateOut')"><div id="fDateOut_dia" class="dia-hint"></div></div>
       <div class="fld"><label>Nota (opcional)</label><input type="text" id="fNoteOut" placeholder="Detalle o referencia…"></div>
@@ -1625,7 +1615,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">Toca el botón azul <b>+</b> abajo en el centro. Elige el tipo:<br><br>
     • <b style="color:var(--green);">▲ Operaciones</b>: ingresos por categoría (Deportiva, Máquinas, Virtuales, PinBet). Si la banca pierde, el balance es negativo — sigue siendo una operación, no un gasto.<br>
     • <b style="color:var(--red);">▼ Gasto</b>: gastos generales (Local, Energía, Salarios…) con opción de NCF.<br>
-    • <b style="color:var(--amber);">↗ Salida</b>: retiros de efectivo o <b>transferencias</b> entre cajas (préstamos y devoluciones).<br><br>
+    • <b style="color:var(--amber);">↗ Salida</b>: retiros de efectivo o <b>transferencias</b> entre cajas (préstamos y devoluciones). Los <b>motivos del retiro</b> se agregan o quitan en <b>Ajustes → Categorías de salida</b>.<br><br>
     Modo <b>"Varias a la vez"</b>: registra todas las categorías de una banca en una sola pantalla. La fecha puede ser pasada.</div>
   </div>
 
@@ -1710,9 +1700,12 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
   <div class="panel">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><div style="width:30px;height:30px;border-radius:9px;background:#1a2e1f;color:#4cd6a0;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">7</div><h3 style="font-size:15px;font-weight:700;">Cierre de Mes</h3></div>
     <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">Desde <b>Inicio</b>, tarjeta verde <b>"Cierre de Mes"</b>. Al terminar el mes, cierras el período y decides qué hacer con el saldo:<br><br>
-    • <b>Saldo a considerar</b>: pendiente en bancas, balance de oficina, o ambos.<br>
+    • <b>Qué toma</b>: el mismo <b>Balance en Oficina</b> y <b>Pendientes en bancas</b> del <b>Corte diario del día 1</b> del mes siguiente, porque lo recibido el 1 es la última jornada del mes. Si cierras días después, sigue tomando la foto del día 1.<br>
+    • <b>Cuándo</b>: el 1 del mes siguiente, después de cerrar el corte de ese día. La pantalla abre sola en el <b>mes anterior</b>; un mes que no ha terminado no se deja cerrar.<br>
+    • <b>Saldo a considerar</b>: pendientes en bancas, balance en oficina, o ambos.<br>
     • <b>Modo</b>: <b>arrastrar</b> el saldo al mes siguiente, o <b>cerrar en 0</b>.<br>
     • El saldo arrastrado aparece automáticamente en el mes siguiente.<br>
+    • El cierre guarda esa foto. Si después corriges algo fechado hasta el día 1, la pantalla te avisa: <b>reábrelo y ciérralo de nuevo</b>.<br>
     • Queda un <b>historial de cierres</b> y puedes <b>reabrir</b> un mes si necesitas corregir.<br><br>
     <b>Por qué importa:</b> lo recibido a inicios de un mes que pertenece a jornadas del mes anterior cuenta en el mes correcto. El cierre te da el corte limpio sin tener que filtrar fechas a mano.</div>
   </div>
@@ -2053,6 +2046,13 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     <div class="add-inline"><input type="text" id="newExpCat" placeholder="Local, energía eléctrica…"><button onclick="addExpCat()">+</button></div>
   </div>
 
+  <div class="section-label">Categorías de salida</div>
+  <div class="set-list editable-list" id="outCatList"></div>
+  <div class="set-list" style="margin-top:-8px;">
+    <div class="add-inline"><input type="text" id="newOutCat" placeholder="Pago de préstamo, retiro de socio…"><button onclick="addOutCat()">+</button></div>
+  </div>
+  <div style="font-size:11.5px;color:var(--muted);padding:0 4px 14px;line-height:1.5;">Son los <b>motivos del retiro</b> que salen al registrar una <b>↗ Salida</b>. Borrar una categoría no cambia las salidas que ya la usaron.</div>
+
   <div class="section-label">Datos</div>
   <div class="set-list">
     <div class="set-item">
@@ -2076,7 +2076,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       <div class="si-act" style="color:var(--amber);" onclick="doLogout()">Salir</div>
     </div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v6.5 nube · Santo Domingo, RD</div>
+  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v6.7 nube · Santo Domingo, RD</div>
 </section>
 
 <!-- NAV -->
@@ -2139,7 +2139,7 @@ window.__supabase = createClient(
 window.dispatchEvent(new Event('supabase-ready'));
 </script>
 <script>
-/* ===================== AdmBca v6.5 ===================== */
+/* ===================== AdmBca v6.7 ===================== */
 function idConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.id)||null; }catch(e){ return null; } }
 function nomConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.nombre)||'AdmBca'; }catch(e){ return 'AdmBca'; } }
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -2163,7 +2163,7 @@ const DEFAULTS={
   expCats:['Local / Alquiler','Energía eléctrica','Nómina / Personal','Internet y teléfono','Mantenimiento','Suministros','Impuestos / DGII','Transporte','Publicidad','Otros gastos']
 };
 
-let state={txns:[],branches:[],incCats:[],expCats:[],officeIncCats:[],maquinas:[],lecturas:[],denoms:[],cierres:[],cierresMes:[],config:{},desgloses:[],virtRegs:[],virtConfig:null,virtProviders:[],virtSucursalesInactivas:{},virtRenglonesInactivos:{},maqGastos:[],maqPog:[],maqCfgBanca:{},cbGastos:[],cbIngresos:[],cbOficinaGastos:[],
+let state={txns:[],branches:[],incCats:[],expCats:[],outCats:[],officeIncCats:[],maquinas:[],lecturas:[],denoms:[],cierres:[],cierresMes:[],config:{},desgloses:[],virtRegs:[],virtConfig:null,virtProviders:[],virtSucursalesInactivas:{},virtRenglonesInactivos:{},maqGastos:[],maqPog:[],maqCfgBanca:{},cbGastos:[],cbIngresos:[],cbOficinaGastos:[],
   empleados:[],nomPeriodos:[],nomDetalle:[],empCuenta:[],equipos:[],mantenimientos:[],regalias:[],incentivos:[]};
 const VIRT_EMPRESAS=['MERENGUE','VARMANEX','VG','SOLL'];
 const VIRT_SUCURSALES=['PRIME SPORT 1','PRIME SPORT 2','PRIME SPORT 3','PRIME SPORT 4','PRIME SPORT 5','PRIME SPORT 6','PRIME SPORT 7','PRIME SPORT 8','PRIME SPORT 9','PRIME SPORT 10'];
@@ -2324,6 +2324,10 @@ async function loadState(){
   state.expCats=cg.data.map(c=>c.nombre);
   state._expCatIds=Object.fromEntries(cg.data.map(c=>[c.nombre,c.id]));
   state.officeIncCats=ta.data.map(a=>a.nombre);
+  try{
+    const cs=await fetchAllSafe('categorias_salida','orden');
+    state.outCats=cs.error?[]:cs.data.slice().sort((a,b)=>(a.orden-b.orden)||String(a.creado).localeCompare(String(b.creado))).map(c=>({name:c.nombre,_id:c.id,orden:c.orden}));
+  }catch(e){ state.outCats=[]; }
   state._aporteIds=Object.fromEntries(ta.data.map(a=>[a.nombre,a.id]));
   state.txns=movRows.map(dbToTxn);
   console.log('Movimientos cargados:',state.txns.length);
@@ -2614,6 +2618,15 @@ async function cloudDeleteTxn(id){
 async function cloudDeleteBranch(id){ if(id) await sb.from('sucursales').delete().eq('id',id); }
 async function cloudDeleteIncCat(id){ if(id) await sb.from('categorias_ingreso').delete().eq('id',id); }
 async function cloudAddExpCat(name){ const {data}=await sb.from('categorias_gasto').insert({nombre:name}).select(); if(data&&data[0])state._expCatIds[name]=data[0].id; }
+const OUT_CATS_BASE=['Retiro de socio','Depósito a banco','Pago de premio','Pago a proveedor / merengue','Impuestos (DGII / TSS)','Gasto de oficina','Capitalización de fondo de banca','Recolección central','Otro'];
+function outCatNames(){ return state.outCats&&state.outCats.length?state.outCats.map(c=>c.name):OUT_CATS_BASE; }
+function fillOutReasons(){
+  const sel=document.getElementById('fOutReason'); if(!sel) return;
+  const prev=sel.value;
+  const esc=x=>String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+  sel.innerHTML=outCatNames().map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  if(prev&&outCatNames().includes(prev)) sel.value=prev;
+}
 async function cloudDeleteExpCat(name){ const id=state._expCatIds&&state._expCatIds[name]; if(id) await sb.from('categorias_gasto').delete().eq('id',id); }
 
 function seed(){ /* no-op in cloud mode; data comes from Supabase */ }
@@ -2932,6 +2945,7 @@ function renderFormOptions(){
     sortBranchesNum(activeBranches().filter(b=>!b.isOffice)).map(b=>`<option>${b.name}</option>`).join('');
   document.getElementById('incCatChips').innerHTML=state.incCats.map(c=>`<div class="chip" data-cat="${c.name}" onclick="pickIncCat('${c.name.replace(/'/g,"\\'")}')">${c.name}</div>`).join('');
   document.getElementById('fExpCat').innerHTML=state.expCats.map(c=>`<option>${c}</option>`).join('');
+  fillOutReasons();
   selIncCat=null;
   document.getElementById('incSubBlock').style.display='none';
 }
@@ -7266,7 +7280,9 @@ async function guardarDesglose(){
 // ==========================================================
 // CIERRE DE MES (Fase 3)
 // ==========================================================
-let cmMesCur=new Date().getMonth()+1, cmAnioCur=new Date().getFullYear();
+// Por defecto se abre en el MES ANTERIOR (el que ya terminó), que es el que toca cerrar.
+let cmMesCur=new Date().getMonth()===0?12:new Date().getMonth(), cmAnioCur=new Date().getMonth()===0?new Date().getFullYear()-1:new Date().getFullYear();
+function cmMesTerminado(anio,mes){ const h=new Date(); return anio<h.getFullYear()||(anio===h.getFullYear()&&mes<h.getMonth()+1); }
 
 function openCierreMes(){
   if(!moduloListo()) return;
@@ -7274,13 +7290,46 @@ function openCierreMes(){
   const mesSel=document.getElementById('cmMesSel');
   mesSel.innerHTML=MONTHS.map((m,i)=>`<option value="${i+1}" ${(i+1)===cmMesCur?'selected':''}>${m}</option>`).join('');
   const anioSel=document.getElementById('cmAnioSel');
-  anioSel.innerHTML=[2024,2025,2026,2027].map(y=>`<option value="${y}" ${y===cmAnioCur?'selected':''}>${y}</option>`).join('');
+  const yNow=new Date().getFullYear();
+  anioSel.innerHTML=[...new Set([2024,2025,2026,2027,yNow,yNow+1])].sort().map(y=>`<option value="${y}" ${y===cmAnioCur?'selected':''}>${y}</option>`).join('');
   renderCierreMes();
 }
 
 // Balance del mes por jornada (neto real de caja)
 function cmMonthTxns(anio,mes){
   return state.txns.filter(t=>{ const d=new Date(monthDate(t)+'T00:00:00'); return d.getMonth()===(mes-1)&&d.getFullYear()===anio; });
+}
+/* El mes M se cierra con la foto del corte del DÍA 1 del mes siguiente:
+   lo que se recibe el 1 corresponde a la última jornada del mes.
+   Balance en Oficina y Pendientes en bancas se calculan igual que en el
+   Corte diario (liveFund / bankPending), con todo lo fechado hasta ese día. */
+function cmCorteFecha(anio,mes){ const a=mes===12?anio+1:anio, m=mes===12?1:mes+1; return `${a}-${String(m).padStart(2,'0')}-01`; }
+function cmSnapshot(anio,mes){
+  const corte=cmCorteFecha(anio,mes);
+  const txs=state.txns.filter(t=>(t.date||'')<=corte);
+  const office=officeName();
+  let officeBal=branchFund(office);
+  txs.forEach(t=>{
+    if(t.branch===office){
+      if(t.type==='income') officeBal+=t.amount;
+      else if(t.type==='expense'||t.type==='out') officeBal-=t.amount;
+      else if(t.type==='collect') officeBal-=t.moved;
+    }
+    if(t.type==='out'&&t.outKind==='transfer'&&t.dest===office) officeBal+=t.amount;
+    if(t.type==='collect'&&t.office===office) officeBal+=t.moved;
+  });
+  const banks=state.branches.filter(b=>!b.isOffice&&b.activa!==false).map(b=>b.name);
+  let pend=0;
+  banks.forEach(name=>{
+    txs.forEach(t=>{
+      if(t.branch!==name||t.isOffice) return;
+      if(t.type==='income') pend+=t.amount;
+      else if(t.type==='expense') pend-=t.amount;
+      else if(t.type==='out'&&t.outKind!=='transfer') pend-=t.amount;
+      else if(t.type==='collect') pend-=t.moved;
+    });
+  });
+  return {corte, officeBal:Math.round(officeBal*100)/100, pendiente:Math.round(pend*100)/100};
 }
 function cmBalance(anio,mes){
   const txns=cmMonthTxns(anio,mes);
@@ -7292,9 +7341,9 @@ function cmBalance(anio,mes){
   const movido=txns.filter(t=>t.type==='collect').reduce((s,t)=>s+t.moved,0);
   const inc=txns.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
   const netoReal=movido-exp-withdraw-tOut+tIn;
-  // Pendiente en bancas = generado − movido (del mes, por jornada)
-  const pendiente=inc-movido;
-  return {netoReal, pendiente, movido, inc, exp, salidas:withdraw+tOut};
+  const snap=cmSnapshot(anio,mes);
+  // pendiente y netoReal = la foto del corte del día 1 siguiente (igual que el Corte diario)
+  return {netoReal:snap.officeBal, pendiente:snap.pendiente, corte:snap.corte, movidoMes:movido, netoMes:netoReal, movido, inc, exp, salidas:withdraw+tOut};
 }
 
 function renderCierreMes(){
@@ -7307,15 +7356,19 @@ function renderCierreMes(){
   const prevCierre=state.cierresMes.find(c=>c.anio===prevAnio&&c.mes===prevMes);
   const arrastre=prevCierre&&prevCierre.modo==='arrastrar'?prevCierre.saldoArrastrado:0;
 
+  const fc=new Date(bal.corte+'T00:00:00');
+  const corteTxt=`${fc.getDate()} de ${MONTHS[fc.getMonth()]}`;
+  const corteCerrado=typeof isDayClosed==='function'&&isDayClosed(bal.corte);
   document.getElementById('cmResumen').innerHTML=`
     <div style="background:linear-gradient(135deg,#101820,#16242f);border-radius:15px;padding:16px;margin-bottom:14px;color:#fff;">
-      <div style="font-size:11px;color:rgba(255,255,255,.78);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">Balance del mes · ${MONTHS[cmMesCur-1]} ${cmAnioCur}</div>
-      <div style="font-size:26px;font-weight:800;color:${bal.netoReal<0?'#f08980':'#7ce6b3'};">RD$${fmt(bal.netoReal)}</div>
-      <div style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap;">
-        <div><div style="font-size:9.5px;color:rgba(255,255,255,.6);text-transform:uppercase;">Movido</div><div style="font-size:13px;font-weight:700;">RD$${fmt(bal.movido)}</div></div>
-        <div><div style="font-size:9.5px;color:rgba(255,255,255,.6);text-transform:uppercase;">Pendiente bancas</div><div style="font-size:13px;font-weight:700;color:#f0b46a;">RD$${fmt(bal.pendiente)}</div></div>
-        ${arrastre?`<div><div style="font-size:9.5px;color:rgba(255,255,255,.6);text-transform:uppercase;">Arrastre mes ant.</div><div style="font-size:13px;font-weight:700;color:#7ce6b3;">RD$${fmt(arrastre)}</div></div>`:''}
+      <div style="font-size:11px;color:rgba(255,255,255,.78);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Cierre de ${MONTHS[cmMesCur-1]} ${cmAnioCur} · corte del ${corteTxt}</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;">
+        <div><div style="font-size:9.5px;color:rgba(255,255,255,.6);text-transform:uppercase;">Balance en Oficina</div><div style="font-size:24px;font-weight:800;color:${bal.netoReal<0?'#f08980':'#7ce6b3'};">RD$${fmt(bal.netoReal)}</div></div>
+        <div><div style="font-size:9.5px;color:rgba(255,255,255,.6);text-transform:uppercase;">Pendientes en bancas</div><div style="font-size:24px;font-weight:800;color:#f0b46a;">RD$${fmt(bal.pendiente)}</div></div>
       </div>
+      <div style="font-size:11px;color:rgba(255,255,255,.62);margin-top:8px;line-height:1.5;">Igual que el Corte diario, con todo lo fechado hasta el ${corteTxt}. Movimiento del mes: recogido RD$${fmt(bal.movidoMes)} · gastos RD$${fmt(bal.exp)} · salidas RD$${fmt(bal.salidas)}.</div>
+      ${arrastre?`<div style="font-size:12px;margin-top:8px;"><span style="color:rgba(255,255,255,.6);">Arrastre del mes anterior:</span> <b style="color:#7ce6b3;">RD$${fmt(arrastre)}</b></div>`:''}
+      ${!corteCerrado&&cmMesTerminado(cmAnioCur,cmMesCur)?`<div style="font-size:11.5px;margin-top:8px;color:#f0b46a;">⚠️ El corte del ${corteTxt} todavía no está cerrado.</div>`:''}
     </div>`;
 
   // ¿Ya cerrado?
@@ -7325,8 +7378,12 @@ function renderCierreMes(){
   if(cierre){
     accDiv.style.display='none';
     yaDiv.style.display='block';
+    const cambioP=Math.round(bal.pendiente-cierre.pendienteBancas), cambioO=Math.round(bal.netoReal-cierre.balanceOficina);
+    const prematuro=cierre.creado&&(()=>{const c=new Date(cierre.creado); return c.getFullYear()<cmAnioCur||(c.getFullYear()===cmAnioCur&&c.getMonth()+1<=cmMesCur);})();
+    const aviso=(cambioP||cambioO||prematuro)?`<div style="background:#fdf6e8;border:1px solid #f0d9a8;color:#8a5a0b;border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.5;margin-bottom:10px;">
+        ⚠️ ${prematuro?'Este mes se cerró <b>antes de terminar</b>. ':''}${(cambioP||cambioO)?`Los números cambiaron desde el cierre: pendiente guardado RD$${fmt(cierre.pendienteBancas)} → hoy RD$${fmt(bal.pendiente)} · oficina guardado RD$${fmt(cierre.balanceOficina)} → hoy RD$${fmt(bal.netoReal)}. `:''}Reábrelo y ciérralo de nuevo para que el arrastre quede correcto.</div>`:'';
     yaDiv.innerHTML=`<div class="panel" style="padding:16px;margin-bottom:14px;border-left:4px solid var(--green);">
-      <div style="font-size:13px;font-weight:800;color:var(--green);margin-bottom:6px;">✓ Mes cerrado</div>
+      <div style="font-size:13px;font-weight:800;color:var(--green);margin-bottom:6px;">✓ Mes cerrado</div>${aviso}
       <div style="font-size:12.5px;color:var(--ink);line-height:1.6;">
         Modo: <b>${cierre.modo==='arrastrar'?'Arrastrar saldo':'Cerrar en 0'}</b><br>
         Saldo considerado: <b>${cierre.saldoTipo==='pendiente'?'Pendiente en bancas':cierre.saldoTipo==='oficina'?'Balance oficina':'Ambos'}</b><br>
@@ -7335,6 +7392,13 @@ function renderCierreMes(){
         <span style="color:var(--muted);font-size:11px;">Cerrado ${cierre.creado?new Date(cierre.creado).toLocaleString('es-DO'):''}${cierre.cerradoPor?' · '+cierre.cerradoPor:''}</span>
       </div>
       <button onclick="reabrirCierreMes()" style="margin-top:12px;width:100%;border:1px solid var(--red);background:#fff;color:var(--red);border-radius:10px;padding:11px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">Reabrir mes</button>
+    </div>`;
+  } else if(!cmMesTerminado(cmAnioCur,cmMesCur)){
+    accDiv.style.display='none';
+    yaDiv.style.display='block';
+    yaDiv.innerHTML=`<div class="panel" style="padding:16px;margin-bottom:14px;border-left:4px solid var(--amber);">
+      <div style="font-size:13px;font-weight:800;color:#a37416;margin-bottom:6px;">Este mes todavía no ha terminado</div>
+      <div style="font-size:12.5px;color:var(--ink);line-height:1.6;">${MONTHS[cmMesCur-1]} ${cmAnioCur} se cierra a partir del 1 del mes siguiente, con el corte de ese día (que trae la última jornada del mes). Lo que ves arriba es cómo va hasta hoy.</div>
     </div>`;
   } else {
     accDiv.style.display='block';
@@ -7351,7 +7415,7 @@ function renderCmHistorial(){
     <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f2f5f6;">
       <div>
         <div style="font-size:13px;font-weight:700;">${MONTHS[c.mes-1]} ${c.anio}</div>
-        <div style="font-size:11px;color:var(--muted);">${c.modo==='arrastrar'?'Arrastró saldo':'Cerró en 0'}${c.cerradoPor?' · '+c.cerradoPor:''}</div>
+        <div style="font-size:11px;color:var(--muted);">${c.modo==='arrastrar'?'Arrastró saldo':'Cerró en 0'}${c.cerradoPor?' · '+c.cerradoPor:''}${(()=>{if(!c.creado)return'';const d=new Date(c.creado);return (d.getFullYear()<c.anio||(d.getFullYear()===c.anio&&d.getMonth()+1<=c.mes))?' · <b style="color:#a37416;">cerrado antes de terminar</b>':'';})()}</div>
       </div>
       <div style="text-align:right;">
         <div style="font-size:13.5px;font-weight:800;color:${c.saldoArrastrado<0?'var(--red)':'var(--green)'};">RD$${fmt(c.saldoArrastrado)}</div>
@@ -7362,6 +7426,7 @@ function renderCmHistorial(){
 
 async function ejecutarCierreMes(){
   if(!state._cierresMesReady){ toast('Falta activar el cierre de mes en la base de datos (SQL).',false); return; }
+  if(!cmMesTerminado(cmAnioCur,cmMesCur)){ toast('Ese mes todavía no ha terminado',false); return; }
   const bal=cmBalance(cmAnioCur,cmMesCur);
   const saldoTipo=document.getElementById('cmSaldoTipo').value;
   const modo=document.querySelector('input[name="cmModo"]:checked').value;
@@ -9160,6 +9225,10 @@ function renderSettings(){
   document.getElementById('expCatList').innerHTML=state.expCats.map((c,i)=>
     `<div class="el-item"><span class="el-dot" style="background:var(--red)"></span><span class="el-name">${c}</span><span class="el-del" onclick="delExpCat(${i})">×</span></div>`
   ).join('');
+  const ocl=document.getElementById('outCatList');
+  if(ocl) ocl.innerHTML=(state.outCats||[]).map((c,i)=>
+    `<div class="el-item"><span class="el-dot" style="background:var(--amber)"></span><span class="el-name">${c.name}</span><span class="el-del" onclick="delOutCat(${i})">×</span></div>`
+  ).join('')||'<div class="empty-hint" style="padding:16px;">Sin categorías de salida</div>';
 }
 function addBranch(){ const v=document.getElementById('newBranch').value.trim(); if(!v)return; state.branches.push({name:v,fund:0}); document.getElementById('newBranch').value=''; saveState(); renderSettings(); toast('Sucursal agregada',true); }
 
@@ -9221,6 +9290,26 @@ function activeBranches(){
 function addIncCat(){ const v=document.getElementById('newIncCat').value.trim(); if(!v)return; state.incCats.push({name:v,subs:[]}); document.getElementById('newIncCat').value=''; saveState(); renderSettings(); toast('Categoría agregada',true); }
 function delIncCat(i){ if(!confirm(`¿Eliminar "${state.incCats[i].name}"?`))return; cloudDeleteIncCat(state.incCats[i]._id); state.incCats.splice(i,1); saveState(); renderSettings(); }
 function addExpCat(){ const v=document.getElementById('newExpCat').value.trim(); if(!v)return; state.expCats.push(v); cloudAddExpCat(v); document.getElementById('newExpCat').value=''; renderSettings(); toast('Categoría agregada',true); }
+async function addOutCat(){
+  const inp=document.getElementById('newOutCat'); const v=inp.value.trim(); if(!v)return;
+  if(outCatNames().some(n=>n.toLowerCase()===v.toLowerCase())){ toast('Esa categoría ya existe',false); return; }
+  try{
+    const {data,error}=await sb.from('categorias_salida').insert({nombre:v,orden:50}).select();
+    if(error) throw error;
+    state.outCats.push({name:v,_id:data[0].id,orden:50});
+    state.outCats.sort((a,b)=>a.orden-b.orden);
+    inp.value=''; renderSettings(); fillOutReasons(); toast('Categoría agregada',true);
+  }catch(e){ console.error(e); toast('No se pudo agregar: '+(e.message||''),false); }
+}
+async function delOutCat(i){
+  const c=state.outCats[i]; if(!c) return;
+  if(!confirm(`¿Eliminar "${c.name}"?\n\nLas salidas ya registradas con este motivo no cambian.`))return;
+  try{
+    const {error}=await sb.from('categorias_salida').delete().eq('id',c._id);
+    if(error) throw error;
+    state.outCats.splice(i,1); renderSettings(); fillOutReasons(); toast('Categoría eliminada',true);
+  }catch(e){ console.error(e); toast('No se pudo eliminar: '+(e.message||''),false); }
+}
 function delExpCat(i){ if(!confirm(`¿Eliminar "${state.expCats[i]}"?`))return; cloudDeleteExpCat(state.expCats[i]); state.expCats.splice(i,1); renderSettings(); }
 
 /* fund modal */
