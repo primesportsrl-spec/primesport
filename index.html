@@ -372,6 +372,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     <div class="label">Balance Neto del Mes</div>
     <div class="big"><span class="cur">RD$</span><span id="heroNet">0</span></div>
     <div id="heroVs" style="font-size:11.5px;font-weight:700;margin-top:2px;">&nbsp;</div>
+    <div id="heroArr" style="display:none;font-size:11.5px;color:rgba(255,255,255,.78);margin-top:4px;line-height:1.45;"></div>
     <div class="hero-sub">
       <div class="item"><div class="t">Recogido</div><div class="v pos" id="heroMov">RD$0</div></div>
       <div class="divider-v"></div>
@@ -1677,6 +1678,8 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">
     El número grande es el <b>Balance Neto del Mes</b>: el dinero real que quedó. Los tres números de abajo son <b>la resta exacta</b> que lo produce:<br><br>
     <b>Recogido</b> − <b>Gastos</b> − <b>Salidas netas</b> = <b>Balance Neto</b><br><br>
+    • El mes del negocio va del <b>día 2 al día 1</b> del mes siguiente: lo fechado el 1 es la última jornada del mes anterior. Por eso el día 1 el balance del mes nuevo arranca en 0.<br>
+    • Si el mes anterior se cerró con <b>Arrastrar</b>, el Balance Neto incluye ese saldo y debajo dice de qué cierre viene.<br>
     • <b>Recogido</b> es el efectivo que entró de verdad a la Oficina desde las bancas (las recolecciones del corte diario), no lo que las bancas produjeron en papel.<br>
     • <b>Salidas netas</b> son los retiros más lo que la Oficina prestó a las bancas, menos lo que las bancas le devolvieron.<br>
     • Debajo aparece el <b>Balance de bancas del mes</b>, que es lo que las bancas produjeron. Es información aparte: no entra en la resta, porque parte de ese balance todavía puede estar en la banca sin recoger.<br>
@@ -2076,7 +2079,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       <div class="si-act" style="color:var(--amber);" onclick="doLogout()">Salir</div>
     </div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v6.7 nube · Santo Domingo, RD</div>
+  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v6.8 nube · Santo Domingo, RD</div>
 </section>
 
 <!-- NAV -->
@@ -2139,7 +2142,7 @@ window.__supabase = createClient(
 window.dispatchEvent(new Event('supabase-ready'));
 </script>
 <script>
-/* ===================== AdmBca v6.7 ===================== */
+/* ===================== AdmBca v6.8 ===================== */
 function idConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.id)||null; }catch(e){ return null; } }
 function nomConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.nombre)||'AdmBca'; }catch(e){ return 'AdmBca'; } }
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -2694,13 +2697,16 @@ function effectiveDate(t){
   // - OPERACIONES / Gastos / Salidas: su fecha normal.
   return t.date;
 }
-// MES CONTABLE (balance mensual):
-// - COLLECT: cuenta en su JORNADA (fecha_jornada). Así lo recibido el 1/7 (jornada 30/6)
-//   suma al balance de JUNIO, no de julio.
-// - OPERACIONES / Gastos / Salidas: su fecha normal.
+// MES DEL NEGOCIO (balance mensual):
+// Lo fechado el DÍA 1 pertenece al mes ANTERIOR: lo que se recibe el 1/10 es la
+// última jornada de septiembre. El mes va del día 2 al día 1 del mes siguiente,
+// igual que el Cierre de Mes (que toma la foto del corte del día 1).
+// - COLLECT: parte de su JORNADA (fecha_jornada); el resto, de su fecha.
 function monthDate(t){
-  if(t.type==='collect' && t.jornada) return t.jornada;
-  return t.date;
+  const base=(t.type==='collect' && t.jornada) ? t.jornada : t.date;
+  if(!base) return base;
+  const d=new Date(base+'T00:00:00'); d.setDate(d.getDate()-1);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 function monthTxns(){ return state.txns.filter(t=>{ const d=new Date(monthDate(t)+'T00:00:00'); return d.getMonth()===curMonth&&d.getFullYear()===curYear; }); }
 
@@ -2723,8 +2729,21 @@ function cifrasMes(anio,mes){
 function renderDash(){
   const c=cifrasMes(curYear,curMonth);
   const txns=c.txns;
-  document.getElementById('heroNet').textContent=fmt(c.net);
-  document.getElementById('heroNet').style.color=c.net<0?'#f08980':'#fff';
+  // Balance arrastrado del cierre del mes anterior (si se cerró con "Arrastrar")
+  const pmA=curMonth===0?12:curMonth, paA=curMonth===0?curYear-1:curYear;
+  const cierreAnt=(state.cierresMes||[]).find(x=>x.anio===paA&&x.mes===pmA);
+  const arrastre=cierreAnt&&cierreAnt.modo==='arrastrar'?(cierreAnt.saldoArrastrado||0):0;
+  const netoTotal=c.net+arrastre;
+  document.getElementById('heroNet').textContent=fmt(netoTotal);
+  document.getElementById('heroNet').style.color=netoTotal<0?'#f08980':'#fff';
+  const arrEl=document.getElementById('heroArr');
+  if(arrEl){
+    if(cierreAnt&&cierreAnt.modo==='arrastrar'){
+      const tipo=cierreAnt.saldoTipo==='oficina'?'Balance en oficina':cierreAnt.saldoTipo==='pendiente'?'Pendientes en bancas':'Balance en oficina + pendientes';
+      arrEl.style.display='block';
+      arrEl.innerHTML=`↪ Incluye <b style="color:#7ce6b3;">RD$${fmt(arrastre)}</b> arrastrado del cierre de <b>${MONTHS[pmA-1]} ${paA}</b> (${tipo}). Movimiento propio del mes: RD$${fmt(c.net)}.`;
+    } else { arrEl.style.display='none'; arrEl.innerHTML=''; }
+  }
   document.getElementById('heroMov').textContent='RD$'+fmt(c.movido);
   document.getElementById('heroExp').textContent='RD$'+fmt(c.exp);
   document.getElementById('heroOut').textContent='RD$'+fmt(c.salidasNetas);
@@ -2751,7 +2770,7 @@ function renderDash(){
   // B3: promedio diario sobre lo RECOGIDO, misma base que el balance de arriba
   const daysInMonth=new Date(curYear,curMonth+1,0).getDate();
   const today=new Date();
-  const divisor=(curMonth===today.getMonth()&&curYear===today.getFullYear())?today.getDate():daysInMonth;
+  const divisor=(curMonth===today.getMonth()&&curYear===today.getFullYear())?Math.max(today.getDate()-1,1):daysInMonth;
   document.getElementById('statAvg').textContent='RD$'+fmt(c.movido/Math.max(divisor,1));
   document.getElementById('statNcf').textContent='RD$'+fmt(txns.filter(t=>t.type==='expense'&&t.hasNcf).reduce((s,t)=>s+t.amount,0));
   document.getElementById('statNoNcf').textContent='RD$'+fmt(txns.filter(t=>t.type==='expense'&&!t.hasNcf).reduce((s,t)=>s+t.amount,0));
