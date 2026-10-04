@@ -1,0 +1,922 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0F6E8C">
+<title>Libreta de Clientes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: two-pane ledger — client list on the left, account sheet on the right; stacks to one pane on phones */
+:root{
+  --bg:#EEF1F4; --panel:#FFFFFF; --ink:#132029; --muted:#5F6E78; --line:#D7DEE4;
+  --accent:#0F6E8C; --accent-ink:#FFFFFF; --soft:#E3ECF1;
+  --pos:#14804A; --pos-soft:#E1F3E8; --neg:#B3261E; --neg-soft:#FBE6E4; --warn:#A35C00; --warn-soft:#FDF0DC;
+  --display:"Archivo",system-ui,sans-serif; --body:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E1519; --panel:#151F25; --ink:#E4EBEF; --muted:#90A0AA; --line:#26343C;
+  --accent:#4FB3D3; --accent-ink:#06131A; --soft:#1C2A32;
+  --pos:#5BCB8A; --pos-soft:#14301F; --neg:#F08279; --neg-soft:#3A1A18; --warn:#F0B35C; --warn-soft:#3A2A12; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1519; --panel:#151F25; --ink:#E4EBEF; --muted:#90A0AA; --line:#26343C;
+  --accent:#4FB3D3; --accent-ink:#06131A; --soft:#1C2A32;
+  --pos:#5BCB8A; --pos-soft:#14301F; --neg:#F08279; --neg-soft:#3A1A18; --warn:#F0B35C; --warn-soft:#3A2A12; color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+[hidden]{display:none!important}
+details summary{cursor:pointer}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:18px 40px;display:flex;flex-direction:column;gap:16px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+h1{font-family:var(--display);font-weight:800;font-size:1.6rem;letter-spacing:-.01em;margin:0;text-wrap:balance}
+.sub{color:var(--muted);font-size:.85rem;margin:2px 0 0}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.label{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:8px 14px}
+button:hover{border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+button.danger{color:var(--neg);border-color:var(--neg)}
+button.ghost{border-color:transparent;background:transparent;padding:6px 10px}
+button:disabled{opacity:.5;cursor:not-allowed}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%;min-width:0}
+.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.summary>div{background:var(--panel);padding:12px 14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.summary .v{font-size:1.15rem;font-weight:600}
+@media (max-width:720px){.summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.panes{display:grid;grid-template-columns:340px minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:860px){.panes{grid-template-columns:minmax(0,1fr)} .panes.show-detail .list-pane{display:none} .panes:not(.show-detail) .detail-pane{display:none}}
+.pane{background:var(--panel);border:1px solid var(--line);border-radius:12px;min-width:0}
+.list-head{padding:12px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--line)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.clients{list-style:none;margin:0;padding:4px;max-height:62vh;overflow:auto}
+.clients li button{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;border:0;border-radius:8px;text-align:left;background:transparent;padding:10px}
+.clients li button:hover{background:var(--soft)}
+.clients li button[aria-current="true"]{background:var(--soft);box-shadow:inset 3px 0 0 var(--accent)}
+.cname{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cmeta{color:var(--muted);font-size:.78rem}
+.pos{color:var(--pos)} .neg{color:var(--neg)}
+.chip{display:inline-block;font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:999px;letter-spacing:.02em;white-space:nowrap}
+.chip.pos{background:var(--pos-soft)} .chip.neg{background:var(--neg-soft)} .chip.warn{background:var(--warn-soft);color:var(--warn)} .chip.zero{background:var(--soft);color:var(--muted)}
+.empty{padding:28px 18px;color:var(--muted);text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
+.empty strong{color:var(--ink);font-family:var(--display);font-size:1.05rem}
+.detail{padding:16px;display:flex;flex-direction:column;gap:16px}
+.dhead{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:flex-start}
+.dhead h2{font-family:var(--display);font-size:1.35rem;margin:0}
+.balance{text-align:right}
+.balance .big{font-family:var(--mono);font-size:1.7rem;font-weight:600;font-variant-numeric:tabular-nums}
+.types{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+@media (max-width:520px){.types{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.types button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:10px 12px;text-align:left}
+.types button small{color:var(--muted);font-size:.75rem}
+.types button[aria-pressed="true"]{border-width:2px;padding:9px 11px}
+.types button[data-t="credito"][aria-pressed="true"],.types button[data-t="deposito"][aria-pressed="true"]{border-color:var(--pos);background:var(--pos-soft)}
+.types button[data-t="debito"][aria-pressed="true"],.types button[data-t="retiro"][aria-pressed="true"]{border-color:var(--neg);background:var(--neg-soft)}
+.mvform{display:grid;grid-template-columns:160px 150px minmax(0,1fr) auto;gap:8px;align-items:end}
+@media (max-width:720px){.mvform{grid-template-columns:1fr 1fr} .mvform .full{grid-column:1/-1}}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table{width:100%;border-collapse:collapse;font-size:.88rem;min-width:560px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;background:var(--soft)}
+td.r,th.r{text-align:right}
+tr:last-child td{border-bottom:0}
+.modal{position:fixed;inset:0;background:rgba(10,18,24,.5);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
+.modal .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;width:min(460px,100%);display:flex;flex-direction:column;gap:12px}
+.modal h3{margin:0;font-family:var(--display)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:440px){.grid2{grid-template-columns:1fr}}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:.88rem;z-index:20;max-width:calc(100% - 32px)}
+.note{font-size:.8rem;color:var(--muted)}
+.banner{background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:10px 14px;font-size:.88rem}
+.confirm{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.tabs{display:inline-flex;gap:4px;background:var(--soft);padding:4px;border-radius:10px;align-self:flex-start;flex-wrap:wrap}
+.tabs button{border:0;background:transparent;padding:7px 14px;border-radius:7px;font-weight:500;color:var(--muted)}
+.tabs button[aria-pressed="true"]{background:var(--panel);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.wknav{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.wknav .wklabel{font-family:var(--display);font-weight:700;font-size:1rem}
+.wknav input{width:auto}
+table.week{min-width:820px}
+table.week td{padding:5px 6px}
+table.week input{padding:7px 8px;font-size:.88rem}
+table.week input.num{text-align:right}
+table.week td.day{white-space:nowrap}
+table.week td.day b{display:block}
+table.week tr.today td{background:var(--soft)}
+table.week tfoot td{font-weight:600;background:var(--soft);border-top:1px solid var(--line)}
+table.week .had{font-size:.75rem;color:var(--muted);white-space:nowrap}
+.wkfoot{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.wkfoot .preview{display:flex;gap:18px;flex-wrap:wrap}
+.rep{display:flex;flex-direction:column;gap:16px}
+.rep .pane{padding:16px;display:flex;flex-direction:column;gap:12px}
+.rep h2{font-family:var(--display);font-size:1.15rem;margin:0}
+.rangebar{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.rangebar .field{width:auto}
+.rangebar input{width:auto}
+table.rpt{min-width:900px}
+table.rpt tbody tr{cursor:pointer}
+table.rpt tbody tr:hover td{background:var(--soft)}
+table.rpt tfoot td{font-weight:700;background:var(--soft);border-top:2px solid var(--line)}
+.eq{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 16px;max-width:560px;font-size:.95rem}
+.eq .num{text-align:right}
+.eq .tot{border-top:1px solid var(--ink);padding-top:6px;font-weight:700}
+.cols2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:860px){.cols2{grid-template-columns:minmax(0,1fr)}}
+.verdict{border-radius:10px;padding:10px 12px;font-size:.9rem}
+.verdict.ok{background:var(--pos-soft);color:var(--pos)}
+.verdict.bad{background:var(--neg-soft);color:var(--neg)}
+.inline-in{display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:8px;align-items:center}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="authView" hidden>
+  <div style="max-width:380px;margin:8vh auto 0;display:flex;flex-direction:column;gap:14px;width:100%">
+    <div><h1>Libreta de Clientes</h1><p class="sub">Entra con tu correo y contraseña</p></div>
+    <form id="loginForm" class="pane" style="padding:18px;display:flex;flex-direction:column;gap:12px">
+      <div class="field"><label class="label" for="lEmail">Correo</label><input id="lEmail" type="email" autocomplete="username" required></div>
+      <div class="field" id="lPassWrap"><label class="label" for="lPass">Contraseña</label><input id="lPass" type="password" autocomplete="current-password" minlength="6"></div>
+      <button class="primary" type="submit" id="lSubmit">Entrar</button>
+      <div class="row" style="justify-content:space-between">
+        <button type="button" class="ghost" id="lToggle">Crear cuenta</button>
+        <button type="button" class="ghost" id="lForgot">Olvidé mi contraseña</button>
+      </div>
+      <p class="note" id="lMsg" style="margin:0" role="status"></p>
+    </form>
+    <form id="recoverForm" class="pane" style="padding:18px;display:flex;flex-direction:column;gap:12px" hidden>
+      <div class="field"><label class="label" for="rPass">Nueva contraseña</label><input id="rPass" type="password" autocomplete="new-password" minlength="8" required></div>
+      <button class="primary" type="submit">Guardar contraseña</button>
+    </form>
+  </div>
+</div>
+<div class="wrap" id="appView" hidden>
+  <header class="top">
+    <div>
+      <h1>Libreta de Clientes</h1>
+      <p class="sub">Créditos, débitos, depósitos y retiros por cliente · montos en RD$</p>
+    </div>
+    <div class="row">
+      <div class="tabs" role="group" aria-label="Vista">
+        <button type="button" data-view="clientes" aria-pressed="true">Clientes</button>
+        <button type="button" data-view="reporte" aria-pressed="false">Reporte por período</button>
+      </div>
+      <button class="primary" id="btnNew" disabled>+ Nuevo cliente</button>
+    </div>
+  </header>
+  <div class="row note" style="justify-content:flex-end;margin-top:-8px">
+    <span id="who"></span>
+    <button class="ghost" id="btnReload" title="Volver a cargar los datos">Actualizar</button>
+    <button class="ghost" id="btnUsers" hidden>Usuarios</button>
+    <button class="ghost" id="btnLogout">Salir</button>
+  </div>
+
+  <div id="banner" class="banner" hidden></div>
+
+  <div id="clientesView" style="display:contents">
+  <section class="summary" aria-label="Resumen">
+    <div><span class="label">Clientes</span><span class="v num" id="sClients">0</span></div>
+    <div><span class="label">Saldo a favor de clientes</span><span class="v num pos" id="sOwe">RD$0.00</span></div>
+    <div><span class="label">Clientes deben</span><span class="v num neg" id="sDue">RD$0.00</span></div>
+    <div><span class="label">Neto hoy (ganan − pierden)</span><span class="v num" id="sToday">RD$0.00</span></div>
+  </section>
+
+  <div class="panes" id="panes">
+    <section class="pane list-pane" aria-label="Clientes">
+      <div class="list-head">
+        <input id="q" type="search" placeholder="Buscar por nombre, teléfono o código" aria-label="Buscar cliente">
+        <div class="row">
+          <select id="filter" aria-label="Filtrar">
+            <option value="all">Todos</option>
+            <option value="pos">Con saldo a favor</option>
+            <option value="neg">Que deben</option>
+            <option value="over">Pasados del límite</option>
+          </select>
+        </div>
+      </div>
+      <ul class="clients" id="clientList"></ul>
+    </section>
+
+    <section class="pane detail-pane" aria-label="Cuenta del cliente">
+      <div id="detail"></div>
+    </section>
+  </div>
+  </div>
+  <section id="reportView" hidden></section>
+  <p class="note">Saldo = Saldo inicial + Depósitos + Créditos − Débitos − Retiros. Positivo: el cliente tiene dinero a su favor. Negativo: el cliente te debe.</p>
+</div>
+
+<div id="modalRoot"></div>
+<div id="toast" class="toast" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
+<script>
+const TYPES = {
+  deposito:{label:"Depósito", hint:"Cliente entrega dinero", sign:1},
+  credito:{label:"Crédito", hint:"Cliente gana", sign:1},
+  debito:{label:"Débito", hint:"Cliente pierde", sign:-1},
+  retiro:{label:"Retiro", hint:"Cliente cobra / retira", sign:-1},
+  inicial:{label:"Saldo inicial", hint:"Arrastre anterior", sign:1},
+};
+const val = m => m.tipo==="inicial" ? m.monto : TYPES[m.tipo].sign*m.monto;
+const fmt = n => (n<0?"−":"") + "RD$" + Math.abs(n).toLocaleString("es-DO",{minimumFractionDigits:2,maximumFractionDigits:2});
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const todayStr = () => { const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+const $ = id => document.getElementById(id);
+const ymd = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const parseYmd = s => { const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); };
+const mondayOf = s => { const d=parseYmd(s); const k=(d.getDay()+6)%7; d.setDate(d.getDate()-k); return ymd(d); };
+const addDays = (s,n) => { const d=parseYmd(s); d.setDate(d.getDate()+n); return ymd(d); };
+const DIAS=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
+const MESES=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+const corta = s => { const d=parseYmd(s); return d.getDate()+" "+MESES[d.getMonth()]; };
+const WT=["deposito","credito","debito","retiro"];
+
+const state = { clients:[], moves:[], selected:null, type:"debito", ready:false, canWrite:false, confirmDel:null, confirmClient:false, mode:"uno", weekStart:null,
+  view:"clientes", anulados:[], desde:"2026-03-01", hasta:todayStr(), sortR:"fin", cuadre:{} };
+let db=null, downloads=null;
+
+function balances(){
+  const b = {}, t = {};
+  for (const c of state.clients) { b[c.id]=0; t[c.id]={deposito:0,credito:0,debito:0,retiro:0,inicial:0}; }
+  for (const m of state.moves) {
+    if (!(m.clienteId in b)) continue;
+    b[m.clienteId] += val(m);
+    t[m.clienteId][m.tipo] += (m.tipo==="inicial"? m.monto : m.monto);
+  }
+  return {b,t};
+}
+function status(c, bal){
+  if (bal>0.004) return {cls:"pos", txt:"A favor"};
+  if (bal< -0.004) {
+    if (c.limite>0 && -bal > c.limite) return {cls:"warn", txt:"Pasó límite"};
+    return {cls:"neg", txt:"Debe"};
+  }
+  return {cls:"zero", txt:"Al día"};
+}
+
+function render(){
+  document.querySelectorAll("[data-view]").forEach(x=>x.setAttribute("aria-pressed", x.dataset.view===state.view));
+  $("clientesView").style.display = state.view==="clientes" ? "contents" : "none";
+  $("reportView").hidden = state.view!=="reporte";
+  $("btnNew").hidden = state.view!=="clientes";
+  if (state.view==="reporte"){ renderReport(); return; }
+  const {b,t} = balances();
+  // summary
+  let owe=0, due=0, today=0; const td=todayStr();
+  for (const c of state.clients){ const v=b[c.id]; if(v>0) owe+=v; else due+=-v; }
+  for (const m of state.moves){ if (m.fecha===td && (m.tipo==="credito"||m.tipo==="debito")) today += TYPES[m.tipo].sign*m.monto; }
+  $("sClients").textContent = state.clients.length;
+  $("sOwe").textContent = fmt(owe);
+  $("sDue").textContent = fmt(due);
+  const st=$("sToday"); st.textContent = fmt(today); st.className = "v num " + (today>0?"neg":today<0?"pos":"");
+  st.title = "Positivo = los clientes ganaron más de lo que perdieron hoy";
+
+  // list
+  const q = $("q").value.trim().toLowerCase(), f=$("filter").value;
+  const list = state.clients
+    .filter(c => !q || [c.nombre,c.telefono,c.codigo].some(x => (x||"").toLowerCase().includes(q)))
+    .filter(c => { const v=b[c.id]; return f==="all" || (f==="pos"&&v>0.004) || (f==="neg"&&v<-0.004) || (f==="over"&&c.limite>0&&-v>c.limite); })
+    .sort((a,z)=>a.nombre.localeCompare(z.nombre,"es"));
+  const ul=$("clientList");
+  if (!state.ready) ul.innerHTML = `<li class="empty">Cargando clientes…</li>`;
+  else if (!state.clients.length) ul.innerHTML = `<li class="empty"><strong>Todavía no hay clientes</strong>Pulsa “Nuevo cliente” para registrar el primero. Luego anota sus depósitos, créditos, débitos y retiros.</li>`;
+  else if (!list.length) ul.innerHTML = `<li class="empty">Ningún cliente coincide con la búsqueda.</li>`;
+  else ul.innerHTML = list.map(c=>{ const v=b[c.id], s=status(c,v);
+    return `<li><button data-id="${esc(c.id)}" aria-current="${state.selected===c.id}">
+      <span style="min-width:0"><div class="cname">${esc(c.nombre)}</div><div class="cmeta">${esc([c.codigo,c.telefono].filter(Boolean).join(" · ")||"Sin teléfono")}</div></span>
+      <span style="text-align:right"><div class="num ${v>0.004?"pos":v<-0.004?"neg":""}">${fmt(v)}</div><span class="chip ${s.cls}">${s.txt}</span></span>
+    </button></li>`; }).join("");
+  renderDetail(b,t);
+}
+
+function renderDetail(b,t){
+  const el=$("detail"); const c=state.clients.find(x=>x.id===state.selected);
+  $("panes").classList.toggle("show-detail", !!c);
+  if (!c){
+    el.innerHTML = `<div class="empty" style="padding:48px 18px"><strong>Selecciona un cliente</strong>Aquí verás su saldo, su historial y podrás registrar movimientos.</div>`;
+    return;
+  }
+  const v=b[c.id], s=status(c,v), tt=t[c.id];
+  const moves = state.moves.filter(m=>m.clienteId===c.id).sort((a,z)=> (z.fecha||"").localeCompare(a.fecha||"") || z.creado-a.creado);
+  // running balance, oldest first
+  const asc=[...moves].reverse(); let run=0; const runMap={};
+  for (const m of asc){ run += val(m); runMap[m.id]=run; }
+  const w = state.canWrite;
+  const keep={}; el.querySelectorAll("input[id]").forEach(i=>{ keep[i.id]=i.value; });
+  const focusId=document.activeElement?.id;
+  if (state.lastSel!==c.id){ for(const k in keep) delete keep[k]; state.lastSel=c.id; }
+  if (!state.weekStart) state.weekStart=mondayOf(todayStr());
+  delete keep.wkJump;
+  el.innerHTML = `<div class="detail">
+    <div class="dhead">
+      <div style="min-width:0">
+        <button class="ghost" id="back" style="padding-left:0">← Clientes</button>
+        <h2>${esc(c.nombre)}</h2>
+        <div class="cmeta">${esc([c.codigo&&("Código "+c.codigo), c.telefono, c.limite>0&&("Límite de crédito "+fmt(c.limite))].filter(Boolean).join(" · "))}</div>
+        ${c.nota?`<div class="note" style="margin-top:4px">${esc(c.nota)}</div>`:""}
+        ${tt.inicial?`<div class="note" style="margin-top:4px">Incluye saldo inicial de ${fmt(tt.inicial)}</div>`:""}
+      </div>
+      <div class="balance">
+        <div class="label">Saldo</div>
+        <div class="big ${v>0.004?"pos":v<-0.004?"neg":""}">${fmt(v)}</div>
+        <span class="chip ${s.cls}">${v<-0.004?"El cliente debe "+fmt(-v):v>0.004?"Se le debe al cliente":"Al día"}${s.cls==="warn"?" · pasó el límite":""}</span>
+      </div>
+    </div>
+
+    <div class="summary">
+      ${WT.map(k=>`<div><span class="label">${TYPES[k].label}s</span><span class="num ${TYPES[k].sign>0?"pos":"neg"}">${fmt(tt[k])}</span></div>`).join("")}
+    </div>
+
+    ${w?`<div class="detail" style="padding:0;gap:12px">
+      <div class="tabs" role="group" aria-label="Forma de registrar">
+        <button type="button" data-mode="uno" aria-pressed="${state.mode==="uno"}">Un movimiento</button>
+        <button type="button" data-mode="semana" aria-pressed="${state.mode==="semana"}">Cuadre semanal</button>
+      </div>
+      ${state.mode==="uno"?`<form id="mvForm" class="detail" style="padding:0;gap:10px">
+      <span class="label">Nuevo movimiento</span>
+      <div class="types" role="group" aria-label="Tipo de movimiento">
+        ${WT.map(k=>`<button type="button" data-t="${k}" aria-pressed="${state.type===k}"><strong>${TYPES[k].sign>0?"+":"−"} ${TYPES[k].label}</strong><small>${TYPES[k].hint}</small></button>`).join("")}
+      </div>
+      <div class="mvform">
+        <div class="field"><label class="label" for="mvMonto">Monto RD$</label><input id="mvMonto" class="num" type="number" min="0.01" step="0.01" inputmode="decimal" required placeholder="0.00"></div>
+        <div class="field"><label class="label" for="mvFecha">Fecha</label><input id="mvFecha" type="date" value="${todayStr()}" required></div>
+        <div class="field full"><label class="label" for="mvNota">Detalle (opcional)</label><input id="mvNota" maxlength="140" placeholder="Ticket, partido, banca, forma de pago…"></div>
+        <button class="primary full" type="submit" id="mvSave">Registrar</button>
+      </div>
+    </form>`:weekForm(c, moves, v)}
+    </div>`:""}
+
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div class="row" style="justify-content:space-between">
+        <span class="label">Historial · ${moves.length} movimiento${moves.length===1?"":"s"}</span>
+        <div class="row">
+          ${downloads&&moves.length?`<button id="csv">Exportar estado de cuenta (CSV)</button>`:""}
+          ${w?`<button id="editC">Editar cliente</button>`:""}
+        </div>
+      </div>
+      ${moves.length?`<div class="tablewrap"><table>
+        <thead><tr><th>Fecha</th><th>Tipo</th><th>Detalle</th><th class="r">Monto</th><th class="r">Saldo</th>${w?"<th></th>":""}</tr></thead>
+        <tbody>${moves.map(m=>`<tr>
+          <td class="num">${esc(m.fecha)}</td>
+          <td><span class="chip ${m.tipo==="inicial"?"zero":val(m)>0?"pos":"neg"}">${TYPES[m.tipo].label}</span></td>
+          <td>${esc(m.nota||"")}</td>
+          <td class="r num ${val(m)>0?"pos":"neg"}">${val(m)>0?"+":"−"}${fmt(Math.abs(val(m)))}</td>
+          <td class="r num">${fmt(runMap[m.id])}</td>
+          ${w?`<td class="r">${state.confirmDel===m.id
+            ?`<span class="confirm"><button class="danger" data-delok="${esc(m.id)}">Anular</button><button class="ghost" data-delno>No</button></span>`
+            :`<button class="ghost" data-del="${esc(m.id)}" aria-label="Anular movimiento">Anular</button>`}</td>`:""}
+        </tr>`).join("")}</tbody></table></div>`
+      :`<div class="empty">Sin movimientos todavía. Registra el primero arriba.</div>`}
+      ${(()=>{ const an=state.anulados.filter(m=>m.clienteId===c.id); return an.length?`<details class="note"><summary>Movimientos anulados (${an.length})</summary>
+        <div class="tablewrap" style="margin-top:8px"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Detalle</th><th class="r">Monto</th><th>Anulado el</th></tr></thead>
+        <tbody>${an.map(m=>`<tr style="text-decoration:line-through;opacity:.75"><td class="num">${esc(m.fecha)}</td><td>${TYPES[m.tipo].label}</td><td>${esc(m.nota||"")}</td><td class="r num">${fmt(val(m))}</td><td class="num" style="text-decoration:none">${esc((m.anulado_en||"").slice(0,16).replace("T"," "))}</td></tr>`).join("")}</tbody></table></div></details>`:""; })()}
+    </div>
+  </div>`;
+  for (const id in keep){ const i=$(id); if(i) i.value=keep[id]; }
+  if (focusId && $(focusId)) $(focusId).focus();
+  if (state.mode==="semana") updateWeek();
+}
+
+/* ---------- period report ---------- */
+function periodData(){
+  const {desde,hasta}=state;
+  const rows={}; for(const c of state.clients) rows[c.id]={c, ini:0, arr:0, deposito:0, retiro:0, credito:0, debito:0};
+  const months={};
+  for(const m of state.moves){
+    const r=rows[m.clienteId]; if(!r || !m.fecha) continue;
+    if (m.fecha<desde){ r.ini+=val(m); continue; }
+    if (m.fecha>hasta) continue;
+    if (m.tipo==="inicial"){ r.arr+=m.monto; continue; }
+    r[m.tipo]+=m.monto;
+    const mk=m.fecha.slice(0,7); const mo=months[mk]||(months[mk]={deposito:0,retiro:0,credito:0,debito:0}); mo[m.tipo]+=m.monto;
+  }
+  const list=Object.values(rows).map(r=>({...r, start:r.ini+r.arr, fin:r.ini+r.arr+r.deposito+r.credito-r.debito-r.retiro, banca:r.debito-r.credito}));
+  const T={start:0,deposito:0,retiro:0,credito:0,debito:0,fin:0,banca:0,favor:0,deben:0,arr:0};
+  for(const r of list){ for(const k of ["start","deposito","retiro","credito","debito","fin","banca","arr"]) T[k]+=r[k]; if(r.fin>0) T.favor+=r.fin; else T.deben+=-r.fin; }
+  return {list,T,months};
+}
+const mesNombre = k => { const [y,m]=k.split("-"); return ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"][Number(m)-1]+" "+y; };
+const cls = v => v>0.004?"pos":v<-0.004?"neg":"";
+function renderReport(){
+  const el=$("reportView");
+  const keep={}; el.querySelectorAll("input[id]").forEach(i=>keep[i.id]=i.value); const focusId=document.activeElement?.id;
+  const {list,T,months}=periodData();
+  const sorters={fin:(a,z)=>z.fin-a.fin, banca:(a,z)=>z.banca-a.banca, nombre:(a,z)=>a.c.nombre.localeCompare(z.c.nombre,"es"), mov:(a,z)=>(z.deposito+z.retiro+z.credito+z.debito)-(a.deposito+a.retiro+a.credito+a.debito)};
+  const rows=[...list].sort(sorters[state.sortR]);
+  const cu=state.cuadre||{};
+  const has = n => n!=="" && n!=null && !isNaN(Number(n));
+  // reported profit check
+  const rep = has(cu.reportada) ? Number(cu.reportada) : null;
+  const ei = has(cu.efIni) ? Number(cu.efIni) : null, ef = has(cu.efFin) ? Number(cu.efFin) : null;
+  const efEsperado = ei!=null ? ei + T.deposito - T.retiro : null;
+  const mk=Object.keys(months).sort();
+  const quick=[["2026-03-01",todayStr(),"Desde marzo 2026"],["2026-06-01","2026-09-30","Jun – Sep 2026"],[todayStr().slice(0,8)+"01",todayStr(),"Este mes"],[mondayOf(todayStr()),addDays(mondayOf(todayStr()),6),"Esta semana"],["2000-01-01","2099-12-31","Todo"]];
+  el.innerHTML = `<div class="rep">
+    <section class="pane">
+      <div class="rangebar">
+        <div class="field"><label class="label" for="rDesde">Desde</label><input id="rDesde" type="date" value="${state.desde}"></div>
+        <div class="field"><label class="label" for="rHasta">Hasta</label><input id="rHasta" type="date" value="${state.hasta}"></div>
+        <div class="row">${quick.map(q=>`<button type="button" data-range="${q[0]}|${q[1]}" ${state.desde===q[0]&&state.hasta===q[1]?'class="primary"':""}>${q[2]}</button>`).join("")}</div>
+      </div>
+      ${!state.clients.length?`<div class="empty"><strong>No hay clientes todavía</strong>Registra tus clientes con su saldo inicial y sus movimientos para ver el cuadre del período.</div>`:""}
+    </section>
+
+    <div class="cols2">
+      <section class="pane">
+        <h2>Cuadre del período</h2>
+        <div class="eq">
+          <span>Lo que debías al inicio (neto)${T.arr?` <span class="note">incluye ${fmt(T.arr)} de saldos iniciales con fecha en el período</span>`:""}</span><span class="num ${cls(T.start)}">${fmt(T.start)}</span>
+          <span>+ Depósitos de clientes</span><span class="num">${fmt(T.deposito)}</span>
+          <span>− Retiros pagados</span><span class="num">${fmt(-T.retiro)}</span>
+          <span>− Ganancia de la banca (pierden − ganan)</span><span class="num">${fmt(-T.banca)}</span>
+          <span class="tot">= Lo que debes al cierre (neto)</span><span class="num tot ${cls(T.fin)}">${fmt(T.fin)}</span>
+        </div>
+        <div class="summary" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+          <div><span class="label">Ganancia banca</span><span class="v num ${T.banca>=0?"pos":"neg"}">${fmt(T.banca)}</span></div>
+          <div><span class="label">A favor de clientes</span><span class="v num">${fmt(T.favor)}</span></div>
+          <div><span class="label">Clientes deben</span><span class="v num">${fmt(T.deben)}</span></div>
+        </div>
+        <p class="note" style="margin:0">Saldo positivo = tú le debes al cliente. Negativo = el cliente te debe. "Lo que debes" es el neto de ambos.</p>
+      </section>
+
+      <section class="pane">
+        <h2>Verificar contra tus otras cifras</h2>
+        <div class="inline-in"><label for="cuRep">Ganancia según tu reporte del sistema</label><input id="cuRep" class="num" type="number" step="0.01" placeholder="Ej. 500000" value="${has(cu.reportada)?cu.reportada:""}"></div>
+        ${rep!=null?`<div class="verdict ${Math.abs(rep-T.banca)<1?"ok":"bad"}">${Math.abs(rep-T.banca)<1?"Coincide con la libreta.":`La libreta da ${fmt(T.banca)}; tu reporte dice ${fmt(rep)}. Diferencia: <b class="num">${fmt(rep-T.banca)}</b>. Busca jugadas que estén en un lado y no en el otro.`}</div>`:""}
+        <div class="inline-in"><label for="cuEi">Efectivo (caja + banco) al inicio</label><input id="cuEi" class="num" type="number" step="0.01" placeholder="0.00" value="${has(cu.efIni)?cu.efIni:""}"></div>
+        <div class="inline-in"><label for="cuEf">Efectivo (caja + banco) al cierre, real</label><input id="cuEf" class="num" type="number" step="0.01" placeholder="0.00" value="${has(cu.efFin)?cu.efFin:""}"></div>
+        ${efEsperado!=null?`<div class="eq">
+            <span>Efectivo esperado al cierre (inicio + depósitos − retiros)</span><span class="num">${fmt(efEsperado)}</span>
+            ${ef!=null?`<span>Efectivo real al cierre</span><span class="num">${fmt(ef)}</span>
+            <span class="tot">Diferencia de efectivo</span><span class="num tot ${cls(ef-efEsperado)}">${fmt(ef-efEsperado)}</span>`:""}
+          </div>`:""}
+        ${ef!=null?`<div class="eq"><span>Tu posición real (efectivo − lo que debes)</span><span class="num ${cls(ef-T.fin)}">${fmt(ef-T.fin)}</span></div>`:""}
+        ${ef!=null&&efEsperado!=null?`<div class="verdict ${Math.abs(ef-efEsperado)<1?"ok":"bad"}">${Math.abs(ef-efEsperado)<1?"El efectivo cuadra con los depósitos y retiros anotados.":(ef<efEsperado?"Te falta efectivo: hay retiros o pagos sin anotar, o depósitos anotados que no entraron en dinero.":"Te sobra efectivo: hay depósitos sin anotar o retiros anotados que no se pagaron.")}</div>`:""}
+        <p class="note" style="margin:0">Las ganancias y pérdidas de apuestas no mueven efectivo; solo los depósitos y retiros. Estas cifras se guardan con la libreta.</p>
+      </section>
+    </div>
+
+    ${mk.length?`<section class="pane">
+      <h2>Por mes</h2>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Mes</th><th class="r">Depósitos</th><th class="r">Retiros</th><th class="r">Ganan (créditos)</th><th class="r">Pierden (débitos)</th><th class="r">Ganancia banca</th><th class="r">Efectivo neto</th></tr></thead>
+        <tbody>${mk.map(k=>{const o=months[k];const b=o.debito-o.credito;return `<tr><td>${mesNombre(k)}</td><td class="r num">${fmt(o.deposito)}</td><td class="r num">${fmt(o.retiro)}</td><td class="r num">${fmt(o.credito)}</td><td class="r num">${fmt(o.debito)}</td><td class="r num ${cls(b)}">${fmt(b)}</td><td class="r num">${fmt(o.deposito-o.retiro)}</td></tr>`}).join("")}</tbody>
+      </table></div>
+    </section>`:""}
+
+    ${state.clients.length?`<section class="pane">
+      <div class="row" style="justify-content:space-between">
+        <h2>Por cliente</h2>
+        <div class="row">
+          <select id="rSort" aria-label="Ordenar">
+            <option value="fin" ${state.sortR==="fin"?"selected":""}>Mayor saldo al cierre</option>
+            <option value="banca" ${state.sortR==="banca"?"selected":""}>Mayor ganancia banca</option>
+            <option value="mov" ${state.sortR==="mov"?"selected":""}>Más movimiento</option>
+            <option value="nombre" ${state.sortR==="nombre"?"selected":""}>Nombre</option>
+          </select>
+          ${downloads?`<button id="rCsv">Exportar (CSV)</button>`:""}
+        </div>
+      </div>
+      <div class="tablewrap"><table class="rpt">
+        <thead><tr><th>Cliente</th><th class="r">Saldo al inicio</th><th class="r">+ Depósitos</th><th class="r">− Retiros</th><th class="r">+ Ganan</th><th class="r">− Pierden</th><th class="r">Saldo al cierre</th><th class="r">Ganancia banca</th></tr></thead>
+        <tbody>${rows.map(r=>`<tr data-goto="${esc(r.c.id)}">
+          <td>${esc(r.c.nombre)}</td>
+          <td class="r num ${cls(r.start)}">${fmt(r.start)}</td>
+          <td class="r num">${fmt(r.deposito)}</td><td class="r num">${fmt(r.retiro)}</td>
+          <td class="r num">${fmt(r.credito)}</td><td class="r num">${fmt(r.debito)}</td>
+          <td class="r num ${cls(r.fin)}">${fmt(r.fin)}</td>
+          <td class="r num ${cls(r.banca)}">${fmt(r.banca)}</td></tr>`).join("")}</tbody>
+        <tfoot><tr><td>Total (${rows.length})</td><td class="r num">${fmt(T.start)}</td><td class="r num">${fmt(T.deposito)}</td><td class="r num">${fmt(T.retiro)}</td><td class="r num">${fmt(T.credito)}</td><td class="r num">${fmt(T.debito)}</td><td class="r num">${fmt(T.fin)}</td><td class="r num">${fmt(T.banca)}</td></tr></tfoot>
+      </table></div>
+      <p class="note" style="margin:0">Toca un cliente para abrir su cuenta.</p>
+    </section>`:""}
+  </div>`;
+  for (const id in keep){ const i=$(id); if(i && id.startsWith("cu")) i.value=keep[id]; }
+  if (focusId && $(focusId)) $(focusId).focus();
+}
+let cuTimer;
+function saveCuadre(){
+  state.cuadre={ reportada:$("cuRep").value, efIni:$("cuEi").value, efFin:$("cuEf").value };
+  clearTimeout(cuTimer);
+  cuTimer=setTimeout(async()=>{ if(!db||!state.canWrite) return; try{ await db.doc("ajustes/cuadre").set({...state.cuadre}); }catch(e){} }, 800);
+  renderReport();
+}
+document.addEventListener("change", e=>{
+  const id=e.target.id;
+  if (id==="rDesde"||id==="rHasta"){ const d=$("rDesde").value, h=$("rHasta").value; if(d&&h){ state.desde=d<=h?d:h; state.hasta=d<=h?h:d; renderReport(); } }
+  if (id==="rSort"){ state.sortR=e.target.value; renderReport(); }
+  if (id==="cuRep"||id==="cuEi"||id==="cuEf") saveCuadre();
+});
+async function exportReport(){
+  if(!downloads) return; const {list,T}=periodData(); const q=s=>'"'+String(s??"").replace(/"/g,'""')+'"';
+  const L=[["Cliente","Saldo al inicio","Depositos","Retiros","Ganan","Pierden","Saldo al cierre","Ganancia banca"].join(",")];
+  for(const r of list) L.push([q(r.c.nombre),r.start,r.deposito,r.retiro,r.credito,r.debito,r.fin,r.banca].map((x,i)=>i?Number(x).toFixed(2):x).join(","));
+  L.push(["TOTAL",T.start,T.deposito,T.retiro,T.credito,T.debito,T.fin,T.banca].map((x,i)=>i?Number(x).toFixed(2):x).join(","));
+  try{ const r=await downloads.save({filename:`cuadre_${state.desde}_a_${state.hasta}.csv`, data:"\ufeff"+L.join("\n")}); if(r?.status==="saved") toast("Archivo guardado"); }catch(e){}
+}
+
+/* ---------- weekly entry ---------- */
+function weekForm(c, moves, bal){
+  const ws=state.weekStart, we=addDays(ws,6), td=todayStr();
+  const days=[0,1,2,3,4,5,6].map(i=>addDays(ws,i));
+  const had={}; for(const d of days) had[d]=0;
+  for(const m of moves) if(m.fecha in had) had[m.fecha]+=val(m);
+  const hadTotal=Object.values(had).reduce((a,x)=>a+x,0);
+  const wd=parseYmd(we);
+  return `<form id="wkForm" class="detail" style="padding:0;gap:10px">
+    <div class="wknav">
+      <div class="row">
+        <button type="button" data-wk="prev" aria-label="Semana anterior">‹</button>
+        <span class="wklabel">Lun ${corta(ws)} – Dom ${corta(we)} ${wd.getFullYear()}</span>
+        <button type="button" data-wk="next" aria-label="Semana siguiente">›</button>
+        ${mondayOf(td)!==ws?`<button type="button" class="ghost" data-wk="hoy">Esta semana</button>`:""}
+      </div>
+      <label class="row note">Ir a fecha <input type="date" id="wkJump" value="${ws}"></label>
+    </div>
+    <div class="tablewrap"><table class="week">
+      <thead><tr><th>Día</th>${WT.map(k=>`<th class="r">${TYPES[k].sign>0?"+":"−"} ${TYPES[k].label}</th>`).join("")}<th>Detalle</th><th class="r">Ya anotado</th></tr></thead>
+      <tbody>${days.map((d,i)=>`<tr class="${d===td?"today":""}">
+        <td class="day"><b>${DIAS[i]}</b><span class="cmeta num">${corta(d)}</span></td>
+        ${WT.map(k=>`<td><input id="w_${d}_${k}" class="num" data-w="${k}" data-d="${d}" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" aria-label="${TYPES[k].label} ${DIAS[i]} ${corta(d)}"></td>`).join("")}
+        <td><input id="w_${d}_nota" maxlength="140" placeholder="Opcional" aria-label="Detalle ${DIAS[i]}"></td>
+        <td class="r num had">${had[d]?fmt(had[d]):"—"}</td>
+      </tr>`).join("")}</tbody>
+      <tfoot><tr><td>Total semana</td>${WT.map(k=>`<td class="r num" id="wt_${k}">${fmt(0)}</td>`).join("")}<td></td><td class="r num had">${hadTotal?fmt(hadTotal):"—"}</td></tr></tfoot>
+    </table></div>
+    <div class="wkfoot">
+      <div class="preview">
+        <div><div class="label">Neto de lo que vas a guardar</div><div class="num" id="wkNet">${fmt(0)}</div></div>
+        <div><div class="label">Saldo quedaría en</div><div class="num" id="wkBal" data-bal="${bal}">${fmt(bal)}</div></div>
+      </div>
+      <div class="row">
+        <button type="button" id="wkClear">Limpiar</button>
+        <button type="submit" class="primary" id="wkSave" disabled>Guardar semana</button>
+      </div>
+    </div>
+    <p class="note" style="margin:0">Deja en blanco lo que no aplique. Cada casilla con monto se guarda como un movimiento con la fecha de ese día. La columna "Ya anotado" muestra el neto que ese día ya tiene registrado, para que no lo dupliques.</p>
+  </form>`;
+}
+function weekEntries(){
+  const out=[];
+  document.querySelectorAll("#wkForm input[data-w]").forEach(i=>{
+    const v=Math.round((Number(i.value)||0)*100)/100;
+    if(v>0) out.push({_id:i.id, fecha:i.dataset.d, tipo:i.dataset.w, monto:v, nota:($("w_"+i.dataset.d+"_nota")?.value||"").trim()});
+  });
+  return out;
+}
+function updateWeek(){
+  if(!$("wkForm")) return;
+  const tot={deposito:0,credito:0,debito:0,retiro:0}; const e=weekEntries();
+  for(const x of e) tot[x.tipo]+=x.monto;
+  for(const k of WT){ const c=$("wt_"+k); c.textContent=fmt(tot[k]); c.className="r num "+(tot[k]?(TYPES[k].sign>0?"pos":"neg"):""); }
+  const net=WT.reduce((a,k)=>a+TYPES[k].sign*tot[k],0);
+  const n=$("wkNet"); n.textContent=fmt(net); n.className="num "+(net>0?"pos":net<0?"neg":"");
+  const b=$("wkBal"), nb=Number(b.dataset.bal)+net; b.textContent=fmt(nb); b.className="num "+(nb>0.004?"pos":nb<-0.004?"neg":"");
+  const s=$("wkSave"); if(!s.dataset.busy){ s.disabled=!e.length; s.textContent=e.length?`Guardar semana (${e.length} movimiento${e.length===1?"":"s"})`:"Guardar semana"; }
+}
+function clearWeek(){ document.querySelectorAll("#wkForm input[id^='w_']").forEach(i=>i.value=""); updateWeek(); }
+document.addEventListener("input", e=>{ if(e.target.closest("#wkForm") && e.target.id!=="wkJump") updateWeek(); });
+document.addEventListener("change", e=>{ if(e.target.id==="wkJump" && e.target.value){ const ws=mondayOf(e.target.value); if(ws!==state.weekStart){ clearWeek(); state.weekStart=ws; render(); } } });
+
+/* ---------- modal: new / edit client ---------- */
+function openClientModal(c){
+  state.confirmClient=false;
+  const ini = c ? state.moves.find(m=>m.id==="ini_"+c.id) : null;
+  const root=$("modalRoot");
+  const draw=()=>{ root.innerHTML = `<div class="modal" id="mbg"><form class="card" id="cForm">
+    <h3>${c?"Editar cliente":"Nuevo cliente"}</h3>
+    <div class="field"><label class="label" for="cNombre">Nombre</label><input id="cNombre" required maxlength="80" value="${esc(c?.nombre||"")}"></div>
+    <div class="grid2">
+      <div class="field"><label class="label" for="cTel">Teléfono</label><input id="cTel" inputmode="tel" maxlength="30" value="${esc(c?.telefono||"")}"></div>
+      <div class="field"><label class="label" for="cCod">Código / usuario</label><input id="cCod" maxlength="30" value="${esc(c?.codigo||"")}"></div>
+    </div>
+    <div class="field"><label class="label" for="cLim">Límite de crédito RD$ (0 = sin límite)</label><input id="cLim" class="num" type="number" min="0" step="0.01" value="${c?.limite||0}"></div>
+    <fieldset class="field" style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;gap:8px;margin:0">
+      <legend class="label" style="padding:0 4px">Saldo inicial (lo que arrastraba antes)</legend>
+      <div class="grid2">
+        <div class="field"><label class="label" for="cIniM">Monto RD$</label><input id="cIniM" class="num" type="number" min="0" step="0.01" value="${ini?Math.abs(ini.monto):""}" placeholder="0.00"></div>
+        <div class="field"><label class="label" for="cIniF">Al día</label><input id="cIniF" type="date" value="${esc(ini?.fecha||"2026-02-28")}"></div>
+      </div>
+      <select id="cIniT" aria-label="Sentido del saldo inicial">
+        <option value="favor" ${ini&&ini.monto>0?"selected":""}>A favor del cliente (yo le debo)</option>
+        <option value="debe" ${ini&&ini.monto<0?"selected":""}>El cliente me debe</option>
+      </select>
+    </fieldset>
+    <div class="field"><label class="label" for="cNota">Nota</label><textarea id="cNota" rows="2" maxlength="300">${esc(c?.nota||"")}</textarea></div>
+    <div class="row" style="justify-content:space-between">
+      <div>${c?(state.confirmClient
+        ?`<span class="confirm"><span class="note">¿Borrar cliente y todo su historial? (solo administrador)</span><button type="button" class="danger" id="cDelOk">Sí, borrar</button><button type="button" class="ghost" id="cDelNo">No</button></span>`
+        :`<button type="button" class="danger" id="cDel">Eliminar</button>`):""}</div>
+      <div class="row"><button type="button" id="cCancel">Cancelar</button><button class="primary" type="submit" id="cSave">Guardar</button></div>
+    </div>
+  </form></div>`;
+    $("cNombre").focus();
+  };
+  draw();
+  root.onclick = async e=>{
+    if (e.target.id==="mbg"||e.target.id==="cCancel") return close();
+    if (e.target.id==="cDel"){ keepVals(); state.confirmClient=true; draw(); restoreVals(); }
+    if (e.target.id==="cDelNo"){ keepVals(); state.confirmClient=false; draw(); restoreVals(); }
+    if (e.target.id==="cDelOk"){
+      e.target.disabled=true;
+      try{
+        await db.collection("clientes").doc(c.id).delete();
+        state.selected=null; close(); toast("Cliente eliminado");
+      }catch(err){ fail(err); e.target.disabled=false; }
+    }
+  };
+  let saved={};
+  const MF=["cNombre","cTel","cCod","cLim","cNota","cIniM","cIniF","cIniT"];
+  function keepVals(){ saved={}; MF.forEach(id=>saved[id]=$(id).value); }
+  function restoreVals(){ MF.forEach(id=>$(id).value=saved[id]); }
+  root.onsubmit = async e=>{
+    e.preventDefault();
+    const body={ nombre:$("cNombre").value.trim(), telefono:$("cTel").value.trim(), codigo:$("cCod").value.trim(),
+      limite:Math.max(0,Number($("cLim").value)||0), nota:$("cNota").value.trim() };
+    if(!body.nombre) return;
+    $("cSave").disabled=true;
+    try{
+      const im=Math.round((Number($("cIniM").value)||0)*100)/100, isign=$("cIniT").value==="debe"?-1:1, ifecha=$("cIniF").value||todayStr();
+      let cid;
+      if (c){ cid=c.id; await db.collection("clientes").doc(c.id).update(body); }
+      else { body.creado=Date.now(); const ref=await db.collection("clientes").add(body); cid=ref.id; state.selected=cid; }
+      const iref=db.collection("movimientos").doc("ini_"+cid);
+      if (im>0){
+        const nb={clienteId:cid, tipo:"inicial", monto:isign*im, fecha:ifecha, nota:"Saldo inicial", creado:0};
+        if (!ini || ini.monto!==nb.monto || ini.fecha!==nb.fecha) await iref.set(nb);
+      } else if (ini) await iref.delete();
+      toast(c?"Cliente actualizado":"Cliente registrado");
+      close();
+    }catch(err){ fail(err); $("cSave").disabled=false; }
+  };
+  function close(){ root.innerHTML=""; root.onclick=null; root.onsubmit=null; render(); }
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click", async e=>{
+  const g=e.target.closest("tr[data-goto]"); if(g){ state.selected=g.dataset.goto; state.view="clientes"; render(); window.scrollTo({top:0}); return; }
+  const t=e.target.closest("button"); if(!t || t.closest("#modalRoot")) return;
+  if (t.dataset.id){ state.selected=t.dataset.id; state.confirmDel=null; render(); window.scrollTo({top:0}); return; }
+  if (t.id==="back"){ state.selected=null; render(); return; }
+  if (t.id==="btnNew"){ openClientModal(null); return; }
+  if (t.id==="editC"){ openClientModal(state.clients.find(c=>c.id===state.selected)); return; }
+  if (t.dataset.view){ state.view=t.dataset.view; render(); window.scrollTo({top:0}); return; }
+  if (t.dataset.range){ [state.desde,state.hasta]=t.dataset.range.split("|"); renderReport(); return; }
+  if (t.id==="rCsv"){ exportReport(); return; }
+  if (t.dataset.mode){ state.mode=t.dataset.mode; render(); return; }
+  if (t.dataset.wk){
+    clearWeek();
+    state.weekStart = t.dataset.wk==="hoy" ? mondayOf(todayStr()) : addDays(state.weekStart, t.dataset.wk==="prev"?-7:7);
+    render(); return;
+  }
+  if (t.id==="wkClear"){ clearWeek(); return; }
+  if (t.dataset.t){ state.type=t.dataset.t; document.querySelectorAll(".types button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.t===state.type)); return; }
+  if (t.dataset.del){ state.confirmDel=t.dataset.del; render(); return; }
+  if (t.hasAttribute("data-delno")){ state.confirmDel=null; render(); return; }
+  if (t.dataset.delok){ t.disabled=true; try{ await db.collection("movimientos").doc(t.dataset.delok).delete(); state.confirmDel=null; toast("Movimiento anulado"); }catch(err){ fail(err); } return; }
+  if (t.id==="csv"){ exportCsv(); return; }
+});
+document.addEventListener("submit", async e=>{
+  if (e.target.id==="wkForm"){
+    e.preventDefault();
+    const items=weekEntries(); if(!items.length) return;
+    const btn=$("wkSave"); btn.dataset.busy="1"; btn.disabled=true;
+    const cid=state.selected, base=Date.now(); let ok=0;
+    try{
+      for(const [i,x] of items.entries()){
+        btn.textContent=`Guardando ${i+1} de ${items.length}…`;
+        const {_id, ...rest}=x;
+        await db.collection("movimientos").add({clienteId:cid, ...rest, nota:rest.nota||"Cuadre semanal", creado:base+i});
+        ok++; const inp=$(_id); if(inp) inp.value="";
+      }
+      clearWeek(); toast(`Semana guardada: ${ok} movimiento${ok===1?"":"s"}`);
+    }catch(err){ fail(err); if(ok) toast(`Se guardaron ${ok} de ${items.length}. Revisa el historial antes de reintentar.`); }
+    finally{ const b2=$("wkSave"); if(b2){ delete b2.dataset.busy; } updateWeek(); }
+    return;
+  }
+  if (e.target.id!=="mvForm") return;
+  e.preventDefault();
+  const monto=Math.round((Number($("mvMonto").value)||0)*100)/100;
+  if (monto<=0){ toast("Escribe un monto mayor que cero"); return; }
+  const body={ clienteId:state.selected, tipo:state.type, monto, fecha:$("mvFecha").value||todayStr(), nota:$("mvNota").value.trim(), creado:Date.now() };
+  $("mvSave").disabled=true;
+  try{ await db.collection("movimientos").add(body); toast(TYPES[body.tipo].label+" de "+fmt(monto)+" registrado"); if($("mvMonto")) $("mvMonto").value=""; if($("mvNota")) $("mvNota").value=""; }
+  catch(err){ fail(err); }
+  finally{ const b=$("mvSave"); if(b) b.disabled=false; }
+});
+$("q").addEventListener("input", render);
+$("filter").addEventListener("change", render);
+
+async function exportCsv(){
+  const c=state.clients.find(x=>x.id===state.selected); if(!c||!downloads) return;
+  const moves=state.moves.filter(m=>m.clienteId===c.id).sort((a,z)=>(a.fecha||"").localeCompare(z.fecha||"")||a.creado-z.creado);
+  let run=0; const q=s=>'"'+String(s??"").replace(/"/g,'""')+'"';
+  const lines=[["Fecha","Tipo","Detalle","Monto","Saldo"].join(",")];
+  for(const m of moves){ const s=val(m); run+=s; lines.push([m.fecha,TYPES[m.tipo].label,q(m.nota),s.toFixed(2),run.toFixed(2)].join(",")); }
+  try{ const r=await downloads.save({filename:"estado-cuenta-"+c.nombre.replace(/[^\w-]+/g,"_")+".csv", data:"﻿"+lines.join("\n")}); if(r?.status==="saved") toast("Archivo guardado"); }
+  catch(err){ if(err?.code==="unavailable"){ downloads=null; render(); } }
+}
+
+let tt; function toast(msg){ const el=$("toast"); el.textContent=msg; el.hidden=false; clearTimeout(tt); tt=setTimeout(()=>el.hidden=true,2600); }
+function fail(err){
+  if (err?.code==="invalid_argument"){ toast("Tu usuario no tiene permiso para esta acción"); }
+  else if (err?.code==="quota_exceeded") toast("La libreta llegó a su capacidad máxima. Borra clientes antiguos para continuar.");
+  else toast("No se pudo guardar. Revisa la conexión e inténtalo de nuevo.");
+}
+
+/* ---------- datos (Supabase) ---------- */
+const SB_URL="https://okrfnucuombayysmdviq.supabase.co";
+const SB_KEY="sb_publishable_JlxZdS70vitaGNqvI_4Q-g_OMGnRdrU";
+const sb = supabase.createClient(SB_URL, SB_KEY, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } });
+let session=null, rol=null, reloadTimer=null, loading=false;
+
+function err(e){ const x=new Error(e?.message||"error"); x.code = (e?.code==="42501"||/row-level security|permission/i.test(e?.message||""))?"invalid_argument":"unavailable"; return x; }
+async function q(p){ const {data,error}=await p; if(error) throw err(error); return data; }
+function scheduleReload(){ clearTimeout(reloadTimer); reloadTimer=setTimeout(loadAll,250); }
+
+const T = { clientes:"libreta_clientes", movimientos:"libreta_movimientos" };
+db = {
+  collection(name){
+    return {
+      async add(body){
+        if (name==="clientes"){
+          const {creado, ...b}=body;
+          const r=await q(sb.from(T.clientes).insert(b).select("id").single()); scheduleReload(); return {id:r.id};
+        }
+        const r=await q(sb.from(T.movimientos).insert({cliente_id:body.clienteId, tipo:body.tipo, monto:body.monto, fecha:body.fecha, nota:body.nota||null}).select("id").single());
+        scheduleReload(); return {id:r.id};
+      },
+      doc(id){ return docRef(name,id); }
+    };
+  },
+  doc(path){
+    const clave=path.split("/")[1];
+    return {
+      async get(){ const r=await q(sb.from("libreta_ajustes").select("valor").eq("clave",clave).maybeSingle()); return {exists:!!r, data:()=>r?.valor||{}}; },
+      async set(v){ await q(sb.from("libreta_ajustes").upsert({clave, valor:v, actualizado:new Date().toISOString()})); }
+    };
+  }
+};
+function realIni(cid){ return state.moves.find(m=>m.id==="ini_"+cid); }
+function docRef(name,id){
+  return {
+    async update(body){
+      if (name==="clientes"){ const {creado,...b}=body; await q(sb.from(T.clientes).update(b).eq("id",id)); }
+      scheduleReload();
+    },
+    async set(body){ // solo saldo inicial
+      const cid=body.clienteId, ex=realIni(cid);
+      if (ex) await q(sb.from(T.movimientos).update({monto:body.monto, fecha:body.fecha}).eq("id",ex._id));
+      else await q(sb.from(T.movimientos).insert({cliente_id:cid, tipo:"inicial", monto:body.monto, fecha:body.fecha, nota:"Saldo inicial"}));
+      scheduleReload();
+    },
+    async delete(){
+      if (name==="clientes"){ await q(sb.from(T.clientes).delete().eq("id",id).select("id")).then(r=>{ if(!r?.length) throw Object.assign(new Error("denegado"),{code:"invalid_argument"}); }); }
+      else {
+        const rid = id.startsWith("ini_") ? realIni(id.slice(4))?._id : id;
+        if (rid) await q(sb.from(T.movimientos).update({anulado:true, anulado_en:new Date().toISOString(), anulado_por:session?.user?.id}).eq("id",rid));
+      }
+      scheduleReload();
+    }
+  };
+}
+
+async function fetchAll(table, cols, order){
+  const out=[]; const size=1000;
+  for (let from=0;;from+=size){
+    const rows=await q(sb.from(table).select(cols).order(order,{ascending:true}).order("id").range(from,from+size-1));
+    out.push(...rows); if (rows.length<size) break;
+  }
+  return out;
+}
+async function loadAll(){
+  if (loading){ scheduleReload(); return; }
+  loading=true;
+  try{
+    const [cl, mv, aj] = await Promise.all([
+      fetchAll(T.clientes,"id,nombre,telefono,codigo,limite,nota,creado","nombre"),
+      fetchAll(T.movimientos,"id,cliente_id,tipo,monto,fecha,nota,anulado,anulado_en,creado","fecha"),
+      q(sb.from("libreta_ajustes").select("valor").eq("clave","cuadre").maybeSingle())
+    ]);
+    state.clients = cl.map(c=>({...c, telefono:c.telefono||"", codigo:c.codigo||"", nota:c.nota||"", limite:Number(c.limite)||0}));
+    const all = mv.map(m=>({ id:m.tipo==="inicial"&&!m.anulado ? "ini_"+m.cliente_id : m.id, _id:m.id, clienteId:m.cliente_id, tipo:m.tipo, monto:Number(m.monto), fecha:m.fecha, nota:m.nota||"", anulado:m.anulado, anulado_en:m.anulado_en, creado:Date.parse(m.creado)||0 }));
+    state.moves = all.filter(m=>!m.anulado);
+    state.anulados = all.filter(m=>m.anulado);
+    if (aj && !document.activeElement?.id?.startsWith("cu")) state.cuadre = aj.valor||{};
+    if (state.selected && !state.clients.some(c=>c.id===state.selected)) state.selected=null;
+    state.ready=true; render();
+  }catch(e){ toast("No se pudieron cargar los datos. Pulsa Actualizar."); }
+  finally{ loading=false; }
+}
+
+downloads = { async save({filename,data}){
+  const url=URL.createObjectURL(new Blob([data],{type:"text/csv;charset=utf-8"}));
+  const a=document.createElement("a"); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),2000); return {status:"saved"};
+}};
+
+/* ---------- acceso ---------- */
+let signupMode=false;
+function showAuth(msg){ $("appView").hidden=true; $("authView").hidden=false; $("recoverForm").hidden=true; $("loginForm").hidden=false; $("lMsg").textContent=msg||""; }
+async function enter(){
+  session=(await sb.auth.getSession()).data.session;
+  if (!session) return showAuth();
+  const {data, error} = await sb.rpc("libreta_activar");
+  rol = error ? null : data;
+  if (!rol){ await sb.auth.signOut(); return showAuth("Tu cuenta no tiene acceso a la libreta. Pide al administrador que agregue tu correo en Usuarios y vuelve a entrar."); }
+  $("authView").hidden=true; $("appView").hidden=false;
+  state.canWrite = rol==="admin" || rol==="editor";
+  $("btnNew").disabled = !state.canWrite;
+  $("btnUsers").hidden = rol!=="admin";
+  $("who").textContent = session.user.email + " · " + ({admin:"Administrador",editor:"Editor",lectura:"Solo lectura"}[rol]);
+  const bn=$("banner"); bn.hidden = state.canWrite; bn.textContent = "Modo solo lectura: puedes consultar saldos pero no registrar movimientos.";
+  render(); loadAll();
+}
+$("loginForm").addEventListener("submit", async e=>{
+  e.preventDefault(); const email=$("lEmail").value.trim(), pass=$("lPass").value; const b=$("lSubmit"); b.disabled=true; $("lMsg").textContent="";
+  try{
+    if (signupMode){
+      const {data,error}=await sb.auth.signUp({email,password:pass, options:{emailRedirectTo:location.origin}});
+      if (error) throw error;
+      $("lMsg").textContent = data.session ? "" : "Cuenta creada. Revisa tu correo para confirmarla y luego entra aquí.";
+      if (data.session) await enter();
+    } else {
+      const {error}=await sb.auth.signInWithPassword({email,password:pass});
+      if (error) throw error;
+      await enter();
+    }
+  }catch(x){ $("lMsg").textContent = /invalid login/i.test(x.message)?"Correo o contraseña incorrectos.": /not confirmed/i.test(x.message)?"Confirma tu correo primero (revisa tu bandeja).": /signups? not allowed|disabled/i.test(x.message)?"El registro de cuentas nuevas está desactivado. Pide al administrador que te cree la cuenta.": x.message; }
+  finally{ b.disabled=false; }
+});
+$("lToggle").addEventListener("click", ()=>{ signupMode=!signupMode; $("lSubmit").textContent=signupMode?"Crear cuenta":"Entrar"; $("lToggle").textContent=signupMode?"Ya tengo cuenta":"Crear cuenta"; $("lPass").autocomplete=signupMode?"new-password":"current-password"; $("lMsg").textContent=signupMode?"Después de crearla, el administrador debe darte acceso.":""; });
+$("lForgot").addEventListener("click", async ()=>{
+  const email=$("lEmail").value.trim(); if(!email){ $("lMsg").textContent="Escribe tu correo arriba y pulsa de nuevo."; return; }
+  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin});
+  $("lMsg").textContent = error ? error.message : "Te enviamos un enlace para cambiar la contraseña.";
+});
+$("recoverForm").addEventListener("submit", async e=>{
+  e.preventDefault(); const {error}=await sb.auth.updateUser({password:$("rPass").value});
+  if (error){ toast(error.message); return; } toast("Contraseña actualizada"); enter();
+});
+sb.auth.onAuthStateChange((ev)=>{
+  if (ev==="PASSWORD_RECOVERY"){ $("appView").hidden=true; $("authView").hidden=false; $("loginForm").hidden=true; $("recoverForm").hidden=false; }
+  if (ev==="SIGNED_OUT") showAuth();
+});
+$("btnLogout").addEventListener("click", async ()=>{ await sb.auth.signOut(); state.clients=[]; state.moves=[]; state.anulados=[]; state.selected=null; showAuth(); });
+$("btnReload").addEventListener("click", ()=>loadAll());
+document.addEventListener("visibilitychange", ()=>{ if(!document.hidden && rol) loadAll(); });
+setInterval(()=>{ if(!document.hidden && rol && !document.querySelector("#wkForm input:focus, #mvForm input:focus, #modalRoot input:focus")) loadAll(); }, 60000);
+
+/* ---------- usuarios (admin) ---------- */
+async function openUsers(){
+  const root=$("modalRoot");
+  const draw=async(msg="")=>{
+    let mem=[], inv=[];
+    try{ [mem,inv]=await Promise.all([q(sb.from("libreta_miembros").select("user_id,email,rol").order("email")), q(sb.from("libreta_invitaciones").select("email,rol").order("email"))]); }catch(e){}
+    const R={admin:"Administrador",editor:"Editor",lectura:"Solo lectura"};
+    root.innerHTML=`<div class="modal" id="ubg"><div class="card" style="width:min(560px,100%)">
+      <h3>Usuarios con acceso</h3>
+      <div class="tablewrap"><table style="min-width:0"><tbody>
+        ${mem.map(m=>`<tr><td>${esc(m.email||"")}</td><td>${R[m.rol]}</td><td class="r">${m.user_id===session.user.id?'<span class="note">Tú</span>':`<button class="ghost danger" data-unmem="${esc(m.user_id)}">Quitar</button>`}</td></tr>`).join("")}
+        ${inv.map(i=>`<tr><td>${esc(i.email)} <span class="chip zero">Pendiente</span></td><td>${R[i.rol]}</td><td class="r"><button class="ghost danger" data-uninv="${esc(i.email)}">Quitar</button></td></tr>`).join("")}
+      </tbody></table></div>
+      <form id="invForm" class="grid2" style="align-items:end">
+        <div class="field"><label class="label" for="iEmail">Correo</label><input id="iEmail" type="email" required></div>
+        <div class="field"><label class="label" for="iRol">Permiso</label><select id="iRol"><option value="editor">Editor (registra movimientos)</option><option value="lectura">Solo lectura</option><option value="admin">Administrador</option></select></div>
+        <button class="primary" type="submit" style="grid-column:1/-1">Dar acceso</button>
+      </form>
+      <p class="note" style="margin:0">La persona entra con ese correo (si no tiene cuenta, la crea con "Crear cuenta"). El acceso se activa la primera vez que entra. ${msg?`<b>${esc(msg)}</b>`:""}</p>
+      <div class="row" style="justify-content:flex-end"><button id="uClose">Cerrar</button></div>
+    </div></div>`;
+  };
+  await draw();
+  root.onclick=async e=>{
+    if (e.target.id==="ubg"||e.target.id==="uClose"){ root.innerHTML=""; root.onclick=null; root.onsubmit=null; return; }
+    const um=e.target.dataset?.unmem, ui=e.target.dataset?.uninv;
+    try{
+      if (um){ await q(sb.from("libreta_miembros").delete().eq("user_id",um)); await draw("Acceso quitado."); }
+      if (ui){ await q(sb.from("libreta_invitaciones").delete().eq("email",ui)); await draw("Invitación quitada."); }
+    }catch(x){ await draw("No se pudo quitar."); }
+  };
+  root.onsubmit=async e=>{
+    e.preventDefault(); const email=$("iEmail").value.trim().toLowerCase(), r=$("iRol").value;
+    try{
+      const ex=(await q(sb.from("libreta_miembros").select("user_id").eq("email",email)))[0];
+      if (ex) await q(sb.from("libreta_miembros").update({rol:r}).eq("user_id",ex.user_id));
+      else await q(sb.from("libreta_invitaciones").upsert({email,rol:r}));
+      await draw(ex?"Permiso actualizado.":"Listo. Ya puede entrar con ese correo.");
+    }catch(x){ await draw("No se pudo guardar: "+x.message); }
+  };
+}
+$("btnUsers").addEventListener("click", openUsers);
+
+render();
+enter();
+</script>
+</body>
+</html>
