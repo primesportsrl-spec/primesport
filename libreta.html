@@ -69,12 +69,13 @@ input,select,textarea{font:inherit;color:var(--ink);background:var(--panel);bord
 .dhead h2{font-family:var(--display);font-size:1.35rem;margin:0}
 .balance{text-align:right}
 .balance .big{font-family:var(--mono);font-size:1.7rem;font-weight:600;font-variant-numeric:tabular-nums}
-.types{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.types{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.summary.s6{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media (max-width:520px){.types{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .types button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:10px 12px;text-align:left}
 .types button small{color:var(--muted);font-size:.75rem}
 .types button[aria-pressed="true"]{border-width:2px;padding:9px 11px}
-.types button[data-t="credito"][aria-pressed="true"],.types button[data-t="deposito"][aria-pressed="true"]{border-color:var(--pos);background:var(--pos-soft)}
+.types button[data-t^="bono"][aria-pressed="true"],.types button[data-t="credito"][aria-pressed="true"],.types button[data-t="deposito"][aria-pressed="true"]{border-color:var(--pos);background:var(--pos-soft)}
 .types button[data-t="debito"][aria-pressed="true"],.types button[data-t="retiro"][aria-pressed="true"]{border-color:var(--neg);background:var(--neg-soft)}
 .mvform{display:grid;grid-template-columns:160px 150px minmax(0,1fr) auto;gap:8px;align-items:end}
 @media (max-width:720px){.mvform{grid-template-columns:1fr 1fr} .mvform .full{grid-column:1/-1}}
@@ -100,7 +101,7 @@ tr:last-child td{border-bottom:0}
 .wknav{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
 .wknav .wklabel{font-family:var(--display);font-weight:700;font-size:1rem}
 .wknav input{width:auto}
-table.week{min-width:820px}
+table.week{min-width:1080px}
 table.week td{padding:5px 6px}
 table.week input{padding:7px 8px;font-size:.88rem}
 table.week input.num{text-align:right}
@@ -117,7 +118,7 @@ table.week .had{font-size:.75rem;color:var(--muted);white-space:nowrap}
 .rangebar{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
 .rangebar .field{width:auto}
 .rangebar input{width:auto}
-table.rpt{min-width:900px}
+table.rpt{min-width:1000px}
 table.rpt tbody tr{cursor:pointer}
 table.rpt tbody tr:hover td{background:var(--soft)}
 table.rpt tfoot td{font-weight:700;background:var(--soft);border-top:2px solid var(--line)}
@@ -207,7 +208,7 @@ table.rpt tfoot td{font-weight:700;background:var(--soft);border-top:2px solid v
   </div>
   </div>
   <section id="reportView" hidden></section>
-  <p class="note">Saldo = Saldo inicial + Depósitos + Créditos − Débitos − Retiros. Positivo: el cliente tiene dinero a su favor. Negativo: el cliente te debe.</p>
+  <p class="note">Saldo = Saldo inicial + Depósitos + Créditos + Bonos − Débitos − Retiros. Positivo: el cliente tiene dinero a su favor. Negativo: el cliente te debe.</p>
 </div>
 
 <div id="modalRoot"></div>
@@ -220,6 +221,8 @@ const TYPES = {
   credito:{label:"Crédito", hint:"Cliente gana", sign:1},
   debito:{label:"Débito", hint:"Cliente pierde", sign:-1},
   retiro:{label:"Retiro", hint:"Cliente cobra / retira", sign:-1},
+  bono_deposito:{label:"Bono depósito", hint:"Bono por depositar", sign:1},
+  bono_perdida:{label:"Bono pérdida", hint:"Reembolso por pérdida semanal", sign:1},
   inicial:{label:"Saldo inicial", hint:"Arrastre anterior", sign:1},
 };
 const val = m => m.tipo==="inicial" ? m.monto : TYPES[m.tipo].sign*m.monto;
@@ -234,7 +237,8 @@ const addDays = (s,n) => { const d=parseYmd(s); d.setDate(d.getDate()+n); return
 const DIAS=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
 const MESES=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
 const corta = s => { const d=parseYmd(s); return d.getDate()+" "+MESES[d.getMonth()]; };
-const WT=["deposito","credito","debito","retiro"];
+const WT=["deposito","credito","debito","retiro","bono_deposito","bono_perdida"];
+const Z=()=>({deposito:0,credito:0,debito:0,retiro:0,bono_deposito:0,bono_perdida:0});
 
 const state = { clients:[], moves:[], selected:null, type:"debito", ready:false, canWrite:false, confirmDel:null, confirmClient:false, mode:"uno", weekStart:null,
   view:"clientes", anulados:[], desde:"2026-03-01", hasta:todayStr(), sortR:"fin", cuadre:{} };
@@ -242,7 +246,7 @@ let db=null, downloads=null;
 
 function balances(){
   const b = {}, t = {};
-  for (const c of state.clients) { b[c.id]=0; t[c.id]={deposito:0,credito:0,debito:0,retiro:0,inicial:0}; }
+  for (const c of state.clients) { b[c.id]=0; t[c.id]={...Z(),inicial:0}; }
   for (const m of state.moves) {
     if (!(m.clienteId in b)) continue;
     b[m.clienteId] += val(m);
@@ -328,7 +332,7 @@ function renderDetail(b,t){
       </div>
     </div>
 
-    <div class="summary">
+    <div class="summary s6">
       ${WT.map(k=>`<div><span class="label">${TYPES[k].label}s</span><span class="num ${TYPES[k].sign>0?"pos":"neg"}">${fmt(tt[k])}</span></div>`).join("")}
     </div>
 
@@ -385,7 +389,7 @@ function renderDetail(b,t){
 /* ---------- period report ---------- */
 function periodData(){
   const {desde,hasta}=state;
-  const rows={}; for(const c of state.clients) rows[c.id]={c, ini:0, arr:0, deposito:0, retiro:0, credito:0, debito:0};
+  const rows={}; for(const c of state.clients) rows[c.id]={c, ini:0, arr:0, ...Z()};
   const months={};
   for(const m of state.moves){
     const r=rows[m.clienteId]; if(!r || !m.fecha) continue;
@@ -393,11 +397,11 @@ function periodData(){
     if (m.fecha>hasta) continue;
     if (m.tipo==="inicial"){ r.arr+=m.monto; continue; }
     r[m.tipo]+=m.monto;
-    const mk=m.fecha.slice(0,7); const mo=months[mk]||(months[mk]={deposito:0,retiro:0,credito:0,debito:0}); mo[m.tipo]+=m.monto;
+    const mk=m.fecha.slice(0,7); const mo=months[mk]||(months[mk]=Z()); mo[m.tipo]+=m.monto;
   }
-  const list=Object.values(rows).map(r=>({...r, start:r.ini+r.arr, fin:r.ini+r.arr+r.deposito+r.credito-r.debito-r.retiro, banca:r.debito-r.credito}));
-  const T={start:0,deposito:0,retiro:0,credito:0,debito:0,fin:0,banca:0,favor:0,deben:0,arr:0};
-  for(const r of list){ for(const k of ["start","deposito","retiro","credito","debito","fin","banca","arr"]) T[k]+=r[k]; if(r.fin>0) T.favor+=r.fin; else T.deben+=-r.fin; }
+  const list=Object.values(rows).map(r=>({...r, start:r.ini+r.arr, fin:r.ini+r.arr+r.deposito+r.credito-r.debito-r.retiro+r.bono_deposito+r.bono_perdida, juego:r.debito-r.credito, bonos:r.bono_deposito+r.bono_perdida, banca:r.debito-r.credito-r.bono_deposito-r.bono_perdida}));
+  const T={start:0,...Z(),fin:0,banca:0,juego:0,bonos:0,favor:0,deben:0,arr:0};
+  for(const r of list){ for(const k of ["start","deposito","retiro","credito","debito","bono_deposito","bono_perdida","fin","banca","juego","bonos","arr"]) T[k]+=r[k]; if(r.fin>0) T.favor+=r.fin; else T.deben+=-r.fin; }
   return {list,T,months};
 }
 const mesNombre = k => { const [y,m]=k.split("-"); return ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"][Number(m)-1]+" "+y; };
@@ -433,11 +437,15 @@ function renderReport(){
           <span>Lo que debías al inicio (neto)${T.arr?` <span class="note">incluye ${fmt(T.arr)} de saldos iniciales con fecha en el período</span>`:""}</span><span class="num ${cls(T.start)}">${fmt(T.start)}</span>
           <span>+ Depósitos de clientes</span><span class="num">${fmt(T.deposito)}</span>
           <span>− Retiros pagados</span><span class="num">${fmt(-T.retiro)}</span>
-          <span>− Ganancia de la banca (pierden − ganan)</span><span class="num">${fmt(-T.banca)}</span>
+          <span>− Resultado del juego (pierden − ganan)</span><span class="num">${fmt(-T.juego)}</span>
+          <span>+ Bonos por depósito</span><span class="num">${fmt(T.bono_deposito)}</span>
+          <span>+ Bonos por pérdida</span><span class="num">${fmt(T.bono_perdida)}</span>
           <span class="tot">= Lo que debes al cierre (neto)</span><span class="num tot ${cls(T.fin)}">${fmt(T.fin)}</span>
         </div>
         <div class="summary" style="grid-template-columns:repeat(3,minmax(0,1fr))">
-          <div><span class="label">Ganancia banca</span><span class="v num ${T.banca>=0?"pos":"neg"}">${fmt(T.banca)}</span></div>
+          <div><span class="label">Resultado del juego</span><span class="v num ${T.juego>=0?"pos":"neg"}">${fmt(T.juego)}</span></div>
+          <div><span class="label">Bonos dados</span><span class="v num">${fmt(T.bonos)}</span></div>
+          <div><span class="label">Ganancia neta (después de bonos)</span><span class="v num ${T.banca>=0?"pos":"neg"}">${fmt(T.banca)}</span></div>
           <div><span class="label">A favor de clientes</span><span class="v num">${fmt(T.favor)}</span></div>
           <div><span class="label">Clientes deben</span><span class="v num">${fmt(T.deben)}</span></div>
         </div>
@@ -447,7 +455,7 @@ function renderReport(){
       <section class="pane">
         <h2>Verificar contra tus otras cifras</h2>
         <div class="inline-in"><label for="cuRep">Ganancia según tu reporte del sistema</label><input id="cuRep" class="num" type="number" step="0.01" placeholder="Ej. 500000" value="${has(cu.reportada)?cu.reportada:""}"></div>
-        ${rep!=null?`<div class="verdict ${Math.abs(rep-T.banca)<1?"ok":"bad"}">${Math.abs(rep-T.banca)<1?"Coincide con la libreta.":`La libreta da ${fmt(T.banca)}; tu reporte dice ${fmt(rep)}. Diferencia: <b class="num">${fmt(rep-T.banca)}</b>. Busca jugadas que estén en un lado y no en el otro.`}</div>`:""}
+        ${rep!=null?`<div class="verdict ${Math.abs(rep-T.banca)<1||Math.abs(rep-T.juego)<1?"ok":"bad"}">${Math.abs(rep-T.banca)<1?"Coincide con la ganancia neta de la libreta (después de bonos).":Math.abs(rep-T.juego)<1?`Coincide con el resultado del juego <b>antes de bonos</b>. Tu reporte no descuenta los ${fmt(T.bonos)} de bonos; la ganancia real es ${fmt(T.banca)}.`:`Tu reporte dice ${fmt(rep)}. La libreta da ${fmt(T.juego)} antes de bonos y ${fmt(T.banca)} después de bonos. Diferencia contra la neta: <b class="num">${fmt(rep-T.banca)}</b>. Revisa si tu reporte incluye los bonos y busca jugadas que estén en un lado y no en el otro.`}</div>`:""}
         <div class="inline-in"><label for="cuEi">Efectivo (caja + banco) al inicio</label><input id="cuEi" class="num" type="number" step="0.01" placeholder="0.00" value="${has(cu.efIni)?cu.efIni:""}"></div>
         <div class="inline-in"><label for="cuEf">Efectivo (caja + banco) al cierre, real</label><input id="cuEf" class="num" type="number" step="0.01" placeholder="0.00" value="${has(cu.efFin)?cu.efFin:""}"></div>
         ${efEsperado!=null?`<div class="eq">
@@ -464,8 +472,8 @@ function renderReport(){
     ${mk.length?`<section class="pane">
       <h2>Por mes</h2>
       <div class="tablewrap"><table>
-        <thead><tr><th>Mes</th><th class="r">Depósitos</th><th class="r">Retiros</th><th class="r">Ganan (créditos)</th><th class="r">Pierden (débitos)</th><th class="r">Ganancia banca</th><th class="r">Efectivo neto</th></tr></thead>
-        <tbody>${mk.map(k=>{const o=months[k];const b=o.debito-o.credito;return `<tr><td>${mesNombre(k)}</td><td class="r num">${fmt(o.deposito)}</td><td class="r num">${fmt(o.retiro)}</td><td class="r num">${fmt(o.credito)}</td><td class="r num">${fmt(o.debito)}</td><td class="r num ${cls(b)}">${fmt(b)}</td><td class="r num">${fmt(o.deposito-o.retiro)}</td></tr>`}).join("")}</tbody>
+        <thead><tr><th>Mes</th><th class="r">Depósitos</th><th class="r">Retiros</th><th class="r">Ganan (créditos)</th><th class="r">Pierden (débitos)</th><th class="r">Bonos</th><th class="r">Ganancia neta</th><th class="r">Efectivo neto</th></tr></thead>
+        <tbody>${mk.map(k=>{const o=months[k];const bo=o.bono_deposito+o.bono_perdida;const b=o.debito-o.credito-bo;return `<tr><td>${mesNombre(k)}</td><td class="r num">${fmt(o.deposito)}</td><td class="r num">${fmt(o.retiro)}</td><td class="r num">${fmt(o.credito)}</td><td class="r num">${fmt(o.debito)}</td><td class="r num">${fmt(bo)}</td><td class="r num ${cls(b)}">${fmt(b)}</td><td class="r num">${fmt(o.deposito-o.retiro)}</td></tr>`}).join("")}</tbody>
       </table></div>
     </section>`:""}
 
@@ -475,7 +483,7 @@ function renderReport(){
         <div class="row">
           <select id="rSort" aria-label="Ordenar">
             <option value="fin" ${state.sortR==="fin"?"selected":""}>Mayor saldo al cierre</option>
-            <option value="banca" ${state.sortR==="banca"?"selected":""}>Mayor ganancia banca</option>
+            <option value="banca" ${state.sortR==="banca"?"selected":""}>Mayor ganancia neta</option>
             <option value="mov" ${state.sortR==="mov"?"selected":""}>Más movimiento</option>
             <option value="nombre" ${state.sortR==="nombre"?"selected":""}>Nombre</option>
           </select>
@@ -483,15 +491,15 @@ function renderReport(){
         </div>
       </div>
       <div class="tablewrap"><table class="rpt">
-        <thead><tr><th>Cliente</th><th class="r">Saldo al inicio</th><th class="r">+ Depósitos</th><th class="r">− Retiros</th><th class="r">+ Ganan</th><th class="r">− Pierden</th><th class="r">Saldo al cierre</th><th class="r">Ganancia banca</th></tr></thead>
+        <thead><tr><th>Cliente</th><th class="r">Saldo al inicio</th><th class="r">+ Depósitos</th><th class="r">− Retiros</th><th class="r">+ Ganan</th><th class="r">− Pierden</th><th class="r">+ Bonos</th><th class="r">Saldo al cierre</th><th class="r">Ganancia neta</th></tr></thead>
         <tbody>${rows.map(r=>`<tr data-goto="${esc(r.c.id)}">
           <td>${esc(r.c.nombre)}</td>
           <td class="r num ${cls(r.start)}">${fmt(r.start)}</td>
           <td class="r num">${fmt(r.deposito)}</td><td class="r num">${fmt(r.retiro)}</td>
-          <td class="r num">${fmt(r.credito)}</td><td class="r num">${fmt(r.debito)}</td>
+          <td class="r num">${fmt(r.credito)}</td><td class="r num">${fmt(r.debito)}</td><td class="r num">${fmt(r.bonos)}</td>
           <td class="r num ${cls(r.fin)}">${fmt(r.fin)}</td>
           <td class="r num ${cls(r.banca)}">${fmt(r.banca)}</td></tr>`).join("")}</tbody>
-        <tfoot><tr><td>Total (${rows.length})</td><td class="r num">${fmt(T.start)}</td><td class="r num">${fmt(T.deposito)}</td><td class="r num">${fmt(T.retiro)}</td><td class="r num">${fmt(T.credito)}</td><td class="r num">${fmt(T.debito)}</td><td class="r num">${fmt(T.fin)}</td><td class="r num">${fmt(T.banca)}</td></tr></tfoot>
+        <tfoot><tr><td>Total (${rows.length})</td><td class="r num">${fmt(T.start)}</td><td class="r num">${fmt(T.deposito)}</td><td class="r num">${fmt(T.retiro)}</td><td class="r num">${fmt(T.credito)}</td><td class="r num">${fmt(T.debito)}</td><td class="r num">${fmt(T.bonos)}</td><td class="r num">${fmt(T.fin)}</td><td class="r num">${fmt(T.banca)}</td></tr></tfoot>
       </table></div>
       <p class="note" style="margin:0">Toca un cliente para abrir su cuenta.</p>
     </section>`:""}
@@ -514,9 +522,9 @@ document.addEventListener("change", e=>{
 });
 async function exportReport(){
   if(!downloads) return; const {list,T}=periodData(); const q=s=>'"'+String(s??"").replace(/"/g,'""')+'"';
-  const L=[["Cliente","Saldo al inicio","Depositos","Retiros","Ganan","Pierden","Saldo al cierre","Ganancia banca"].join(",")];
-  for(const r of list) L.push([q(r.c.nombre),r.start,r.deposito,r.retiro,r.credito,r.debito,r.fin,r.banca].map((x,i)=>i?Number(x).toFixed(2):x).join(","));
-  L.push(["TOTAL",T.start,T.deposito,T.retiro,T.credito,T.debito,T.fin,T.banca].map((x,i)=>i?Number(x).toFixed(2):x).join(","));
+  const L=[["Cliente","Saldo al inicio","Depositos","Retiros","Ganan","Pierden","Bono deposito","Bono perdida","Saldo al cierre","Ganancia neta"].join(",")];
+  for(const r of list) L.push([q(r.c.nombre),r.start,r.deposito,r.retiro,r.credito,r.debito,r.bono_deposito,r.bono_perdida,r.fin,r.banca].map((x,i)=>i?Number(x).toFixed(2):x).join(","));
+  L.push(["TOTAL",T.start,T.deposito,T.retiro,T.credito,T.debito,T.bono_deposito,T.bono_perdida,T.fin,T.banca].map((x,i)=>i?Number(x).toFixed(2):x).join(","));
   try{ const r=await downloads.save({filename:`cuadre_${state.desde}_a_${state.hasta}.csv`, data:"\ufeff"+L.join("\n")}); if(r?.status==="saved") toast("Archivo guardado"); }catch(e){}
 }
 
@@ -571,7 +579,7 @@ function weekEntries(){
 }
 function updateWeek(){
   if(!$("wkForm")) return;
-  const tot={deposito:0,credito:0,debito:0,retiro:0}; const e=weekEntries();
+  const tot=Z(); const e=weekEntries();
   for(const x of e) tot[x.tipo]+=x.monto;
   for(const k of WT){ const c=$("wt_"+k); c.textContent=fmt(tot[k]); c.className="r num "+(tot[k]?(TYPES[k].sign>0?"pos":"neg"):""); }
   const net=WT.reduce((a,k)=>a+TYPES[k].sign*tot[k],0);
