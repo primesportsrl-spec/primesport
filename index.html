@@ -505,18 +505,6 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
   </div>
   </div>
-<div data-mod="libreta">
-<div onclick="openLibreta()" style="background:linear-gradient(135deg,#14303f,#0f6e8c);border-radius:16px;padding:15px 16px;margin-bottom:16px;display:flex;align-items:center;gap:13px;cursor:pointer;box-shadow:0 4px 16px rgba(15,110,140,.3);">
-    <div style="width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:22px;height:22px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="7" x2="16" y2="7"/><line x1="9" y1="11" x2="14" y2="11"/></svg>
-    </div>
-    <div style="flex:1;">
-      <div style="color:#fff;font-size:14.5px;font-weight:700;">Libreta de Clientes</div>
-      <div style="color:rgba(255,255,255,.78);font-size:11.5px;margin-top:1px;">Créditos, débitos, depósitos, retiros y bonos</div>
-    </div>
-    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
-  </div>
-  </div>
 </div>
 
 <div class="stat-grid">
@@ -786,6 +774,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     <button onclick="go('dash')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
     <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Corte Diario</div><div style="font-size:12px;color:var(--muted);" id="corteDateLabel">—</div></div>
   </div>
+  <div class="grp-bar" data-grpbar="view-corte" style="display:none;"></div>
 
   <button onclick="enviarRutaMensajero()" style="width:100%;border:1px solid #25d366;background:#25d366;color:#fff;border-radius:12px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;">
     <svg viewBox="0 0 24 24" fill="currentColor" style="width:18px;height:18px;"><path d="M12 2a10 10 0 00-8.5 15.3L2 22l4.9-1.4A10 10 0 1012 2zm0 18a8 8 0 01-4.1-1.1l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1112 20z"/></svg>
@@ -920,6 +909,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Máquinas</div><div style="font-size:12px;color:var(--muted);">Ruletas, Bergman y POG</div></div>
     <button onclick="openMaqConfig()" style="border:none;background:#f0eaf7;color:#6b3fa0;border-radius:10px;padding:8px 12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">⚙ Configurar</button>
   </div>
+  <div class="grp-bar" data-grpbar="view-maquinas" style="display:none;"></div>
 
   <!-- branch selector -->
   <div class="fld" style="margin-bottom:10px;">
@@ -1047,6 +1037,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     <button onclick="go('dash')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
     <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Cuadre Mensual · Bancas</div><div style="font-size:12px;color:var(--muted);">Matriz por banca + oficina</div></div>
   </div>
+  <div class="grp-bar" data-grpbar="view-cuadrebancas" style="display:none;"></div>
 
   <div class="row2" style="margin-bottom:12px;">
     <div class="fld" style="margin:0;"><label>Mes</label><select id="cbMesSel" onchange="renderCuadreBancas()"></select></div>
@@ -1340,6 +1331,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     <button onclick="go('dash')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
     <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Virtuales</div><div style="font-size:12px;color:var(--muted);">Resumen mensual por empresa</div></div>
   </div>
+  <div class="grp-bar" data-grpbar="view-virtuales" style="display:none;"></div>
 
   <!-- month/year selector -->
   <div class="row2" style="margin-bottom:14px;">
@@ -1628,7 +1620,9 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">Toca el botón azul <b>+</b> abajo en el centro. Elige el tipo:<br><br>
     • <b style="color:var(--green);">▲ Operaciones</b>: ingresos por categoría (Deportiva, Máquinas, Virtuales, PinBet). Si la banca pierde, el balance es negativo — sigue siendo una operación, no un gasto.<br>
     • <b style="color:var(--red);">▼ Gasto</b>: gastos generales (Local, Energía, Salarios…) con opción de NCF.<br>
-    • <b style="color:var(--amber);">↗ Salida</b>: retiros de efectivo o <b>transferencias</b> entre cajas (préstamos y devoluciones). Los <b>motivos del retiro</b> se agregan o quitan en <b>Ajustes → Categorías de salida</b>.<br><br>
+    • <b style="color:var(--amber);">↗ Salida</b>: retiros de efectivo o <b>transferencias</b> entre cajas (préstamos y devoluciones). Los <b>motivos del retiro</b> se agregan o quitan en <b>Ajustes → Categorías de salida</b>.<br>
+    • <b>Fecha y corte cerrado</b>: si el corte de hoy ya se cerró, el formulario propone solo la fecha de <b>mañana</b> (lo de la noche va al próximo corte). Si eliges un día cerrado, te pregunta si lo pasa al próximo corte abierto.<br>
+    • <b>Grupos de bancas</b> (opcional, en Ajustes): al activarlos aparece arriba del Corte, Cuadre Mensual, Virtuales, Máquinas y Análisis una barra para ver <b>Todas</b> o un grupo. El cierre del corte y el prorrateo siempre usan todas las bancas.<br><br>
     Modo <b>"Varias a la vez"</b>: registra todas las categorías de una banca en una sola pantalla. La fecha puede ser pasada.</div>
   </div>
 
@@ -1889,19 +1883,12 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
   <div id="invLista"></div>
 </section>
 
-<section class="view" id="view-libreta">
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-    <button onclick="go('dash')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
-    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Libreta de Clientes</div><div style="font-size:12px;color:var(--muted);">Créditos, débitos, depósitos, retiros y bonos</div></div>
-  </div>
-  <iframe id="libretaFrame" title="Libreta de Clientes" style="width:100%;height:calc(100dvh - 170px);min-height:480px;border:0;border-radius:14px;background:var(--paper);display:block;"></iframe>
-</section>
-
 <section class="view" id="view-analisis">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
     <button onclick="go('dash')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
     <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Análisis</div><div style="font-size:12px;color:var(--muted);">Rentabilidad, tendencias y proyección</div></div>
   </div>
+  <div class="grp-bar" data-grpbar="view-analisis" style="display:none;"></div>
 
   <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
     <button class="an-quick" onclick="anRango('anio')">Año</button>
@@ -2076,6 +2063,10 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
   </div>
   <div style="font-size:11.5px;color:var(--muted);padding:0 4px 14px;line-height:1.5;">Son los <b>motivos del retiro</b> que salen al registrar una <b>↗ Salida</b>. Borrar una categoría no cambia las salidas que ya la usaron.</div>
 
+  <div class="section-label">Grupos de bancas</div>
+  <div class="set-list" id="grpSettings"></div>
+  <div style="font-size:11.5px;color:var(--muted);padding:0 4px 14px;line-height:1.5;">Opcional. Sirve para dividir las bancas en grupos (por zona, socio o ruta) y ver el <b>Corte Diario, Cuadre Mensual, Virtuales, Máquinas y Análisis</b> por grupo. Mientras esté apagado no cambia nada.</div>
+
   <div class="section-label">Datos</div>
   <div class="set-list">
     <div class="set-item">
@@ -2099,7 +2090,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       <div class="si-act" style="color:var(--amber);" onclick="doLogout()">Salir</div>
     </div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v6.8 nube · Santo Domingo, RD</div>
+  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v6.9 nube · Santo Domingo, RD</div>
 </section>
 
 <!-- NAV -->
@@ -2162,7 +2153,7 @@ window.__supabase = createClient(
 window.dispatchEvent(new Event('supabase-ready'));
 </script>
 <script>
-/* ===================== AdmBca v6.8 ===================== */
+/* ===================== AdmBca v6.9 ===================== */
 function idConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.id)||null; }catch(e){ return null; } }
 function nomConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.nombre)||'AdmBca'; }catch(e){ return 'AdmBca'; } }
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -2516,6 +2507,20 @@ function moduloListo(){
 }
 function num0(v){ return v!=null?Number(v):0; }
 function isDayClosed(date){ return Array.isArray(state.cierres)&&state.cierres.includes(date); }
+function sumarDias(iso,n){ const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return isoLocal(d); }
+/* Primer día con el corte ABIERTO a partir de "iso". Si el corte de hoy ya se
+   cerró, lo que se registra después pertenece al corte de mañana. */
+function fechaAbierta(iso){ let d=iso, n=0; while(isDayClosed(d)&&n<15){ d=sumarDias(d,1); n++; } return d; }
+/* Al guardar: si la fecha elegida tiene el corte cerrado, ofrece pasarlo al
+   próximo corte abierto en vez de bloquear. Devuelve la fecha a usar o null. */
+function fechaParaGuardar(date,inputId){
+  if(!isDayClosed(date)) return date;
+  const nueva=fechaAbierta(date);
+  const f=x=>{ const d=new Date(x+'T00:00:00'); return `${d.getDate()} de ${MONTHS[d.getMonth()]}`; };
+  if(!confirm(`El corte del ${f(date)} ya está cerrado.\n\n¿Registrarlo en el corte del ${f(nueva)}?\n\n(Si de verdad va en el ${f(date)}, cancela y reabre ese corte.)`)) return null;
+  const el=document.getElementById(inputId); if(el){ el.value=nueva; pintarDia(inputId); }
+  return nueva;
+}
 
 // saveState is kept for API compatibility, but cloud sync happens via specific
 // operations below. We use it as a light debounced "sync branches & categories".
@@ -3048,9 +3053,11 @@ function pintarDia(id){
   let col='var(--muted)';
   if(v===todayISO()) txt+=' · hoy';
   else if(v===yesterdayISO()) txt+=' · ayer';
+  else if(v===sumarDias(todayISO(),1)) txt+=' · mañana (corte de hoy ya cerrado)';
   else { const dif=Math.round((new Date(todayISO()+'T00:00:00')-d)/86400000);
          txt+= dif>0 ? ` · hace ${dif} días` : ` · dentro de ${Math.abs(dif)} días`;
          col='#a37416'; }
+  if(isDayClosed(v)){ txt+=' · ⚠️ corte cerrado'; col='var(--red)'; }
   out.textContent=txt; out.style.color=col;
 }
 function pintarDias(){ ['fDateInc','fDateExp','fDateOut'].forEach(pintarDia); }
@@ -3062,9 +3069,10 @@ function resetForms(){
   document.getElementById('fHasNcf').checked=false; toggleNcf();
   // Operaciones (cuadre de banca) = AYER por defecto (se recibe la jornada anterior)
   // Gastos y Salidas = HOY (se ejecutan el día actual)
-  document.getElementById('fDateInc').value=yesterdayISO();
-  document.getElementById('fDateExp').value=todayISO();
-  document.getElementById('fDateOut').value=todayISO();
+  // Si ese corte ya está cerrado, propone el próximo corte abierto (ej. de noche, mañana)
+  document.getElementById('fDateInc').value=fechaAbierta(yesterdayISO());
+  document.getElementById('fDateExp').value=fechaAbierta(todayISO());
+  document.getElementById('fDateOut').value=fechaAbierta(todayISO());
   pintarDias();
   updateFundBanner('inc'); updateFundBanner('exp'); updateFundBanner('out');
   setIncMode('single');
@@ -3075,9 +3083,9 @@ let __terminarTrasGuardar=false;
 function saveIncome(fin){ __terminarTrasGuardar=!!fin; return conBloqueo(fin?'saveBtnIncFin':'saveBtnInc',_saveIncome); }
 async function _saveIncome(){
   const branch=document.getElementById('fBranchInc').value;
-  const date=document.getElementById('fDateInc').value||todayISO();
+  const date=fechaParaGuardar(document.getElementById('fDateInc').value||todayISO(),'fDateInc');
+  if(!date) return;
   const note=document.getElementById('fNoteInc').value.trim();
-  if(isDayClosed(date)){ toast('El corte de ese día está cerrado. Reábrelo para registrar.',false); return; }
 
   if(incMode==='single'){
     const amount=parseFloat(document.getElementById('fAmountInc').value);
@@ -3114,9 +3122,9 @@ async function _saveExpense(){
   const amount=parseFloat(document.getElementById('fAmountExp').value);
   if(!amount||amount<=0){ shake('fAmountExp'); toast('Ingresa un monto válido',false); return; }
   const branch=document.getElementById('fBranchExp').value;
-  const date=document.getElementById('fDateExp').value||todayISO();
+  const date=fechaParaGuardar(document.getElementById('fDateExp').value||todayISO(),'fDateExp');
+  if(!date) return;
   const note=document.getElementById('fNoteExp').value.trim();
-  if(isDayClosed(date)){ toast('El corte de ese día está cerrado. Reábrelo para registrar.',false); return; }
   const hasNcf=document.getElementById('fHasNcf').checked;
   const category=document.getElementById('fExpCat').value;
   const bancaSel=document.getElementById('fExpBanca');
@@ -3133,9 +3141,9 @@ async function _saveOut(){
   const amount=parseFloat(document.getElementById('fAmountOut').value);
   if(!amount||amount<=0){ shake('fAmountOut'); toast('Ingresa un monto válido',false); return; }
   const branch=document.getElementById('fBranchOut').value;
-  const date=document.getElementById('fDateOut').value||todayISO();
+  const date=fechaParaGuardar(document.getElementById('fDateOut').value||todayISO(),'fDateOut');
+  if(!date) return;
   const note=document.getElementById('fNoteOut').value.trim();
-  if(isDayClosed(date)){ toast('El corte de ese día está cerrado. Reábrelo para registrar.',false); return; }
   if(outMode==='transfer'){
     const dest=document.getElementById('fBranchDest').value;
     if(!dest||dest===branch){ toast('Selecciona una sucursal destino distinta',false); return; }
@@ -4111,12 +4119,6 @@ const EQ_TIPOS=['Aire acondicionado','Inversor','Baterías','Planta','PC','TV','
 const EQ_SERVICIOS=['Mantenimiento','Reparación','Cambio','Instalación'];
 let mantCur=null, eqCur=null;
 
-function openLibreta(){
-  if(!puedeVer('libreta')){ toast('No tienes acceso a esta sección.',false); return; }
-  showOnlyView('view-libreta');
-  const f=document.getElementById('libretaFrame');
-  if(!f.getAttribute('src')) f.setAttribute('src','libreta.html?embed=1');
-}
 function openEquipos(){
   if(!puedeVer('equipos')){ toast('No tienes acceso a esta sección.',false); return; }
   if(!moduloListo()) return;
@@ -4322,7 +4324,7 @@ function mesesDelRango(){
   while((a<a2||(a===a2&&m<=m2)) && guard++<120){ out.push({anio:a,mes:m,clave:mesClave(a,m)}); m++; if(m>12){m=1;a++;} }
   return out;
 }
-function bancasActivas(){ return sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false)).map(b=>b.name); }
+function bancasActivas(){ return sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false&&enGrupo(b.name))).map(b=>b.name); }
 function anIncluyeProrrateo(){ const el=document.getElementById('anProrrateo'); return !el||el.checked; }
 
 /* Ingresos de una banca en un mes, abiertos por renglón. */
@@ -5394,6 +5396,7 @@ function openCorte(){
   apilarVista('view-corte');
   document.querySelectorAll('nav.tabbar button').forEach(b=>b.classList.remove('active'));
   window.scrollTo(0,0);
+  try{ renderGrupoBars(); }catch(e){}
   renderCorte();
 }
 
@@ -5408,7 +5411,7 @@ function enviarRutaMensajero(){
   }
   const d=new Date(corteDateVal+'T00:00:00');
   const fechaTxt=`${d.getDate()} ${MONTHS_SHORT[d.getMonth()]} ${d.getFullYear()}`;
-  const banks=sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false));
+  const banks=sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false&&enGrupo(b.name)));
   const lines=[`*PRIME SPORT · Ruta de recolección*`,`📅 Jornada: ${fechaTxt}`,''];
   let total=0, anyEntrega=false, anyEnvio=false;
   banks.forEach(b=>{
@@ -5481,7 +5484,7 @@ function renderCorte(){
   if(Math.abs(dias)>7) tag = ` · <span style="color:var(--red);font-weight:800;">⛔ ${Math.abs(dias)} días ${dias>0?'atrás':'adelante'} — revisa el mes</span>`;
   document.getElementById('corteDateLabel').innerHTML=`Cuadrando jornada del <b>${d.getDate()} de ${MONTHS[d.getMonth()]}, ${d.getFullYear()}</b>${tag}`;
 
-  const banks=sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false));
+  const banks=sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false&&enGrupo(b.name)));
   const el=document.getElementById('corteList');
   let anyActivity=false;
   el.innerHTML=banks.map(b=>{
@@ -5540,7 +5543,7 @@ function diasDesdeHoy(date){
   return Math.round((new Date(todayISO()+'T00:00:00') - new Date(date+'T00:00:00'))/86400000);
 }
 function renderCorteExceso(){
-  const banks=sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false));
+  const banks=sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false&&enGrupo(b.name)));
   const exc=banks.map(b=>({name:b.name,e:fondoExceso(b.name)}))
                  .filter(x=>Math.abs(x.e)>=1)
                  .sort((a,b)=>Math.abs(b.e)-Math.abs(a.e));
@@ -5573,7 +5576,7 @@ function devolverAdelanto(branch){
 }
 
 function renderCortePending(){
-  const banks=sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false));
+  const banks=sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false&&enGrupo(b.name)));
   const pend=banks.map(b=>({name:b.name,p:bankPending(b.name)})).filter(x=>Math.abs(x.p)>=1);
   const panel=document.getElementById('cortePendPanel');
   if(!pend.length){ panel.style.display='none'; return; }
@@ -5623,7 +5626,7 @@ async function _collectAll(){
   const yaRec=state.txns.filter(t=>t.type==='collect'&&(t.jornada||t.date)===corteDateVal).length;
   const avisoYa = yaRec ? `\n\n⚠️ Esta jornada YA tiene ${yaRec} recolección(es) registrada(s). Si continúas se sumarán otras.` : '';
   if(!confirm(`¿Recolectar el neto completo de todas las bancas (cuadre de hoy + pendientes anteriores)? El dinero se moverá desde/hacia la Oficina.${avisoAll}${avisoYa}`)) return;
-  const banks=sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false));
+  const banks=sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false&&enGrupo(b.name)));
   let count=0, fallos=0;
   for(const b of banks){
     const cuadre=dayCuadre(b.name,corteDateVal);
@@ -5756,6 +5759,7 @@ const MAQ_TYPES={ruleta:'Otra ruleta',bergman:'Bergman',pog:'POG / Pot o Gold'};
 function showOnlyView(id){
   document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  try{ renderGrupoBars(); }catch(e){}
   document.querySelectorAll('nav.tabbar button').forEach(b=>b.classList.remove('active'));
   window.scrollTo(0,0);
   __sinGuardar=false;
@@ -6152,7 +6156,7 @@ function maqGlobalRow(branch, mes, anio){
 function renderMaqGlobal(){
   maqGlobalMesCur=parseInt(document.getElementById('maqGlobalMes').value);
   maqGlobalAnioCur=parseInt(document.getElementById('maqGlobalAnio').value);
-  const branches=sortBranchesNum(state.branches.filter(b=>!b.isOffice && b.activa!==false)).map(b=>b.name);
+  const branches=sortBranchesNum(state.branches.filter(b=>!b.isOffice && b.activa!==false && enGrupo(b.name))).map(b=>b.name);
   if(!branches.length){ document.getElementById('maqGlobalTable').innerHTML='<tr><td>No hay sucursales activas</td></tr>'; return; }
 
   // Compute current month rows
@@ -6354,9 +6358,10 @@ function exportMaqGlobalWhatsApp(){
 let cbMesCur=new Date().getMonth()+1, cbAnioCur=new Date().getFullYear();
 let _cbTab='matriz';
 
-function cbActiveBranches(){
+function cbActiveBranches(opt){
+  const todos=opt&&opt.todos;
   return state.branches
-    .filter(b=>!b.isOffice && b.activa!==false)
+    .filter(b=>!b.isOffice && b.activa!==false && (todos||enGrupo(b.name)))
     .sort((a,b)=>{
       // Extract trailing number for natural sort: "PRIME SPORT 10" → 10
       const na=parseInt((a.name.match(/\d+$/)||['0'])[0]);
@@ -6974,7 +6979,7 @@ function renderCbImportList(){
     wrap.innerHTML='<div class="empty-hint" style="padding:20px;">No hay gastos en el cuadre diario este mes.</div>';
     cbImportUpdateBar(); return;
   }
-  const bancas=cbActiveBranches().map(b=>b.name);
+  const bancas=cbActiveBranches({todos:true}).map(b=>b.name);
   // Agrupar por la banca donde se registró el gasto
   const groups={};
   txns.forEach(t=>{ (groups[t.branch]=groups[t.branch]||[]).push(t); });
@@ -7097,7 +7102,7 @@ async function cbImportSelected(){
 
 // === PRORRATEAR GASTOS DE OFICINA ENTRE LAS BANCAS ===
 async function cbProrratearOficina(){
-  const bancas=cbActiveBranches().map(b=>b.name);
+  const bancas=cbActiveBranches({todos:true}).map(b=>b.name);
   if(!bancas.length){ toast('No hay bancas activas',false); return; }
   const totalOf=state.cbOficinaGastos.filter(o=>o.anio===cbAnioCur&&o.mes===cbMesCur).reduce((s,o)=>s+o.monto,0);
   if(!totalOf){ toast('No hay gastos de oficina en este mes',false); return; }
@@ -8570,7 +8575,7 @@ function isVirtSucursalActiva(suc){
   return true;
 }
 function isVirtRenglonActivo(campo){ return !state.virtRenglonesInactivos[campo]; }
-function activeVirtSucursales(){ return VIRT_SUCURSALES.filter(isVirtSucursalActiva); }
+function activeVirtSucursales(){ return VIRT_SUCURSALES.filter(x=>isVirtSucursalActiva(x)&&enGrupo(x)); }
 function activeVirtCampos(){ return VIRT_CAMPOS.filter(c=>isVirtRenglonActivo(c.k)); }
 
 // Build the full distribution for the current month — now PER PROVIDER
@@ -9270,12 +9275,95 @@ function renderSettings(){
   document.getElementById('expCatList').innerHTML=state.expCats.map((c,i)=>
     `<div class="el-item"><span class="el-dot" style="background:var(--red)"></span><span class="el-name">${c}</span><span class="el-del" onclick="delExpCat(${i})">×</span></div>`
   ).join('');
+  try{ renderGrupoSettings(); }catch(e){ console.warn('grupos',e); }
   const ocl=document.getElementById('outCatList');
   if(ocl) ocl.innerHTML=(state.outCats||[]).map((c,i)=>
     `<div class="el-item"><span class="el-dot" style="background:var(--amber)"></span><span class="el-name">${c.name}</span><span class="el-del" onclick="delOutCat(${i})">×</span></div>`
   ).join('')||'<div class="empty-hint" style="padding:16px;">Sin categorías de salida</div>';
 }
 function addBranch(){ const v=document.getElementById('newBranch').value.trim(); if(!v)return; state.branches.push({name:v,fund:0}); document.getElementById('newBranch').value=''; saveState(); renderSettings(); toast('Sucursal agregada',true); }
+
+/* ===================== GRUPOS DE BANCAS =====================
+   Se guardan en app_config (clave "grupos_bancas") como JSON:
+   {activo:false, grupos:[{id,nombre,bancas:[...]}]}. Apagado = todo igual que antes. */
+let grupoSel='';   // '' = todas · '__sin' = sin grupo · id de grupo
+function grupoCfg(){
+  let c=null; try{ c=JSON.parse((state.config&&state.config.grupos_bancas)||'null'); }catch(e){}
+  if(!c||typeof c!=='object') c={activo:false,grupos:[]};
+  if(!Array.isArray(c.grupos)) c.grupos=[];
+  return c;
+}
+function gruposActivos(){ const c=grupoCfg(); return !!c.activo && c.grupos.length>0; }
+function grupoDeBanca(name){ const n=normBranchName(name); return grupoCfg().grupos.find(g=>(g.bancas||[]).some(b=>normBranchName(b)===n))||null; }
+function enGrupo(name){
+  if(!grupoSel||!gruposActivos()) return true;
+  const g=grupoDeBanca(name);
+  if(grupoSel==='__sin') return !g;
+  return !!g&&g.id===grupoSel;
+}
+function guardarGrupos(c){ saveConfig('grupos_bancas',JSON.stringify(c)); }
+function renderGrupoBars(){
+  const on=gruposActivos(), c=grupoCfg();
+  if(on && grupoSel && grupoSel!=='__sin' && !c.grupos.some(g=>g.id===grupoSel)) grupoSel='';
+  const hayLibres=state.branches.some(b=>!b.isOffice&&b.activa!==false&&!grupoDeBanca(b.name));
+  document.querySelectorAll('[data-grpbar]').forEach(el=>{
+    if(!on){ el.style.display='none'; el.innerHTML=''; return; }
+    const opts=[{id:'',n:'Todas'},...c.grupos.map(g=>({id:g.id,n:g.nombre})),...(hayLibres?[{id:'__sin',n:'Sin grupo'}]:[])];
+    el.style.display='flex';
+    el.style.cssText='display:flex;gap:7px;overflow-x:auto;margin:-4px 0 14px;padding-bottom:2px;';
+    el.innerHTML=opts.map(o=>`<button onclick="setGrupoSel('${o.id}','${el.getAttribute('data-grpbar')}')" style="flex-shrink:0;border:1px solid ${grupoSel===o.id?'var(--cerulean)':'var(--line)'};background:${grupoSel===o.id?'var(--cerulean)':'#fff'};color:${grupoSel===o.id?'#fff':'var(--ink)'};border-radius:20px;padding:7px 13px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">${o.n}</button>`).join('');
+  });
+}
+function setGrupoSel(id,vista){
+  grupoSel=id; renderGrupoBars();
+  try{
+    if(vista==='view-corte') renderCorte();
+    else if(vista==='view-cuadrebancas') openCuadreBancas();
+    else if(vista==='view-virtuales') renderVirtuales();
+    else if(vista==='view-analisis') renderAnalisis();
+    else if(vista==='view-maquinas'){ try{ renderMaqGlobal(); }catch(e){} try{ renderMaqList(); }catch(e){} }
+  }catch(e){ console.warn('grupo',e); }
+}
+function renderGrupoSettings(){
+  const el=document.getElementById('grpSettings'); if(!el) return;
+  const c=grupoCfg();
+  const sw=`<div class="el-item"><span class="el-name" style="font-weight:700;">Usar grupos de bancas</span><label class="switch" style="flex-shrink:0;"><input type="checkbox" ${c.activo?'checked':''} onchange="toggleGrupos(this.checked)"><span class="slider"></span></label></div>`;
+  if(!c.activo){ el.innerHTML=sw; return; }
+  const esc=x=>String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+  const lista=c.grupos.map((g,i)=>`<div class="el-item"><span class="el-dot" style="background:var(--cerulean)"></span><span class="el-name">${esc(g.nombre)} <span class="el-sub">· ${(g.bancas||[]).length} bancas</span></span><span class="el-del" onclick="delGrupo(${i})">×</span></div>`).join('');
+  const add=`<div class="add-inline"><input type="text" id="newGrupo" placeholder="Nuevo grupo (Zona Norte, Ruta 1…)"><button onclick="addGrupo()">+</button></div>`;
+  const bancas=sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false));
+  const asig=c.grupos.length?`<div style="font-size:11.5px;font-weight:700;color:var(--muted);padding:10px 2px 4px;">Asignar bancas</div>`+bancas.map(b=>{
+      const g=grupoDeBanca(b.name);
+      return `<div class="el-item"><span class="el-name">${esc(b.name)}</span><select onchange="asignarGrupo('${esc(b.name).replace(/'/g,"\\'")}',this.value)" style="padding:7px 9px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:12.5px;background:#fff;max-width:55%;"><option value="">— Sin grupo —</option>${c.grupos.map(x=>`<option value="${x.id}" ${g&&g.id===x.id?'selected':''}>${esc(x.nombre)}</option>`).join('')}</select></div>`;
+    }).join(''):'<div class="empty-hint" style="padding:12px;">Crea un grupo para empezar a asignar bancas.</div>';
+  el.innerHTML=sw+lista+add+asig;
+}
+function toggleGrupos(on){
+  const c=grupoCfg(); c.activo=!!on; guardarGrupos(c);
+  if(!on) grupoSel='';
+  renderGrupoSettings(); renderGrupoBars();
+  toast(on?'Grupos activados':'Grupos desactivados',true);
+}
+function addGrupo(){
+  const inp=document.getElementById('newGrupo'); const v=(inp&&inp.value||'').trim(); if(!v) return;
+  const c=grupoCfg();
+  if(c.grupos.some(g=>g.nombre.toLowerCase()===v.toLowerCase())){ toast('Ese grupo ya existe',false); return; }
+  c.grupos.push({id:'g'+Date.now().toString(36),nombre:v,bancas:[]}); guardarGrupos(c);
+  renderGrupoSettings(); renderGrupoBars(); toast('Grupo creado',true);
+}
+function delGrupo(i){
+  const c=grupoCfg(); const g=c.grupos[i]; if(!g) return;
+  if(!confirm(`¿Eliminar el grupo "${g.nombre}"?\n\nSus bancas quedan sin grupo. No se borra ningún movimiento.`)) return;
+  c.grupos.splice(i,1); if(grupoSel===g.id) grupoSel='';
+  guardarGrupos(c); renderGrupoSettings(); renderGrupoBars();
+}
+function asignarGrupo(banca,gid){
+  const c=grupoCfg(); const n=normBranchName(banca);
+  c.grupos.forEach(g=>{ g.bancas=(g.bancas||[]).filter(b=>normBranchName(b)!==n); });
+  const g=c.grupos.find(x=>x.id===gid); if(g) g.bancas.push(banca);
+  guardarGrupos(c); renderGrupoSettings(); renderGrupoBars();
+}
 
 async function saveConfig(clave,valor){
   if(!state.config) state.config={};
@@ -9478,7 +9566,6 @@ const MODULOS = [
   ['virtuales','Virtuales','Resumen y reparto'],
   ['empleados','Empleados y Nómina','Fichas, nómina quincenal y préstamos'],
   ['equipos','Equipos y Mantenimiento','Inventario y servicios por banca'],
-  ['libreta','Libreta de Clientes','Créditos, débitos, depósitos, retiros y bonos'],
   ['ajustes','Ajustes','Bancas, categorías y configuración']
 ];
 const NIVELES = [['no','Sin acceso'],['ver','Solo ver'],['editar','Ver y editar']];
@@ -9739,9 +9826,9 @@ async function startApp(){
     updateMonthLabel();
     renderFormOptions();
     setType('income');
-    document.getElementById('fDateInc').value=yesterdayISO();
-    document.getElementById('fDateExp').value=todayISO();
-    document.getElementById('fDateOut').value=todayISO();
+    document.getElementById('fDateInc').value=fechaAbierta(yesterdayISO());
+    document.getElementById('fDateExp').value=fechaAbierta(todayISO());
+    document.getElementById('fDateOut').value=fechaAbierta(todayISO());
     renderDash();
     marcarCargado();
     const av=document.getElementById('avisoCargando');
