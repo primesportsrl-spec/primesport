@@ -24,6 +24,18 @@
   --bg:#0E1519; --panel:#151F25; --ink:#E4EBEF; --muted:#90A0AA; --line:#26343C;
   --accent:#4FB3D3; --accent-ink:#06131A; --soft:#1C2A32;
   --pos:#5BCB8A; --pos-soft:#14301F; --neg:#F08279; --neg-soft:#3A1A18; --warn:#F0B35C; --warn-soft:#3A2A12; color-scheme:dark}
+/* Dentro del sistema principal: mismos colores y letra que AdmBca, siempre en claro */
+:root.embed.embed{
+  --bg:#f4f6f7; --panel:#FFFFFF; --ink:#0d1419; --muted:#7d909e; --line:#e3e9ec;
+  --accent:#0086AD; --accent-ink:#FFFFFF; --soft:#eef2f4;
+  --pos:#1f9d6b; --pos-soft:#e3f5ec; --neg:#d64545; --neg-soft:#fbe9e9; --warn:#a37416; --warn-soft:#fbf1dc;
+  --display:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; --body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  color-scheme:light}
+:root.embed header.top > div:first-child{display:none}
+:root.embed header.top{justify-content:flex-start}
+:root.embed .wrap{padding-block:4px 24px}
+:root.embed .pane,:root.embed .summary{border-radius:14px}
+:root.embed button.primary{background:linear-gradient(135deg,#0086AD,#16a8d4);border:0}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -862,7 +874,10 @@ function fail(err){
 /* ---------- datos (Supabase) ---------- */
 const SB_URL="https://okrfnucuombayysmdviq.supabase.co";
 const SB_KEY="sb_publishable_JlxZdS70vitaGNqvI_4Q-g_OMGnRdrU";
-const sb = supabase.createClient(SB_URL, SB_KEY, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } });
+// Dentro del sistema principal (AdmBca) usa la misma sesión, sin pedir login otra vez
+const EMBED = (()=>{ try{ return new URLSearchParams(location.search).has("embed") && window.parent!==window && !!window.parent.__supabase; }catch(e){ return false; } })();
+if (EMBED) document.documentElement.classList.add("embed");
+const sb = EMBED ? window.parent.__supabase : supabase.createClient(SB_URL, SB_KEY, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } });
 let session=null, rol=null, reloadTimer=null, loading=false;
 
 function err(e){ const x=new Error(e?.message||"error"); x.code = (e?.code==="42501"||/row-level security|permission/i.test(e?.message||""))?"invalid_argument":"unavailable"; return x; }
@@ -953,13 +968,15 @@ downloads = { async save({filename,data}){
 }};
 
 /* ---------- acceso ---------- */
+function embedMsg(t){ $("appView").hidden=true; $("authView").hidden=false; $("loginForm").hidden=true; $("recoverForm").hidden=true; const p=$("authView").querySelector(".sub"); if(p) p.textContent=t; }
 let signupMode=false;
 function showAuth(msg){ $("appView").hidden=true; $("authView").hidden=false; $("recoverForm").hidden=true; $("loginForm").hidden=false; $("lMsg").textContent=msg||""; }
 async function enter(){
   session=(await sb.auth.getSession()).data.session;
-  if (!session) return showAuth();
+  if (!session) return EMBED ? embedMsg("Tu sesión del sistema se cerró. Vuelve a entrar al sistema.") : showAuth();
   const {data, error} = await sb.rpc("libreta_activar");
   rol = error ? null : data;
+  if (!rol && EMBED) return embedMsg("Tu usuario todavía no tiene acceso a la Libreta. El administrador debe agregar tu correo en Libreta → Usuarios.");
   if (!rol){ await sb.auth.signOut(); return showAuth("Tu cuenta no tiene acceso a la libreta. Pide al administrador que agregue tu correo en Usuarios y vuelve a entrar."); }
   $("authView").hidden=true; $("appView").hidden=false;
   state.canWrite = rol==="admin" || rol==="editor";
@@ -998,8 +1015,9 @@ $("recoverForm").addEventListener("submit", async e=>{
 });
 sb.auth.onAuthStateChange((ev)=>{
   if (ev==="PASSWORD_RECOVERY"){ $("appView").hidden=true; $("authView").hidden=false; $("loginForm").hidden=true; $("recoverForm").hidden=false; }
-  if (ev==="SIGNED_OUT") showAuth();
+  if (ev==="SIGNED_OUT") EMBED ? embedMsg("Tu sesión del sistema se cerró.") : showAuth();
 });
+if (EMBED) $("btnLogout").hidden=true;
 $("btnLogout").addEventListener("click", async ()=>{ await sb.auth.signOut(); state.clients=[]; state.moves=[]; state.anulados=[]; state.selected=null; showAuth(); });
 $("btnReload").addEventListener("click", ()=>loadAll());
 document.addEventListener("visibilitychange", ()=>{ if(!document.hidden && rol) loadAll(); });

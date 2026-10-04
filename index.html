@@ -505,6 +505,18 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
   </div>
   </div>
+<div data-mod="libreta">
+<div onclick="openLibreta()" style="background:linear-gradient(135deg,#14303f,#0f6e8c);border-radius:16px;padding:15px 16px;margin-bottom:16px;display:flex;align-items:center;gap:13px;cursor:pointer;box-shadow:0 4px 16px rgba(15,110,140,.3);">
+    <div style="width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:22px;height:22px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="7" x2="16" y2="7"/><line x1="9" y1="11" x2="14" y2="11"/></svg>
+    </div>
+    <div style="flex:1;">
+      <div style="color:#fff;font-size:14.5px;font-weight:700;">Libreta de Clientes</div>
+      <div style="color:rgba(255,255,255,.78);font-size:11.5px;margin-top:1px;">Créditos, débitos, depósitos, retiros y bonos</div>
+    </div>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
+  </div>
+  </div>
 </div>
 
 <div class="stat-grid">
@@ -1875,6 +1887,14 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
   </div>
   <button onclick="nuevoEquipo()" style="width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:12px;">+ Agregar equipo</button>
   <div id="invLista"></div>
+</section>
+
+<section class="view" id="view-libreta">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+    <button onclick="go('dash')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Libreta de Clientes</div><div style="font-size:12px;color:var(--muted);">Créditos, débitos, depósitos, retiros y bonos</div></div>
+  </div>
+  <iframe id="libretaFrame" title="Libreta de Clientes" style="width:100%;height:calc(100dvh - 170px);min-height:480px;border:0;border-radius:14px;background:var(--paper);display:block;"></iframe>
 </section>
 
 <section class="view" id="view-analisis">
@@ -4091,6 +4111,12 @@ const EQ_TIPOS=['Aire acondicionado','Inversor','Baterías','Planta','PC','TV','
 const EQ_SERVICIOS=['Mantenimiento','Reparación','Cambio','Instalación'];
 let mantCur=null, eqCur=null;
 
+function openLibreta(){
+  if(!puedeVer('libreta')){ toast('No tienes acceso a esta sección.',false); return; }
+  showOnlyView('view-libreta');
+  const f=document.getElementById('libretaFrame');
+  if(!f.getAttribute('src')) f.setAttribute('src','libreta.html?embed=1');
+}
 function openEquipos(){
   if(!puedeVer('equipos')){ toast('No tienes acceso a esta sección.',false); return; }
   if(!moduloListo()) return;
@@ -9452,6 +9478,7 @@ const MODULOS = [
   ['virtuales','Virtuales','Resumen y reparto'],
   ['empleados','Empleados y Nómina','Fichas, nómina quincenal y préstamos'],
   ['equipos','Equipos y Mantenimiento','Inventario y servicios por banca'],
+  ['libreta','Libreta de Clientes','Créditos, débitos, depósitos, retiros y bonos'],
   ['ajustes','Ajustes','Bancas, categorías y configuración']
 ];
 const NIVELES = [['no','Sin acceso'],['ver','Solo ver'],['editar','Ver y editar']];
