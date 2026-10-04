@@ -78,6 +78,12 @@ input,select,textarea{font:inherit;color:var(--ink);background:var(--panel);bord
 .types button[data-t^="bono"][aria-pressed="true"],.types button[data-t="credito"][aria-pressed="true"],.types button[data-t="deposito"][aria-pressed="true"]{border-color:var(--pos);background:var(--pos-soft)}
 .types button[data-t="debito"][aria-pressed="true"],.types button[data-t="retiro"][aria-pressed="true"]{border-color:var(--neg);background:var(--neg-soft)}
 .mvform{display:grid;grid-template-columns:160px 150px minmax(0,1fr) auto;gap:8px;align-items:end}
+.bonobar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;background:var(--soft);border-radius:10px;padding:8px 12px;font-size:.85rem}
+.bonobar .chip{background:var(--panel)}
+input.calc{background:var(--soft);color:var(--accent);font-weight:600}
+input.sug{border-style:dashed;border-color:var(--accent)}
+.bonofield{display:grid;grid-template-columns:160px minmax(0,1fr);gap:8px;align-items:end}
+@media (max-width:520px){.bonofield{grid-template-columns:1fr}}
 @media (max-width:720px){.mvform{grid-template-columns:1fr 1fr} .mvform .full{grid-column:1/-1}}
 .field{display:flex;flex-direction:column;gap:4px;min-width:0}
 .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
@@ -172,6 +178,7 @@ table.rpt tfoot td{font-weight:700;background:var(--soft);border-top:2px solid v
   <div class="row note" style="justify-content:flex-end;margin-top:-8px">
     <span id="who"></span>
     <button class="ghost" id="btnReload" title="Volver a cargar los datos">Actualizar</button>
+    <button class="ghost" id="btnBonos" hidden>Bonos</button>
     <button class="ghost" id="btnUsers" hidden>Usuarios</button>
     <button class="ghost" id="btnLogout">Salir</button>
   </div>
@@ -238,10 +245,34 @@ const DIAS=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"
 const MESES=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
 const corta = s => { const d=parseYmd(s); return d.getDate()+" "+MESES[d.getMonth()]; };
 const WT=["deposito","credito","debito","retiro","bono_deposito","bono_perdida"];
+const MODOS={manual:"Manual",automatico:"Automático",mixto:"Mixto"};
+const r2 = x => Math.round(x*100)/100;
+function cfgFor(c){
+  const g=Object.assign({modo:"manual",pctDep:0,topeDep:0,pctPer:0,topePer:0}, state.bonosCfg||{});
+  const o=(c&&c.bonos)||{}; const has=v=>v!==""&&v!=null&&!isNaN(Number(v));
+  return { modo: o.modo&&o.modo!=="general"?o.modo:g.modo, propio: !!(o.modo&&o.modo!=="general")||has(o.pctDep)||has(o.pctPer),
+    pctDep: has(o.pctDep)?Number(o.pctDep):Number(g.pctDep)||0, topeDep:Number(g.topeDep)||0,
+    pctPer: has(o.pctPer)?Number(o.pctPer):Number(g.pctPer)||0, topePer:Number(g.topePer)||0 };
+}
+const capped=(v,t)=> t>0?Math.min(v,t):v;
+const calcDep=(amt,cf)=> amt>0&&cf.pctDep>0 ? r2(capped(amt*cf.pctDep/100,cf.topeDep)) : 0;
+const calcPer=(loss,cf)=> loss>0&&cf.pctPer>0 ? r2(capped(loss*cf.pctPer/100,cf.topePer)) : 0;
+function cfgText(cf){
+  if (cf.modo==="manual") return "Bonos: manual";
+  const p=[]; if(cf.pctDep) p.push(cf.pctDep+"% de cada depósito"+(cf.topeDep?" (tope "+fmt(cf.topeDep)+")":"")); if(cf.pctPer) p.push(cf.pctPer+"% de la pérdida neta semanal"+(cf.topePer?" (tope "+fmt(cf.topePer)+")":""));
+  return "Bonos: "+MODOS[cf.modo]+(p.length?" · "+p.join(" · "):" · sin porcentajes configurados");
+}
+// pérdida neta (débitos − créditos) y bonos de pérdida ya anotados en la semana que empieza en ws
+function weekLoss(cid, ws){
+  const we=addDays(ws,6); let loss=0, bper=0;
+  for(const m of state.moves){ if(m.clienteId!==cid||m.fecha<ws||m.fecha>we) continue;
+    if(m.tipo==="debito") loss+=m.monto; else if(m.tipo==="credito") loss-=m.monto; else if(m.tipo==="bono_perdida") bper+=m.monto; }
+  return {loss, bper};
+}
 const Z=()=>({deposito:0,credito:0,debito:0,retiro:0,bono_deposito:0,bono_perdida:0});
 
 const state = { clients:[], moves:[], selected:null, type:"debito", ready:false, canWrite:false, confirmDel:null, confirmClient:false, mode:"uno", weekStart:null,
-  view:"clientes", anulados:[], desde:"2026-03-01", hasta:todayStr(), sortR:"fin", cuadre:{} };
+  view:"clientes", anulados:[], bonosCfg:{}, desde:"2026-03-01", hasta:todayStr(), sortR:"fin", cuadre:{} };
 let db=null, downloads=null;
 
 function balances(){
@@ -324,6 +355,7 @@ function renderDetail(b,t){
         <div class="cmeta">${esc([c.codigo&&("Código "+c.codigo), c.telefono, c.limite>0&&("Límite de crédito "+fmt(c.limite))].filter(Boolean).join(" · "))}</div>
         ${c.nota?`<div class="note" style="margin-top:4px">${esc(c.nota)}</div>`:""}
         ${tt.inicial?`<div class="note" style="margin-top:4px">Incluye saldo inicial de ${fmt(tt.inicial)}</div>`:""}
+        <div class="note" style="margin-top:4px">${esc(cfgText(cfgFor(c)))}${cfgFor(c).propio?" (propio de este cliente)":""}</div>
       </div>
       <div class="balance">
         <div class="label">Saldo</div>
@@ -352,6 +384,13 @@ function renderDetail(b,t){
         <div class="field full"><label class="label" for="mvNota">Detalle (opcional)</label><input id="mvNota" maxlength="140" placeholder="Ticket, partido, banca, forma de pago…"></div>
         <button class="primary full" type="submit" id="mvSave">Registrar</button>
       </div>
+      ${(()=>{ const cf=cfgFor(c);
+        if (state.type==="deposito" && cf.modo!=="manual" && cf.pctDep>0) return `<div class="bonofield">
+          <div class="field"><label class="label" for="mvBono">Bono depósito ${cf.pctDep}%</label><input id="mvBono" class="num ${cf.modo==="automatico"?"calc":"sug"}" type="number" min="0" step="0.01" ${cf.modo==="automatico"?"readonly":""} placeholder="0.00" data-mode="${cf.modo}"></div>
+          <span class="note">${cf.modo==="automatico"?"Se calcula y se guarda solo junto con el depósito.":"Sugerido; puedes cambiarlo o dejarlo en 0 antes de registrar."}</span></div>`;
+        if (state.type==="bono_perdida" && cf.pctPer>0){ const f=$("mvFecha")?.value||todayStr(); const ws=mondayOf(f); const wl=weekLoss(c.id,ws); const sug=Math.max(0,r2(calcPer(wl.loss,cf)-wl.bper));
+          return `<div class="bonobar"><span>Semana del ${corta(ws)} al ${corta(addDays(ws,6))}: pérdida neta ${fmt(wl.loss)}${wl.bper?` · ya tiene ${fmt(wl.bper)} de bono`:""}</span><span>Sugerido (${cf.pctPer}%): <b class="num">${fmt(sug)}</b></span>${sug>0?`<button type="button" id="useSug" data-v="${sug}">Usar</button>`:""}</div>`; }
+        return ""; })()}
     </form>`:weekForm(c, moves, v)}
     </div>`:""}
 
@@ -536,7 +575,17 @@ function weekForm(c, moves, bal){
   for(const m of moves) if(m.fecha in had) had[m.fecha]+=val(m);
   const hadTotal=Object.values(had).reduce((a,x)=>a+x,0);
   const wd=parseYmd(we);
-  return `<form id="wkForm" class="detail" style="padding:0;gap:10px">
+  const cf=cfgFor(c), wl=weekLoss(c.id, ws), auto=cf.modo!=="manual";
+  const cellAttr=(k,i)=>{
+    if (!auto) return 'class="num"';
+    if (k==="bono_deposito" && cf.pctDep>0) return cf.modo==="automatico" ? 'readonly class="num calc"' : 'class="num sug"';
+    if (k==="bono_perdida" && cf.pctPer>0) return i<6 ? 'class="num" readonly tabindex="-1" placeholder="—"' : (cf.modo==="automatico" ? 'readonly class="num calc"' : 'class="num sug"');
+    return 'class="num"';
+  };
+  return `<form id="wkForm" class="detail" style="padding:0;gap:10px" data-mode="${cf.modo}" data-pctdep="${cf.pctDep}" data-topedep="${cf.topeDep}" data-pctper="${cf.pctPer}" data-topeper="${cf.topePer}" data-exloss="${wl.loss}" data-exbper="${wl.bper}">
+    <div class="bonobar"><span class="chip">${MODOS[cf.modo]}</span><span>${esc(cfgText(cf).replace(/^Bonos: [^·]+·?\s*/,"")||"Escribe los bonos a mano.")}</span>
+      ${auto&&cf.pctPer>0?`<span>El bono por pérdida se pone el domingo, sobre la pérdida neta de toda la semana${wl.bper?` (ya tiene ${fmt(wl.bper)} anotado, se descuenta)`:""}.</span>`:""}
+      ${state.canWrite?`<button type="button" class="ghost" id="btnBonos">Cambiar</button>`:""}</div>
     <div class="wknav">
       <div class="row">
         <button type="button" data-wk="prev" aria-label="Semana anterior">‹</button>
@@ -550,7 +599,7 @@ function weekForm(c, moves, bal){
       <thead><tr><th>Día</th>${WT.map(k=>`<th class="r">${TYPES[k].sign>0?"+":"−"} ${TYPES[k].label}</th>`).join("")}<th>Detalle</th><th class="r">Ya anotado</th></tr></thead>
       <tbody>${days.map((d,i)=>`<tr class="${d===td?"today":""}">
         <td class="day"><b>${DIAS[i]}</b><span class="cmeta num">${corta(d)}</span></td>
-        ${WT.map(k=>`<td><input id="w_${d}_${k}" class="num" data-w="${k}" data-d="${d}" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" aria-label="${TYPES[k].label} ${DIAS[i]} ${corta(d)}"></td>`).join("")}
+        ${WT.map(k=>`<td><input id="w_${d}_${k}" data-w="${k}" data-d="${d}" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" ${cellAttr(k,i)} aria-label="${TYPES[k].label} ${DIAS[i]} ${corta(d)}"></td>`).join("")}
         <td><input id="w_${d}_nota" maxlength="140" placeholder="Opcional" aria-label="Detalle ${DIAS[i]}"></td>
         <td class="r num had">${had[d]?fmt(had[d]):"—"}</td>
       </tr>`).join("")}</tbody>
@@ -578,7 +627,20 @@ function weekEntries(){
   return out;
 }
 function updateWeek(){
-  if(!$("wkForm")) return;
+  const F=$("wkForm"); if(!F) return;
+  const cf={modo:F.dataset.mode, pctDep:Number(F.dataset.pctdep), topeDep:Number(F.dataset.topedep), pctPer:Number(F.dataset.pctper), topePer:Number(F.dataset.topeper)};
+  if (cf.modo!=="manual"){
+    const days=[...new Set([...F.querySelectorAll("input[data-d]")].map(i=>i.dataset.d))].sort();
+    let loss=Number(F.dataset.exloss)||0;
+    for (const d of days){
+      const dep=Number($("w_"+d+"_deposito").value)||0;
+      loss += (Number($("w_"+d+"_debito").value)||0) - (Number($("w_"+d+"_credito").value)||0);
+      const bi=$("w_"+d+"_bono_deposito");
+      if (cf.pctDep>0 && (cf.modo==="automatico" || !bi.dataset.touched)){ const v=calcDep(dep,cf); bi.value=v>0?v:""; }
+    }
+    const sun=$("w_"+days[6]+"_bono_perdida");
+    if (cf.pctPer>0 && sun && (cf.modo==="automatico" || !sun.dataset.touched)){ const v=Math.max(0, r2(calcPer(loss,cf)-(Number(F.dataset.exbper)||0))); sun.value=v>0?v:""; }
+  }
   const tot=Z(); const e=weekEntries();
   for(const x of e) tot[x.tipo]+=x.monto;
   for(const k of WT){ const c=$("wt_"+k); c.textContent=fmt(tot[k]); c.className="r num "+(tot[k]?(TYPES[k].sign>0?"pos":"neg"):""); }
@@ -587,9 +649,41 @@ function updateWeek(){
   const b=$("wkBal"), nb=Number(b.dataset.bal)+net; b.textContent=fmt(nb); b.className="num "+(nb>0.004?"pos":nb<-0.004?"neg":"");
   const s=$("wkSave"); if(!s.dataset.busy){ s.disabled=!e.length; s.textContent=e.length?`Guardar semana (${e.length} movimiento${e.length===1?"":"s"})`:"Guardar semana"; }
 }
-function clearWeek(){ document.querySelectorAll("#wkForm input[id^='w_']").forEach(i=>i.value=""); updateWeek(); }
-document.addEventListener("input", e=>{ if(e.target.closest("#wkForm") && e.target.id!=="wkJump") updateWeek(); });
+function clearWeek(){ document.querySelectorAll("#wkForm input[id^='w_']").forEach(i=>{ i.value=""; delete i.dataset.touched; }); updateWeek(); }
+document.addEventListener("input", e=>{ if(e.target.closest("#wkForm") && e.target.id!=="wkJump"){ if((e.target.dataset.w||"").startsWith("bono")) e.target.dataset.touched="1"; updateWeek(); } });
 document.addEventListener("change", e=>{ if(e.target.id==="wkJump" && e.target.value){ const ws=mondayOf(e.target.value); if(ws!==state.weekStart){ clearWeek(); state.weekStart=ws; render(); } } });
+
+/* ---------- configuración general de bonos ---------- */
+function openBonos(){
+  const g=Object.assign({modo:"manual",pctDep:"",topeDep:"",pctPer:"",topePer:""}, state.bonosCfg||{});
+  const root=$("modalRoot");
+  root.innerHTML=`<div class="modal" id="bbg"><form class="card" id="bForm">
+    <h3>Bonos · configuración general</h3>
+    <div class="field"><label class="label" for="bModo">Cómo se registran</label>
+      <select id="bModo">
+        <option value="manual" ${g.modo==="manual"?"selected":""}>Manual: los escribo yo</option>
+        <option value="automatico" ${g.modo==="automatico"?"selected":""}>Automático: se calculan y guardan solos</option>
+        <option value="mixto" ${g.modo==="mixto"?"selected":""}>Mixto: se sugieren y yo los ajusto</option>
+      </select></div>
+    <div class="grid2">
+      <div class="field"><label class="label" for="bPD">% bono por depósito</label><input id="bPD" class="num" type="number" min="0" max="100" step="0.01" value="${g.pctDep??""}" placeholder="Ej. 10"></div>
+      <div class="field"><label class="label" for="bTD">Tope por bono RD$ (0 = sin tope)</label><input id="bTD" class="num" type="number" min="0" step="0.01" value="${g.topeDep??""}" placeholder="0"></div>
+      <div class="field"><label class="label" for="bPP">% bono por pérdida semanal</label><input id="bPP" class="num" type="number" min="0" max="100" step="0.01" value="${g.pctPer??""}" placeholder="Ej. 5"></div>
+      <div class="field"><label class="label" for="bTP">Tope semanal RD$ (0 = sin tope)</label><input id="bTP" class="num" type="number" min="0" step="0.01" value="${g.topePer??""}" placeholder="0"></div>
+    </div>
+    <p class="note" style="margin:0">El bono por pérdida se calcula sobre la pérdida neta de la semana (lunes a domingo): débitos menos créditos. Solo aplica si el cliente perdió. Cada cliente puede tener su propio modo o porcentaje desde "Editar cliente".</p>
+    <div class="row" style="justify-content:flex-end"><button type="button" id="bCancel">Cancelar</button><button class="primary" type="submit" id="bSave">Guardar</button></div>
+  </form></div>`;
+  root.onclick=e=>{ if(e.target.id==="bbg"||e.target.id==="bCancel"){ root.innerHTML=""; root.onclick=null; root.onsubmit=null; } };
+  root.onsubmit=async e=>{
+    e.preventDefault();
+    const n=id=>{ const v=$(id).value; return v===""?0:Math.max(0,Number(v)||0); };
+    const v={modo:$("bModo").value, pctDep:n("bPD"), topeDep:n("bTD"), pctPer:n("bPP"), topePer:n("bTP")};
+    $("bSave").disabled=true;
+    try{ await db.doc("ajustes/bonos").set(v); state.bonosCfg=v; root.innerHTML=""; root.onclick=null; root.onsubmit=null; toast("Configuración de bonos guardada"); render(); }
+    catch(x){ fail(x); $("bSave").disabled=false; }
+  };
+}
 
 /* ---------- modal: new / edit client ---------- */
 function openClientModal(c){
@@ -615,6 +709,20 @@ function openClientModal(c){
         <option value="debe" ${ini&&ini.monto<0?"selected":""}>El cliente me debe</option>
       </select>
     </fieldset>
+    <fieldset class="field" style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;gap:8px;margin:0">
+      <legend class="label" style="padding:0 4px">Bonos de este cliente</legend>
+      <select id="cBMode" aria-label="Modo de bonos">
+        <option value="general" ${!c?.bonos?.modo||c?.bonos?.modo==="general"?"selected":""}>Usar la configuración general (${MODOS[(state.bonosCfg||{}).modo||"manual"]})</option>
+        <option value="manual" ${c?.bonos?.modo==="manual"?"selected":""}>Manual: los escribo yo</option>
+        <option value="automatico" ${c?.bonos?.modo==="automatico"?"selected":""}>Automático: se calculan y guardan solos</option>
+        <option value="mixto" ${c?.bonos?.modo==="mixto"?"selected":""}>Mixto: se sugieren y yo los ajusto</option>
+      </select>
+      <div class="grid2">
+        <div class="field"><label class="label" for="cBDep">% bono depósito</label><input id="cBDep" class="num" type="number" min="0" max="100" step="0.01" placeholder="General: ${Number((state.bonosCfg||{}).pctDep)||0}%" value="${c?.bonos?.pctDep??""}"></div>
+        <div class="field"><label class="label" for="cBPer">% bono pérdida semanal</label><input id="cBPer" class="num" type="number" min="0" max="100" step="0.01" placeholder="General: ${Number((state.bonosCfg||{}).pctPer)||0}%" value="${c?.bonos?.pctPer??""}"></div>
+      </div>
+      <span class="note">Deja los porcentajes en blanco para usar los generales.</span>
+    </fieldset>
     <div class="field"><label class="label" for="cNota">Nota</label><textarea id="cNota" rows="2" maxlength="300">${esc(c?.nota||"")}</textarea></div>
     <div class="row" style="justify-content:space-between">
       <div>${c?(state.confirmClient
@@ -639,13 +747,15 @@ function openClientModal(c){
     }
   };
   let saved={};
-  const MF=["cNombre","cTel","cCod","cLim","cNota","cIniM","cIniF","cIniT"];
+  const MF=["cNombre","cTel","cCod","cLim","cNota","cIniM","cIniF","cIniT","cBMode","cBDep","cBPer"];
   function keepVals(){ saved={}; MF.forEach(id=>saved[id]=$(id).value); }
   function restoreVals(){ MF.forEach(id=>$(id).value=saved[id]); }
   root.onsubmit = async e=>{
     e.preventDefault();
     const body={ nombre:$("cNombre").value.trim(), telefono:$("cTel").value.trim(), codigo:$("cCod").value.trim(),
       limite:Math.max(0,Number($("cLim").value)||0), nota:$("cNota").value.trim() };
+    { const m=$("cBMode").value, d=$("cBDep").value, pr=$("cBPer").value;
+      body.bonos = (m==="general" && d==="" && pr==="") ? null : { modo:m, pctDep: d===""?null:Number(d), pctPer: pr===""?null:Number(pr) }; }
     if(!body.nombre) return;
     $("cSave").disabled=true;
     try{
@@ -683,7 +793,9 @@ document.addEventListener("click", async e=>{
     render(); return;
   }
   if (t.id==="wkClear"){ clearWeek(); return; }
-  if (t.dataset.t){ state.type=t.dataset.t; document.querySelectorAll(".types button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.t===state.type)); return; }
+  if (t.dataset.t){ state.type=t.dataset.t; render(); return; }
+  if (t.id==="useSug"){ $("mvMonto").value=t.dataset.v; return; }
+  if (t.id==="btnBonos"){ openBonos(); return; }
   if (t.dataset.del){ state.confirmDel=t.dataset.del; render(); return; }
   if (t.hasAttribute("data-delno")){ state.confirmDel=null; render(); return; }
   if (t.dataset.delok){ t.disabled=true; try{ await db.collection("movimientos").doc(t.dataset.delok).delete(); state.confirmDel=null; toast("Movimiento anulado"); }catch(err){ fail(err); } return; }
@@ -699,7 +811,7 @@ document.addEventListener("submit", async e=>{
       for(const [i,x] of items.entries()){
         btn.textContent=`Guardando ${i+1} de ${items.length}…`;
         const {_id, ...rest}=x;
-        await db.collection("movimientos").add({clienteId:cid, ...rest, nota:rest.nota||"Cuadre semanal", creado:base+i});
+        await db.collection("movimientos").add({clienteId:cid, ...rest, nota:rest.nota||(rest.tipo==="bono_deposito"?"Bono por depósito":rest.tipo==="bono_perdida"?"Bono por pérdida semanal":"Cuadre semanal"), creado:base+i});
         ok++; const inp=$(_id); if(inp) inp.value="";
       }
       clearWeek(); toast(`Semana guardada: ${ok} movimiento${ok===1?"":"s"}`);
@@ -713,10 +825,20 @@ document.addEventListener("submit", async e=>{
   if (monto<=0){ toast("Escribe un monto mayor que cero"); return; }
   const body={ clienteId:state.selected, tipo:state.type, monto, fecha:$("mvFecha").value||todayStr(), nota:$("mvNota").value.trim(), creado:Date.now() };
   $("mvSave").disabled=true;
-  try{ await db.collection("movimientos").add(body); toast(TYPES[body.tipo].label+" de "+fmt(monto)+" registrado"); if($("mvMonto")) $("mvMonto").value=""; if($("mvNota")) $("mvNota").value=""; }
+  const bono = $("mvBono") ? r2(Number($("mvBono").value)||0) : 0; const cf=cfgFor(state.clients.find(x=>x.id===state.selected));
+  try{
+    await db.collection("movimientos").add(body);
+    if (bono>0 && body.tipo==="deposito") await db.collection("movimientos").add({clienteId:body.clienteId, tipo:"bono_deposito", monto:bono, fecha:body.fecha, nota:`Bono ${cf.pctDep}% por depósito de ${fmt(monto)}`});
+    toast(TYPES[body.tipo].label+" de "+fmt(monto)+" registrado"+(bono>0?" + bono "+fmt(bono):""));
+    if($("mvMonto")) $("mvMonto").value=""; if($("mvNota")) $("mvNota").value=""; if($("mvBono")){ $("mvBono").value=""; delete $("mvBono").dataset.touched; } }
   catch(err){ fail(err); }
   finally{ const b=$("mvSave"); if(b) b.disabled=false; }
 });
+document.addEventListener("input", e=>{
+  if (e.target.id==="mvBono") e.target.dataset.touched="1";
+  if (e.target.id==="mvMonto" && $("mvBono")){ const b=$("mvBono"); if (b.dataset.mode==="automatico" || !b.dataset.touched){ const v=calcDep(Number(e.target.value)||0, cfgFor(state.clients.find(x=>x.id===state.selected))); b.value=v>0?v:""; } }
+});
+document.addEventListener("change", e=>{ if (e.target.id==="mvFecha" && state.type==="bono_perdida") render(); });
 $("q").addEventListener("input", render);
 $("filter").addEventListener("change", render);
 
@@ -807,15 +929,17 @@ async function loadAll(){
   loading=true;
   try{
     const [cl, mv, aj] = await Promise.all([
-      fetchAll(T.clientes,"id,nombre,telefono,codigo,limite,nota,creado","nombre"),
+      fetchAll(T.clientes,"id,nombre,telefono,codigo,limite,nota,bonos,creado","nombre"),
       fetchAll(T.movimientos,"id,cliente_id,tipo,monto,fecha,nota,anulado,anulado_en,creado","fecha"),
-      q(sb.from("libreta_ajustes").select("valor").eq("clave","cuadre").maybeSingle())
+      q(sb.from("libreta_ajustes").select("clave,valor").in("clave",["cuadre","bonos"]))
     ]);
     state.clients = cl.map(c=>({...c, telefono:c.telefono||"", codigo:c.codigo||"", nota:c.nota||"", limite:Number(c.limite)||0}));
     const all = mv.map(m=>({ id:m.tipo==="inicial"&&!m.anulado ? "ini_"+m.cliente_id : m.id, _id:m.id, clienteId:m.cliente_id, tipo:m.tipo, monto:Number(m.monto), fecha:m.fecha, nota:m.nota||"", anulado:m.anulado, anulado_en:m.anulado_en, creado:Date.parse(m.creado)||0 }));
     state.moves = all.filter(m=>!m.anulado);
     state.anulados = all.filter(m=>m.anulado);
-    if (aj && !document.activeElement?.id?.startsWith("cu")) state.cuadre = aj.valor||{};
+    const ajC=aj.find(a=>a.clave==="cuadre"), ajB=aj.find(a=>a.clave==="bonos");
+    if (ajC && !document.activeElement?.id?.startsWith("cu")) state.cuadre = ajC.valor||{};
+    state.bonosCfg = ajB?.valor || {};
     if (state.selected && !state.clients.some(c=>c.id===state.selected)) state.selected=null;
     state.ready=true; render();
   }catch(e){ toast("No se pudieron cargar los datos. Pulsa Actualizar."); }
@@ -841,6 +965,7 @@ async function enter(){
   state.canWrite = rol==="admin" || rol==="editor";
   $("btnNew").disabled = !state.canWrite;
   $("btnUsers").hidden = rol!=="admin";
+  $("btnBonos").hidden = !state.canWrite;
   $("who").textContent = session.user.email + " · " + ({admin:"Administrador",editor:"Editor",lectura:"Solo lectura"}[rol]);
   const bn=$("banner"); bn.hidden = state.canWrite; bn.textContent = "Modo solo lectura: puedes consultar saldos pero no registrar movimientos.";
   render(); loadAll();
