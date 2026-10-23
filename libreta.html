@@ -112,6 +112,9 @@ tr:last-child td{border-bottom:0}
 .toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:.88rem;z-index:20;max-width:calc(100% - 32px)}
 .note{font-size:.8rem;color:var(--muted)}
 .banner{background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:10px 14px;font-size:.88rem}
+.banner.era{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
+.banner.era.nuevo{background:var(--soft);color:var(--ink)}
+.banner.era button{font-size:.82rem;padding:5px 10px}
 .confirm{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .tabs{display:inline-flex;gap:4px;background:var(--soft);padding:4px;border-radius:10px;align-self:flex-start;flex-wrap:wrap}
 .tabs button{border:0;background:transparent;padding:7px 14px;border-radius:7px;font-weight:500;color:var(--muted)}
@@ -184,6 +187,10 @@ table.rpt tfoot td{font-weight:700;background:var(--soft);border-top:2px solid v
         <button type="button" data-view="clientes" aria-pressed="true">Clientes</button>
         <button type="button" data-view="reporte" aria-pressed="false">Reporte por período</button>
       </div>
+      <div class="tabs" role="group" aria-label="Período de la libreta" id="eraTabs" hidden>
+        <button type="button" data-era="nuevo" aria-pressed="true">Desde el corte</button>
+        <button type="button" data-era="historico" aria-pressed="false">Histórico</button>
+      </div>
       <button class="primary" id="btnNew" disabled>+ Nuevo cliente</button>
     </div>
   </header>
@@ -196,6 +203,7 @@ table.rpt tfoot td{font-weight:700;background:var(--soft);border-top:2px solid v
   </div>
 
   <div id="banner" class="banner" hidden></div>
+  <div id="eraBanner" class="banner era" hidden></div>
 
   <div id="clientesView" style="display:contents">
   <section class="summary" aria-label="Resumen">
@@ -284,8 +292,50 @@ function weekLoss(cid, ws){
 const Z=()=>({deposito:0,credito:0,debito:0,retiro:0,bono_deposito:0,bono_perdida:0});
 
 const state = { clients:[], moves:[], selected:null, type:"debito", ready:false, canWrite:false, confirmDel:null, confirmClient:false, mode:"uno", weekStart:null,
-  view:"clientes", anulados:[], bonosCfg:{}, desde:"2026-03-01", hasta:todayStr(), sortR:"fin", cuadre:{} };
+  view:"clientes", anulados:[], bonosCfg:{}, desde:"2026-03-01", hasta:todayStr(), sortR:"fin", cuadre:{},
+  corte:null, era:"nuevo", allMoves:[], allAnul:[], unlockHist:false, eraInit:false };
 let db=null, downloads=null;
+
+/* ---------- corte: histórico / desde el corte ---------- */
+const fechaLarga = s => { const d=parseYmd(s); return d.getDate()+" "+MESES[d.getMonth()]+" "+d.getFullYear(); };
+const corteF = () => state.corte?.fecha || null;
+function enEra(f){ const cf=corteF(); if(!cf||!f) return true; return state.era==="historico" ? f<=cf : f>cf; }
+const fechaFuera = f => !enEra(f);
+function applyEra(){ state.moves=state.allMoves.filter(m=>enEra(m.fecha)); state.anulados=state.allAnul.filter(m=>enEra(m.fecha)); }
+function puedeEscribir(){ return state.canWrite && (state.era!=="historico" || !corteF() || !state.corte.hold || state.unlockHist); }
+function eraDefaults(){
+  const cf=corteF(); if(!cf) return;
+  if (state.era==="historico"){ state.desde="2026-03-01"; state.hasta=cf; state.weekStart=mondayOf(cf); }
+  else { state.desde=addDays(cf,1); state.hasta=todayStr()>cf?todayStr():addDays(cf,1); state.weekStart=mondayOf(todayStr()>cf?todayStr():addDays(cf,1)); }
+}
+function setEra(e){ state.era=e; state.unlockHist=false; state.confirmDel=null; applyEra(); eraDefaults(); render(); window.scrollTo({top:0}); }
+function msgFecha(){ const cf=corteF(); return state.era==="historico" ? `Fecha después del corte. En el histórico solo van fechas hasta el ${fechaLarga(cf)}; usa “Desde ${fechaLarga(addDays(cf,1))}”.` : `Fecha antes del corte. Aquí solo van fechas desde el ${fechaLarga(addDays(cf,1))}; lo anterior va en el Histórico.`; }
+// saldo de la libreta al corte vs. saldo confirmado (arrastre con fecha del día siguiente al corte)
+function diffCorte(){
+  const cf=corteF(), d1=addDays(cf,1), r={};
+  for (const c of state.clients) r[c.id]={c, libreta:0, conf:0};
+  for (const m of state.allMoves){ const x=r[m.clienteId]; if(!x) continue;
+    if (m.fecha<=cf) x.libreta+=val(m); else if (m.tipo==="inicial" && m.fecha===d1) x.conf+=m.monto; }
+  for (const k in r) r[k].dif=r[k].libreta-r[k].conf;
+  return r;
+}
+function renderEra(){
+  const cf=corteF(), tabs=$("eraTabs"), bn=$("eraBanner");
+  tabs.hidden=!cf; if(!cf){ bn.hidden=true; return; }
+  tabs.querySelector('[data-era="nuevo"]').textContent="Desde "+fechaLarga(addDays(cf,1));
+  tabs.querySelector('[data-era="historico"]').textContent="Histórico hasta "+fechaLarga(cf);
+  tabs.querySelectorAll("[data-era]").forEach(b=>b.setAttribute("aria-pressed", b.dataset.era===state.era));
+  bn.hidden=false;
+  if (state.era==="historico"){
+    let tl=0, tc=0; for (const x of Object.values(diffCorte())){ tl+=x.libreta; tc+=x.conf; }
+    bn.className="banner era";
+    bn.innerHTML=`<span><b>Histórico hasta el ${esc(fechaLarga(cf))} 11:59 PM</b> · ${state.corte.hold&&!state.unlockHist?"cerrado (en revisión)":"abierto para correcciones"}. La libreta da ${fmt(tl)} neto a favor de clientes; el saldo confirmado es ${fmt(tc)}. Diferencia por encontrar: <b class="num">${fmt(tl-tc)}</b>.</span>`
+      + (state.canWrite&&state.corte.hold&&rol==="admin"?`<button type="button" id="unlockHist">${state.unlockHist?"Volver a cerrar":"Permitir correcciones"}</button>`:"");
+  } else {
+    bn.className="banner era nuevo";
+    bn.innerHTML=`<span>Período nuevo: arranca con los saldos confirmados al ${esc(fechaLarga(cf))} (movimiento “Saldo inicial” del ${esc(fechaLarga(addDays(cf,1)))}). Solo se aceptan fechas desde ese día.</span>`;
+  }
+}
 
 function balances(){
   const b = {}, t = {};
@@ -307,6 +357,7 @@ function status(c, bal){
 }
 
 function render(){
+  renderEra();
   document.querySelectorAll("[data-view]").forEach(x=>x.setAttribute("aria-pressed", x.dataset.view===state.view));
   $("clientesView").style.display = state.view==="clientes" ? "contents" : "none";
   $("reportView").hidden = state.view!=="reporte";
@@ -353,7 +404,7 @@ function renderDetail(b,t){
   // running balance, oldest first
   const asc=[...moves].reverse(); let run=0; const runMap={};
   for (const m of asc){ run += val(m); runMap[m.id]=run; }
-  const w = state.canWrite;
+  const w = puedeEscribir();
   const keep={}; el.querySelectorAll("input[id]").forEach(i=>{ keep[i.id]=i.value; });
   const focusId=document.activeElement?.id;
   if (state.lastSel!==c.id){ for(const k in keep) delete keep[k]; state.lastSel=c.id; }
@@ -368,6 +419,7 @@ function renderDetail(b,t){
         ${c.nota?`<div class="note" style="margin-top:4px">${esc(c.nota)}</div>`:""}
         ${tt.inicial?`<div class="note" style="margin-top:4px">Incluye saldo inicial de ${fmt(tt.inicial)}</div>`:""}
         <div class="note" style="margin-top:4px">${esc(cfgText(cfgFor(c)))}${cfgFor(c).propio?" (propio de este cliente)":""}</div>
+        ${corteF()&&state.era==="historico"?(()=>{ const x=diffCorte()[c.id]; return `<div class="note" style="margin-top:4px">Al corte del ${esc(fechaLarga(corteF()))}: libreta ${fmt(x.libreta)} · confirmado ${fmt(x.conf)} · <b class="num ${cls(x.dif)}">diferencia ${fmt(x.dif)}</b></div>`; })():""}
       </div>
       <div class="balance">
         <div class="label">Saldo</div>
@@ -392,7 +444,7 @@ function renderDetail(b,t){
       </div>
       <div class="mvform">
         <div class="field"><label class="label" for="mvMonto">Monto RD$</label><input id="mvMonto" class="num" type="number" min="0.01" step="0.01" inputmode="decimal" required placeholder="0.00"></div>
-        <div class="field"><label class="label" for="mvFecha">Fecha</label><input id="mvFecha" type="date" value="${todayStr()}" required></div>
+        <div class="field"><label class="label" for="mvFecha">Fecha</label><input id="mvFecha" type="date" value="${fechaFuera(todayStr())?(state.era==="historico"?corteF():addDays(corteF(),1)):todayStr()}" required></div>
         <div class="field full"><label class="label" for="mvNota">Detalle (opcional)</label><input id="mvNota" maxlength="140" placeholder="Ticket, partido, banca, forma de pago…"></div>
         <button class="primary full" type="submit" id="mvSave">Registrar</button>
       </div>
@@ -470,7 +522,13 @@ function renderReport(){
   const ei = has(cu.efIni) ? Number(cu.efIni) : null, ef = has(cu.efFin) ? Number(cu.efFin) : null;
   const efEsperado = ei!=null ? ei + T.deposito - T.retiro : null;
   const mk=Object.keys(months).sort();
-  const quick=[["2026-03-01",todayStr(),"Desde marzo 2026"],["2026-06-01","2026-09-30","Jun – Sep 2026"],[todayStr().slice(0,8)+"01",todayStr(),"Este mes"],[mondayOf(todayStr()),addDays(mondayOf(todayStr()),6),"Esta semana"],["2000-01-01","2099-12-31","Todo"]];
+  const cfR=corteF();
+  const quick=cfR ? (state.era==="historico"
+      ? [["2026-03-01",cfR,"Todo el histórico"],["2026-06-01","2026-09-30","Jun – Sep 2026"],[cfR.slice(0,8)+"01",cfR,"Último mes"]]
+      : [[addDays(cfR,1),todayStr(),"Desde el corte"],[todayStr().slice(0,8)+"01",todayStr(),"Este mes"],[mondayOf(todayStr()),addDays(mondayOf(todayStr()),6),"Esta semana"]])
+    : [["2026-03-01",todayStr(),"Desde marzo 2026"],["2026-06-01","2026-09-30","Jun – Sep 2026"],[todayStr().slice(0,8)+"01",todayStr(),"Este mes"],[mondayOf(todayStr()),addDays(mondayOf(todayStr()),6),"Esta semana"],["2000-01-01","2099-12-31","Todo"]];
+  const dc = cfR && state.era==="historico" ? Object.values(diffCorte()).filter(x=>Math.abs(x.libreta)>0.004||Math.abs(x.conf)>0.004).sort((a,z)=>Math.abs(z.dif)-Math.abs(a.dif)) : null;
+  const dcT = dc ? dc.reduce((a,x)=>({l:a.l+x.libreta,c:a.c+x.conf,d:a.d+x.dif}),{l:0,c:0,d:0}) : null;
   el.innerHTML = `<div class="rep">
     <section class="pane">
       <div class="rangebar">
@@ -480,6 +538,15 @@ function renderReport(){
       </div>
       ${!state.clients.length?`<div class="empty"><strong>No hay clientes todavía</strong>Registra tus clientes con su saldo inicial y sus movimientos para ver el cuadre del período.</div>`:""}
     </section>
+    ${dc?`<section class="pane">
+      <h2>Diferencia al corte del ${esc(fechaLarga(cfR))}</h2>
+      <p class="note" style="margin:0">Lo que da la libreta con todo lo anotado hasta el corte, contra el saldo confirmado con que arranca el período nuevo. Positivo = a favor del cliente. La diferencia es lo que falta encontrar.</p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Cliente</th><th class="r">Libreta al corte</th><th class="r">Confirmado</th><th class="r">Diferencia</th></tr></thead>
+        <tbody>${dc.map(x=>`<tr data-goto="${esc(x.c.id)}"><td>${esc([x.c.codigo,x.c.nombre].filter(Boolean).join(" · "))}</td><td class="r num ${cls(x.libreta)}">${fmt(x.libreta)}</td><td class="r num ${cls(x.conf)}">${fmt(x.conf)}</td><td class="r num ${cls(x.dif)}"><b>${fmt(x.dif)}</b></td></tr>`).join("")}</tbody>
+        <tfoot><tr><td>Total</td><td class="r num">${fmt(dcT.l)}</td><td class="r num">${fmt(dcT.c)}</td><td class="r num">${fmt(dcT.d)}</td></tr></tfoot>
+      </table></div>
+    </section>`:""}
 
     <div class="cols2">
       <section class="pane">
@@ -611,8 +678,8 @@ function weekForm(c, moves, bal){
       <thead><tr><th>Día</th>${WT.map(k=>`<th class="r">${TYPES[k].sign>0?"+":"−"} ${TYPES[k].label}</th>`).join("")}<th>Detalle</th><th class="r">Ya anotado</th></tr></thead>
       <tbody>${days.map((d,i)=>`<tr class="${d===td?"today":""}">
         <td class="day"><b>${DIAS[i]}</b><span class="cmeta num">${corta(d)}</span></td>
-        ${WT.map(k=>`<td><input id="w_${d}_${k}" data-w="${k}" data-d="${d}" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" ${cellAttr(k,i)} aria-label="${TYPES[k].label} ${DIAS[i]} ${corta(d)}"></td>`).join("")}
-        <td><input id="w_${d}_nota" maxlength="140" placeholder="Opcional" aria-label="Detalle ${DIAS[i]}"></td>
+        ${WT.map(k=>`<td><input id="w_${d}_${k}" data-w="${k}" data-d="${d}" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" ${cellAttr(k,i)} ${fechaFuera(d)?'disabled title="Fuera de este período (corte)"':""} aria-label="${TYPES[k].label} ${DIAS[i]} ${corta(d)}"></td>`).join("")}
+        <td><input id="w_${d}_nota" maxlength="140" ${fechaFuera(d)?"disabled":""} placeholder="${fechaFuera(d)?"Otro período":"Opcional"}" aria-label="Detalle ${DIAS[i]}"></td>
         <td class="r num had">${had[d]?fmt(had[d]):"—"}</td>
       </tr>`).join("")}</tbody>
       <tfoot><tr><td>Total semana</td>${WT.map(k=>`<td class="r num" id="wt_${k}">${fmt(0)}</td>`).join("")}<td></td><td class="r num had">${hadTotal?fmt(hadTotal):"—"}</td></tr></tfoot>
@@ -711,10 +778,10 @@ function openClientModal(c){
     </div>
     <div class="field"><label class="label" for="cLim">Límite de crédito RD$ (0 = sin límite)</label><input id="cLim" class="num" type="number" min="0" step="0.01" value="${c?.limite||0}"></div>
     <fieldset class="field" style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;gap:8px;margin:0">
-      <legend class="label" style="padding:0 4px">Saldo inicial (lo que arrastraba antes)</legend>
+      <legend class="label" style="padding:0 4px">${corteF()&&state.era==="nuevo"?"Saldo inicial · arrastre al corte del "+esc(fechaLarga(corteF())):"Saldo inicial (lo que arrastraba antes)"}</legend>
       <div class="grid2">
         <div class="field"><label class="label" for="cIniM">Monto RD$</label><input id="cIniM" class="num" type="number" min="0" step="0.01" value="${ini?Math.abs(ini.monto):""}" placeholder="0.00"></div>
-        <div class="field"><label class="label" for="cIniF">Al día</label><input id="cIniF" type="date" value="${esc(ini?.fecha||"2026-02-28")}"></div>
+        <div class="field"><label class="label" for="cIniF">Al día</label><input id="cIniF" type="date" value="${esc(ini?.fecha||(corteF()&&state.era==="nuevo"?addDays(corteF(),1):"2026-02-28"))}"></div>
       </div>
       <select id="cIniT" aria-label="Sentido del saldo inicial">
         <option value="favor" ${ini&&ini.monto>0?"selected":""}>A favor del cliente (yo le debo)</option>
@@ -772,6 +839,7 @@ function openClientModal(c){
     $("cSave").disabled=true;
     try{
       const im=Math.round((Number($("cIniM").value)||0)*100)/100, isign=$("cIniT").value==="debe"?-1:1, ifecha=$("cIniF").value||todayStr();
+      if (im>0 && fechaFuera(ifecha)){ toast(msgFecha()); $("cSave").disabled=false; return; }
       let cid;
       if (c){ cid=c.id; await db.collection("clientes").doc(c.id).update(body); }
       else { body.creado=Date.now(); const ref=await db.collection("clientes").add(body); cid=ref.id; state.selected=cid; }
@@ -795,6 +863,8 @@ document.addEventListener("click", async e=>{
   if (t.id==="back"){ state.selected=null; render(); return; }
   if (t.id==="btnNew"){ openClientModal(null); return; }
   if (t.id==="editC"){ openClientModal(state.clients.find(c=>c.id===state.selected)); return; }
+  if (t.dataset.era){ if(t.dataset.era!==state.era) setEra(t.dataset.era); return; }
+  if (t.id==="unlockHist"){ state.unlockHist=!state.unlockHist; render(); toast(state.unlockHist?"Histórico abierto para correcciones (solo en esta sesión)":"Histórico cerrado"); return; }
   if (t.dataset.view){ state.view=t.dataset.view; render(); window.scrollTo({top:0}); return; }
   if (t.dataset.range){ [state.desde,state.hasta]=t.dataset.range.split("|"); renderReport(); return; }
   if (t.id==="rCsv"){ exportReport(); return; }
@@ -817,6 +887,7 @@ document.addEventListener("submit", async e=>{
   if (e.target.id==="wkForm"){
     e.preventDefault();
     const items=weekEntries(); if(!items.length) return;
+    { const bad=items.filter(x=>fechaFuera(x.fecha)); if(bad.length){ toast(msgFecha()); return; } }
     const btn=$("wkSave"); btn.dataset.busy="1"; btn.disabled=true;
     const cid=state.selected, base=Date.now(); let ok=0;
     try{
@@ -836,6 +907,7 @@ document.addEventListener("submit", async e=>{
   const monto=Math.round((Number($("mvMonto").value)||0)*100)/100;
   if (monto<=0){ toast("Escribe un monto mayor que cero"); return; }
   const body={ clienteId:state.selected, tipo:state.type, monto, fecha:$("mvFecha").value||todayStr(), nota:$("mvNota").value.trim(), creado:Date.now() };
+  if (fechaFuera(body.fecha)){ toast(msgFecha()); return; }
   $("mvSave").disabled=true;
   const bono = $("mvBono") ? r2(Number($("mvBono").value)||0) : 0; const cf=cfgFor(state.clients.find(x=>x.id===state.selected));
   try{
@@ -946,13 +1018,16 @@ async function loadAll(){
     const [cl, mv, aj] = await Promise.all([
       fetchAll(T.clientes,"id,nombre,telefono,codigo,limite,nota,bonos,creado","nombre"),
       fetchAll(T.movimientos,"id,cliente_id,tipo,monto,fecha,nota,anulado,anulado_en,creado","fecha"),
-      q(sb.from("libreta_ajustes").select("clave,valor").in("clave",["cuadre","bonos"]))
+      q(sb.from("libreta_ajustes").select("clave,valor").in("clave",["cuadre","bonos","corte"]))
     ]);
     state.clients = cl.map(c=>({...c, telefono:c.telefono||"", codigo:c.codigo||"", nota:c.nota||"", limite:Number(c.limite)||0}));
     const all = mv.map(m=>({ id:m.tipo==="inicial"&&!m.anulado ? "ini_"+m.cliente_id : m.id, _id:m.id, clienteId:m.cliente_id, tipo:m.tipo, monto:Number(m.monto), fecha:m.fecha, nota:m.nota||"", anulado:m.anulado, anulado_en:m.anulado_en, creado:Date.parse(m.creado)||0 }));
-    state.moves = all.filter(m=>!m.anulado);
-    state.anulados = all.filter(m=>m.anulado);
-    const ajC=aj.find(a=>a.clave==="cuadre"), ajB=aj.find(a=>a.clave==="bonos");
+    state.allMoves = all.filter(m=>!m.anulado);
+    state.allAnul = all.filter(m=>m.anulado);
+    const ajC=aj.find(a=>a.clave==="cuadre"), ajB=aj.find(a=>a.clave==="bonos"), ajK=aj.find(a=>a.clave==="corte");
+    state.corte = ajK?.valor?.fecha ? ajK.valor : null;
+    if (!state.eraInit){ state.eraInit=true; eraDefaults(); }
+    applyEra();
     if (ajC && !document.activeElement?.id?.startsWith("cu")) state.cuadre = ajC.valor||{};
     state.bonosCfg = ajB?.valor || {};
     if (state.selected && !state.clients.some(c=>c.id===state.selected)) state.selected=null;
@@ -1018,7 +1093,7 @@ sb.auth.onAuthStateChange((ev)=>{
   if (ev==="SIGNED_OUT") EMBED ? embedMsg("Tu sesión del sistema se cerró.") : showAuth();
 });
 if (EMBED) $("btnLogout").hidden=true;
-$("btnLogout").addEventListener("click", async ()=>{ await sb.auth.signOut(); state.clients=[]; state.moves=[]; state.anulados=[]; state.selected=null; showAuth(); });
+$("btnLogout").addEventListener("click", async ()=>{ await sb.auth.signOut(); state.clients=[]; state.moves=[]; state.anulados=[]; state.allMoves=[]; state.allAnul=[]; state.selected=null; showAuth(); });
 $("btnReload").addEventListener("click", ()=>loadAll());
 document.addEventListener("visibilitychange", ()=>{ if(!document.hidden && rol) loadAll(); });
 setInterval(()=>{ if(!document.hidden && rol && !document.querySelector("#wkForm input:focus, #mvForm input:focus, #modalRoot input:focus")) loadAll(); }, 60000);
