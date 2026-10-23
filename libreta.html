@@ -139,7 +139,18 @@ table.week .had{font-size:.75rem;color:var(--muted);white-space:nowrap}
 .rangebar{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
 .rangebar .field{width:auto}
 .rangebar input{width:auto}
-table.rpt{min-width:1000px}
+table.fit{min-width:0;font-size:.8rem}
+table.fit th,table.fit td{padding:7px 6px}
+table.fit th{white-space:normal;line-height:1.25;font-size:.62rem;letter-spacing:.04em}
+table.fit td.num{white-space:nowrap}
+@media (max-width:760px){
+  table.fit thead{display:none}
+  table.fit,table.fit tbody,table.fit tfoot{display:block;width:100%}
+  table.fit tr{display:grid;grid-template-columns:1fr 1fr;gap:2px 14px;padding:10px 12px;border-bottom:1px solid var(--line)}
+  table.fit td{display:block;border:0;padding:2px 0;text-align:right}
+  table.fit td:first-child{grid-column:1/-1;text-align:left;font-weight:600}
+  table.fit td[data-l]::before{content:attr(data-l);float:left;margin-right:8px;color:var(--muted);font-size:.72rem;font-family:var(--body);font-weight:400}
+}
 table.rpt tbody tr{cursor:pointer}
 table.rpt tbody tr:hover td{background:var(--soft)}
 table.rpt tfoot td{font-weight:700;background:var(--soft);border-top:2px solid var(--line)}
@@ -509,6 +520,7 @@ function periodData(){
 }
 const mesNombre = k => { const [y,m]=k.split("-"); return ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"][Number(m)-1]+" "+y; };
 const cls = v => v>0.004?"pos":v<-0.004?"neg":"";
+const fmtC = n => (n<-0.004?"−":"") + Math.abs(n).toLocaleString("es-DO",{maximumFractionDigits:2});
 function renderReport(){
   const el=$("reportView");
   const keep={}; el.querySelectorAll("input[id]").forEach(i=>keep[i.id]=i.value); const focusId=document.activeElement?.id;
@@ -588,16 +600,16 @@ function renderReport(){
     </div>
 
     ${mk.length?`<section class="pane">
-      <h2>Por mes</h2>
-      <div class="tablewrap"><table>
+      <h2>Por mes <span class="note" style="font-weight:400">· RD$</span></h2>
+      <div class="tablewrap"><table class="fit">
         <thead><tr><th>Mes</th><th class="r">Depósitos</th><th class="r">Retiros</th><th class="r">Ganan (créditos)</th><th class="r">Pierden (débitos)</th><th class="r">Bonos</th><th class="r">Ganancia neta</th><th class="r">Efectivo neto</th></tr></thead>
-        <tbody>${mk.map(k=>{const o=months[k];const bo=o.bono_deposito+o.bono_perdida;const b=o.debito-o.credito-bo;return `<tr><td>${mesNombre(k)}</td><td class="r num">${fmt(o.deposito)}</td><td class="r num">${fmt(o.retiro)}</td><td class="r num">${fmt(o.credito)}</td><td class="r num">${fmt(o.debito)}</td><td class="r num">${fmt(bo)}</td><td class="r num ${cls(b)}">${fmt(b)}</td><td class="r num">${fmt(o.deposito-o.retiro)}</td></tr>`}).join("")}</tbody>
+        <tbody>${mk.map(k=>{const o=months[k];const bo=o.bono_deposito+o.bono_perdida;const b=o.debito-o.credito-bo;return `<tr><td>${mesNombre(k)}</td><td class="r num" data-l="Depósitos">${fmtC(o.deposito)}</td><td class="r num" data-l="Retiros">${fmtC(o.retiro)}</td><td class="r num" data-l="Ganan">${fmtC(o.credito)}</td><td class="r num" data-l="Pierden">${fmtC(o.debito)}</td><td class="r num" data-l="Bonos">${fmtC(bo)}</td><td class="r num ${cls(b)}" data-l="Ganancia neta">${fmtC(b)}</td><td class="r num" data-l="Efectivo neto">${fmtC(o.deposito-o.retiro)}</td></tr>`}).join("")}</tbody>
       </table></div>
     </section>`:""}
 
     ${state.clients.length?`<section class="pane">
       <div class="row" style="justify-content:space-between">
-        <h2>Por cliente</h2>
+        <h2>Por cliente <span class="note" style="font-weight:400">· RD$</span></h2>
         <div class="row">
           <select id="rSort" aria-label="Ordenar">
             <option value="fin" ${state.sortR==="fin"?"selected":""}>Mayor saldo al cierre</option>
@@ -608,16 +620,16 @@ function renderReport(){
           ${downloads?`<button id="rCsv">Exportar (CSV)</button>`:""}
         </div>
       </div>
-      <div class="tablewrap"><table class="rpt">
+      <div class="tablewrap"><table class="rpt fit">
         <thead><tr><th>Cliente</th><th class="r">Saldo al inicio</th><th class="r">+ Depósitos</th><th class="r">− Retiros</th><th class="r">+ Ganan</th><th class="r">− Pierden</th><th class="r">+ Bonos</th><th class="r">Saldo al cierre</th><th class="r">Ganancia neta</th></tr></thead>
         <tbody>${rows.map(r=>`<tr data-goto="${esc(r.c.id)}">
-          <td>${esc(r.c.nombre)}</td>
-          <td class="r num ${cls(r.start)}">${fmt(r.start)}</td>
-          <td class="r num">${fmt(r.deposito)}</td><td class="r num">${fmt(r.retiro)}</td>
-          <td class="r num">${fmt(r.credito)}</td><td class="r num">${fmt(r.debito)}</td><td class="r num">${fmt(r.bonos)}</td>
-          <td class="r num ${cls(r.fin)}">${fmt(r.fin)}</td>
-          <td class="r num ${cls(r.banca)}">${fmt(r.banca)}</td></tr>`).join("")}</tbody>
-        <tfoot><tr><td>Total (${rows.length})</td><td class="r num">${fmt(T.start)}</td><td class="r num">${fmt(T.deposito)}</td><td class="r num">${fmt(T.retiro)}</td><td class="r num">${fmt(T.credito)}</td><td class="r num">${fmt(T.debito)}</td><td class="r num">${fmt(T.bonos)}</td><td class="r num">${fmt(T.fin)}</td><td class="r num">${fmt(T.banca)}</td></tr></tfoot>
+          <td>${esc(r.c.nombre)}${r.c.codigo?` <span class="cmeta">${esc(r.c.codigo)}</span>`:""}</td>
+          <td class="r num ${cls(r.start)}" data-l="Al inicio">${fmtC(r.start)}</td>
+          <td class="r num" data-l="+ Depósitos">${fmtC(r.deposito)}</td><td class="r num" data-l="− Retiros">${fmtC(r.retiro)}</td>
+          <td class="r num" data-l="+ Ganan">${fmtC(r.credito)}</td><td class="r num" data-l="− Pierden">${fmtC(r.debito)}</td><td class="r num" data-l="+ Bonos">${fmtC(r.bonos)}</td>
+          <td class="r num ${cls(r.fin)}" data-l="Al cierre"><b>${fmtC(r.fin)}</b></td>
+          <td class="r num ${cls(r.banca)}" data-l="Ganancia neta">${fmtC(r.banca)}</td></tr>`).join("")}</tbody>
+        <tfoot><tr><td>Total (${rows.length})</td><td class="r num" data-l="Al inicio">${fmtC(T.start)}</td><td class="r num" data-l="+ Depósitos">${fmtC(T.deposito)}</td><td class="r num" data-l="− Retiros">${fmtC(T.retiro)}</td><td class="r num" data-l="+ Ganan">${fmtC(T.credito)}</td><td class="r num" data-l="− Pierden">${fmtC(T.debito)}</td><td class="r num" data-l="+ Bonos">${fmtC(T.bonos)}</td><td class="r num" data-l="Al cierre">${fmtC(T.fin)}</td><td class="r num" data-l="Ganancia neta">${fmtC(T.banca)}</td></tr></tfoot>
       </table></div>
       <p class="note" style="margin:0">Toca un cliente para abrir su cuenta.</p>
     </section>`:""}
