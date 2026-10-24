@@ -1698,6 +1698,14 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     • Los símbolos <b>&lt;</b> y <b>&gt;</b> escritos en notas o nombres se muestran como ‹ ›: es una protección para que nadie pueda meter código en la pantalla de otro usuario.</div>
   </div>
 
+  <div class="panel" style="background:linear-gradient(135deg,#f1f0fa,#e6e3f5);border-color:#d3cdee;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><div style="width:30px;height:30px;border-radius:9px;background:#2a2440;color:#b9a5e8;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">★</div><h3 style="font-size:15px;font-weight:700;">Varios consorcios <span style="font-size:11px;color:#5a4a8a;font-weight:800;">NUEVO v7.5</span></h3></div>
+    <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">
+    • <b>Módulos opcionales</b> (Depósitos de bancas y Libreta de Clientes): solo aparecen en un consorcio si el súper administrador los activa en Ajustes → <b>Súper administrador</b>. Ni el administrador del consorcio puede activarlos.<br>
+    • <b>Claves maestras</b>: cada consorcio tiene la suya, que crea su administrador en Ajustes → Clave maestra (solo él la sabe). La clave del súper administrador abre en todos los consorcios; su uso queda en la Bitácora como "Clave súper".<br>
+    • Si un administrador olvida su clave, el súper administrador puede <b>Restablecerla</b> y él crea una nueva.</div>
+  </div>
+
   <div class="panel" style="background:linear-gradient(135deg,#fdf4ec,#f8e6d5);border-color:#e8c7a5;">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><div style="width:30px;height:30px;border-radius:9px;background:#3a2a12;color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">↗</div><h3 style="font-size:15px;font-weight:700;">Rentabilidad y Bitácora <span style="font-size:11px;color:#a37416;font-weight:800;">NUEVO v7.4</span></h3></div>
     <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">
@@ -1992,6 +2000,15 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
   <iframe id="libretaFrame" title="Libreta de Clientes" style="width:100%;height:calc(100dvh - 170px);min-height:480px;border:0;border-radius:14px;background:var(--paper);display:block;"></iframe>
 </section>
 
+<section class="view" id="view-super">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="go('settings')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Súper administrador</div><div style="font-size:12px;color:var(--muted);">Qué módulos tiene cada consorcio y sus claves</div></div>
+  </div>
+  <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:12px;">Los módulos opcionales solo aparecen en un consorcio si los activas aquí; ni su administrador puede activarlos. Tu clave maestra (la de PRIME SPORT) abre en todos los consorcios; cada dueño crea la suya.</div>
+  <div id="superLista"></div>
+</section>
+
 <section class="view" id="view-errores">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
     <button onclick="go('settings')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
@@ -2012,6 +2029,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     <div><label for="ckRepite" style="display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px;">Repite la clave nueva</label><input type="password" id="ckRepite" autocomplete="new-password"></div>
     <button class="btn-primary" id="btnGuardarClave" onclick="guardarClaveMaestra()">Cambiar clave</button>
     <div style="font-size:11.5px;color:var(--muted);line-height:1.5;">La clave no se guarda en el teléfono ni en el código: solo su versión cifrada en Supabase. Si se escribe mal 5 veces seguidas, se bloquea 15 minutos. Cada intento queda en la Bitácora.</div>
+    <div id="ckSuperNota" style="display:none;font-size:11.5px;line-height:1.5;background:#eef6fb;border:1px solid #cfe3ee;border-radius:10px;padding:9px 11px;color:#006a8a;"><b>Esta es la clave súper.</b> Además de este consorcio, abre en todos los demás, aunque cada uno tenga su propia clave.</div>
   </div>
 </section>
 
@@ -2145,6 +2163,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       <option value="DESBLOQUEO">Desbloqueos con clave</option>
       <option value="CLAVE_INCORRECTA">Clave incorrecta</option>
       <option value="CAMBIO_CLAVE">Cambio de clave</option>
+      <option value="DESBLOQUEO_SUPER">Uso de la clave súper</option>
     </select>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
@@ -2183,6 +2202,11 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     <div class="set-item" id="setItemRevision" onclick="openRevision()" style="cursor:pointer;">
       <div class="si-ic" style="background:var(--green-dim);color:#4cd6a0;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
       <div class="si-txt"><div class="t">Revisión semanal</div><div class="d">Arqueo de caja y chequeo de transacciones</div></div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" style="width:18px;height:18px;"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+    <div class="set-item" id="setItemSuper" onclick="openSuperAdmin()" style="cursor:pointer;display:none;">
+      <div class="si-ic" style="background:#2a2440;color:#b9a5e8;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 6 6 .9-4.5 4.3 1 6.3L12 16.8 6.5 19.5l1-6.3L3 8.9 9 8z"/></svg></div>
+      <div class="si-txt"><div class="t">Súper administrador</div><div class="d">Módulos por consorcio y claves maestras</div></div>
       <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" style="width:18px;height:18px;"><polyline points="9 18 15 12 9 6"/></svg>
     </div>
     <div class="set-item" id="setItemClave" onclick="openClaveMaestra()" style="cursor:pointer;display:none;">
@@ -2278,7 +2302,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       <div class="si-act" style="color:var(--amber);" onclick="doLogout()">Salir</div>
     </div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v7.4 nube · Santo Domingo, RD</div>
+  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v7.5 nube · Santo Domingo, RD</div>
 </section>
 
 <!-- NAV -->
@@ -2341,8 +2365,8 @@ window.__supabase = createClient(
 window.dispatchEvent(new Event('supabase-ready'));
 </script>
 <script>
-/* ===================== AdmBca v7.4 ===================== */
-const APP_VERSION='7.4';
+/* ===================== AdmBca v7.5 ===================== */
+const APP_VERSION='7.5';
 function idConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.id)||null; }catch(e){ return null; } }
 function nomConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.nombre)||'AdmBca'; }catch(e){ return 'AdmBca'; } }
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -3105,6 +3129,8 @@ function renderAlertas(){
     avisos.push({c:'#b23b31',bg:'#fdf1ef',bd:'#f0c9c4',t:`${n} error${n===1?'':'es'} de la app esta semana`,d:state.erroresApp[0].mensaje,go:'openErroresApp()'});
   }
   // v7.1: la clave maestra vieja estuvo en el código público
+  if(esAdmin() && state.claveEstado && state.claveEstado.existe===false)
+    avisos.unshift({c:'#a3651a',bg:'#fdf6e8',bd:'#ecd9ac',t:'Crea tu clave maestra',d:'Sirve para reabrir cortes y meses. Solo tú la sabrás.',go:'openClaveMaestra()'});
   if(esAdmin() && state.claveEstado && state.claveEstado.debe_cambiar)
     avisos.unshift({c:'#a3651a',bg:'#fdf6e8',bd:'#ecd9ac',t:'Cambia la clave maestra',d:'La clave anterior estuvo visible en el código. Toca aquí para poner una nueva.',go:'openClaveMaestra()'});
   if(!avisos.length){ el.innerHTML=''; return; }
@@ -4370,6 +4396,49 @@ function enviarNominaWhatsApp(){
   const tIng=filas.reduce((s,f)=>s+nomIngresos(f.d),0), tDesc=filas.reduce((s,f)=>s+nomDescuentos(f.d),0);
   t+=`\n*TOTAL A PAGAR: RD$${fmt(tIng-tDesc)}*\nIngresos RD$${fmt(tIng)} · Descuentos RD$${fmt(tDesc)}`;
   window.open('https://wa.me/'+corteWaNumber()+'?text='+encodeURIComponent(t),'_blank');
+}
+
+/* ===================== SÚPER ADMINISTRADOR (v7.5) ===================== */
+const NOMBRE_OPCIONAL={depositos:'Depósitos de bancas',libreta:'Libreta de Clientes'};
+async function openSuperAdmin(){
+  if(!esSuper()){ toast('Solo el súper administrador.',false); return; }
+  showOnlyView('view-super');
+  const el=document.getElementById('superLista'); el.innerHTML='<div class="empty-hint" style="padding:24px;">Cargando…</div>';
+  try{
+    const {data,error}=await sb.rpc('consorcios_super'); if(error) throw error;
+    el.innerHTML=(data||[]).map(c=>{ const m=c.modulos_activos||{};
+      return `<div class="panel" style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px;">
+          <div style="font-size:15px;font-weight:800;">${escD(c.nombre)}</div>
+          <div style="font-size:11px;color:var(--muted);">${c.usuarios} usuario(s)</div></div>
+        ${MODULOS_OPCIONALES.map(k=>`<label style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid var(--line);cursor:pointer;">
+            <span style="font-size:13px;font-weight:600;">${NOMBRE_OPCIONAL[k]}</span>
+            <input type="checkbox" ${m[k]?'checked':''} data-con="${c.id}" data-modulo="${k}" onchange="superModulo(this)" style="width:20px;height:20px;"></label>`).join('')}
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:9px;border-top:1px solid var(--line);">
+          <span style="font-size:12.5px;color:var(--muted);">Clave maestra: <b style="color:${c.tiene_clave?'var(--green)':'#a3651a'};">${c.tiene_clave?'creada':'sin crear'}</b>${c.codigo==='PRIMESPORT'?' · es la súper':''}</span>
+          ${c.codigo!=='PRIMESPORT'&&c.tiene_clave?`<button data-con="${c.id}" data-nom="${escD(c.nombre)}" onclick="superRestablecer(this)" style="border:1px solid #e9b3ad;background:#fff;color:var(--red);border-radius:9px;padding:8px 11px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Restablecer</button>`:''}
+        </div></div>`; }).join('') || '<div class="empty-hint">Sin consorcios.</div>';
+  }catch(e){ console.error(e); el.innerHTML='<div class="empty-hint" style="padding:24px;">No se pudo cargar.</div>'; }
+}
+async function superModulo(chk){
+  const con=chk.getAttribute('data-con'), mod=chk.getAttribute('data-modulo'), on=chk.checked;
+  chk.disabled=true;
+  try{
+    const {data,error}=await sb.rpc('fijar_modulo',{p_consorcio:con,p_modulo:mod,p_activo:on});
+    if(error||data!=='OK') throw error||new Error(data);
+    if(state.consorcio&&state.consorcio.id===con){ state.consorcio.modulos=Object.assign({},state.consorcio.modulos,{[mod]:on}); aplicarPermisos(); }
+    toast(`${NOMBRE_OPCIONAL[mod]} ${on?'activado':'desactivado'}`,true);
+  }catch(e){ console.error(e); chk.checked=!on; toast('No se pudo cambiar el módulo.',false); }
+  finally{ chk.disabled=false; }
+}
+async function superRestablecer(btn){
+  const con=btn.getAttribute('data-con'), nom=btn.getAttribute('data-nom');
+  if(!confirm(`¿Restablecer la clave maestra de ${nom}?\n\nSu clave actual dejará de servir y su administrador tendrá que crear una nueva. Tu clave súper sigue abriendo.`)) return;
+  try{
+    const {data,error}=await sb.rpc('restablecer_clave_consorcio',{p_consorcio:con});
+    if(error||data!=='OK') throw error||new Error(data);
+    toast('Clave restablecida',true); openSuperAdmin();
+  }catch(e){ console.error(e); toast('No se pudo restablecer.',false); }
 }
 
 /* ===================== RESPALDO COMPLETO (v7.2) =====================
@@ -5729,13 +5798,17 @@ const BIT_TABLAS={movimientos:'Movimiento',cuadre_banca_gasto:'Gasto de banca',c
                   virtuales_registros:'Virtuales',cierres_dia:'Corte diario',cierres_mes:'Cierre de mes',
                   depositos_banca:'Depósito de banca',bancos_deposito:'Banco',arqueos_caja:'Arqueo de caja',empleados:'Empleado',
                   empleado_cuenta:'Préstamo / faltante',nomina_detalle:'Nómina',nomina_periodos:'Período de nómina',incentivos:'Incentivo',
-                  mantenimientos:'Mantenimiento',equipos:'Equipo',clave_maestra:'Clave maestra'};
+                  mantenimientos:'Mantenimiento',equipos:'Equipo',clave_maestra:'Clave maestra',consorcios:'Consorcio'};
 const BIT_ACCIONES={INSERT:{t:'Creó',c:'#1f9d6b',bg:'var(--green-dim)'},
                     UPDATE:{t:'Cambió',c:'#a37416',bg:'#3a3016'},
                     DELETE:{t:'Borró',c:'#d3564b',bg:'var(--red-dim)'},
                     DESBLOQUEO:{t:'Desbloqueó',c:'#0086AD',bg:'var(--cerulean-dim)'},
                     CLAVE_INCORRECTA:{t:'Clave mala',c:'#d3564b',bg:'var(--red-dim)'},
-                    CAMBIO_CLAVE:{t:'Cambió clave',c:'#a37416',bg:'#3a3016'}};
+                    CAMBIO_CLAVE:{t:'Cambió clave',c:'#a37416',bg:'#3a3016'},
+                    DESBLOQUEO_SUPER:{t:'Clave súper',c:'#6b3fa0',bg:'#2a2440'},
+                    CLAVE_RESTABLECIDA:{t:'Clave restablecida',c:'#a37416',bg:'#3a3016'},
+                    MODULO_ACTIVADO:{t:'Activó módulo',c:'#1f9d6b',bg:'var(--green-dim)'},
+                    MODULO_DESACTIVADO:{t:'Desactivó módulo',c:'#d3564b',bg:'var(--red-dim)'}};
 function bitFiltrar(q){
   const tabla=document.getElementById('bitTabla').value, accion=document.getElementById('bitAccion').value;
   const usr=(document.getElementById('bitUsuario')||{}).value, banca=(document.getElementById('bitBanca')||{}).value;
@@ -5780,6 +5853,7 @@ function bitQue(r){
   if(r.tabla==='clave_maestra') return (r.despues&&r.despues.motivo)?`Para: ${r.despues.motivo}`:'Clave maestra';
   if(r.tabla==='empleados') return `${d.nombre||''}${d.sucursal?' · '+d.sucursal:''}`;
   if(r.tabla==='bancos_deposito') return d.nombre||'';
+  if(r.tabla==='consorcios') return 'Módulo: '+((NOMBRE_OPCIONAL&&NOMBRE_OPCIONAL[d.modulo])||d.modulo||'');
   if(r.tabla==='cierres_mes') return `${MONTHS[(d.mes||1)-1]||''} ${d.anio||''}`;
   if(r.tabla==='virtuales_registros') return `${d.empresa||''} · ${d.sucursal||''} · ${MONTHS_SHORT[(d.mes||1)-1]||''} ${d.anio||''}`;
   if(r.tabla==='cuadre_oficina_gasto') return `${d.categoria||''} · RD$${fmt(Number(d.monto||0))} · ${MONTHS_SHORT[(d.mes||1)-1]||''} ${d.anio||''}`;
@@ -8789,17 +8863,18 @@ async function checkMasterKey(motivo){
     const {data,error}=await sb.rpc('verificar_clave_maestra',{p_clave:entry,p_motivo:motivo||null});
     if(error) throw error;
     if(data&&data.ok){
-      if(data.debe_cambiar&&esAdmin()) setTimeout(()=>toast('Cambia la clave maestra en Ajustes → Clave maestra',false),2600);
+      if(data.super) setTimeout(()=>toast('Desbloqueado con la clave súper',true),100);
+      else if(data.debe_cambiar&&esAdmin()) setTimeout(()=>toast('Cambia la clave maestra en Ajustes → Clave maestra',false),2600);
       return true;
     }
     if(data&&data.error==='bloqueado'){ toast('Demasiados intentos fallidos. Espera 15 minutos.',false); return false; }
-    if(data&&data.error==='sin_clave'){ toast('No hay clave maestra. El administrador debe crearla en Ajustes → Clave maestra.',false); return false; }
+    if(data&&data.error==='sin_clave'){ toast('Este consorcio todavía no tiene clave maestra. Su administrador debe crearla en Ajustes → Clave maestra.',false); return false; }
     toast('Clave incorrecta'+(data&&data.intentos_restantes!=null?` · quedan ${data.intentos_restantes} intento(s)`:''),false);
     return false;
   }catch(e){ console.error(e); toast('No se pudo verificar la clave. Revisa tu conexión.',false); return false; }
 }
 async function cargarEstadoClave(){
-  try{ const {data,error}=await sb.rpc('clave_maestra_estado'); if(!error&&data){ state.claveEstado=data; try{ renderAlertas(); }catch(e){} } }catch(e){}
+  try{ const {data,error}=await sb.rpc('clave_maestra_estado'); if(!error&&data){ state.claveEstado=data; try{ renderAlertas(); aplicarPermisos(); }catch(e){} } }catch(e){}
 }
 function openClaveMaestra(){
   if(!esAdmin()){ toast('Solo el administrador puede cambiar la clave maestra.',false); return; }
@@ -8808,6 +8883,7 @@ function openClaveMaestra(){
   const e=state.claveEstado||{};
   document.getElementById('ckActualBox').style.display=e.existe===false?'none':'';
   document.getElementById('ckAviso').style.display=e.debe_cambiar?'':'none';
+  document.getElementById('ckSuperNota').style.display=(e.es_super&&state.consorcio&&state.consorcio.codigo==='PRIMESPORT')?'':'none';
 }
 async function guardarClaveMaestra(){
   const a=document.getElementById('ckActual').value, n=document.getElementById('ckNueva').value, r=document.getElementById('ckRepite').value;
@@ -10505,7 +10581,13 @@ const MODULOS = [
 const NIVELES = [['no','Sin acceso'],['ver','Solo ver'],['editar','Ver y editar']];
 
 function esAdmin(){ return (state&&state.rol)==='admin'; }
+/* v7.5: módulos opcionales. Solo existen en un consorcio si el súper administrador
+   los activa (Ajustes → Súper administrador). La base aplica la misma regla. */
+const MODULOS_OPCIONALES=['depositos','libreta'];
+function moduloActivo(mod){ return !MODULOS_OPCIONALES.includes(mod) || !!(state&&state.consorcio&&state.consorcio.modulos&&state.consorcio.modulos[mod]); }
+function esSuper(){ return !!(state&&state.claveEstado&&state.claveEstado.es_super); }
 function nivel(mod){
+  if(!moduloActivo(mod)) return 'no';
   if(esAdmin()) return 'editar';
   return ((state&&state.permisos&&state.permisos[mod])||'no');
 }
@@ -10531,6 +10613,8 @@ function aplicarPermisos(){
   if(bit) bit.style.display = esAdmin() ? '' : 'none';
   const ck=document.getElementById('setItemClave');
   if(ck) ck.style.display = esAdmin() ? '' : 'none';
+  const sa=document.getElementById('setItemSuper');
+  if(sa) sa.style.display = esSuper() ? '' : 'none';
   const ea=document.getElementById('setItemErrores');
   if(ea) ea.style.display = esAdmin() ? '' : 'none';
   try{ pintarRespaldoDesc(); }catch(e){}
@@ -10559,7 +10643,7 @@ function tarjetaUsuario(u, soyYo){
   const p=u.permisos||{};
   const adm=u.rol==='admin';
   const filas = adm ? '<div style="font-size:12.5px;color:var(--muted);padding:6px 0;">Un administrador tiene acceso completo a todos los módulos.</div>'
-    : MODULOS.map(([k,nom,desc])=>{
+    : MODULOS.filter(([k])=>moduloActivo(k)).map(([k,nom,desc])=>{
         const v=p[k]||'no';
         const ops=NIVELES.map(([nv,lbl])=>'<option value="'+nv+'"'+(v===nv?' selected':'')+'>'+lbl+'</option>').join('');
         return '<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line);">'
@@ -10796,7 +10880,10 @@ async function loadConsorcio(){
       if(error) throw error;
       act=(data&&data[0])||null;
     }
-    state.consorcio = act ? {id:act.id,codigo:act.codigo,nombre:act.nombre} : null;
+    state.consorcio = act ? {id:act.id,codigo:act.codigo,nombre:act.nombre,modulos:{}} : null;
+    if(state.consorcio){
+      try{ const {data:cm}=await sb.from('consorcios').select('modulos_activos').eq('id',state.consorcio.id).maybeSingle(); state.consorcio.modulos=(cm&&cm.modulos_activos)||{}; }catch(e){}
+    }
     const { data:u } = await sb.auth.getUser();
     const uid = u && u.user && u.user.id;
     if(uid && state.consorcio){
