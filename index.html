@@ -384,6 +384,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       <span style="color:rgba(255,255,255,.62);font-size:11.5px;font-weight:600;">Balance de bancas del mes</span>
       <span id="heroInc" style="color:#fff;font-size:13px;font-weight:800;">RD$0</span>
     </div>
+    <div id="heroDep" style="display:none;margin-top:7px;"></div>
   </div>
   <div id="dashAlertas"></div>
 
@@ -413,6 +414,18 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     <div style="flex:1;">
       <div style="color:#fff;font-size:14.5px;font-weight:700;">Desglose de Efectivo</div>
       <div style="color:rgba(255,255,255,.78);font-size:11.5px;margin-top:1px;">Contar billetes y monedas recibidos</div>
+    </div>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
+  </div>
+  </div>
+  <div data-mod="depositos">
+<div onclick="openDepositos()" style="background:linear-gradient(135deg,#123028,#1f6b4f);border-radius:16px;padding:15px 16px;margin-bottom:16px;display:flex;align-items:center;gap:13px;cursor:pointer;box-shadow:0 4px 16px rgba(31,107,79,.3);">
+    <div style="width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:22px;height:22px;"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 20h18"/></svg>
+    </div>
+    <div style="flex:1;">
+      <div style="color:#fff;font-size:14.5px;font-weight:700;">Depósitos de bancas</div>
+      <div id="depCardSub" style="color:rgba(255,255,255,.8);font-size:11.5px;margin-top:1px;">Lo que las bancas depositan al banco</div>
     </div>
     <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:18px;height:18px;opacity:.8;"><polyline points="9 18 15 12 9 6"/></svg>
   </div>
@@ -547,6 +560,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     <div class="panel-head"><h3>Ingresos por categoría</h3><span class="hint" id="catTotal">RD$0</span></div>
     <div id="catBreakdown"></div>
   </div>
+  <div class="panel" id="depDeportivaPanel" style="display:none;"></div>
 </section>
 
 <!-- REGISTRO -->
@@ -1549,7 +1563,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
   </div>
 
   <div class="panel" style="line-height:1.6;">
-    <div style="font-size:14px;color:var(--ink);">AdmBca es el sistema de administración de bancas del consorcio <b class="js-consorcio">—</b>. Cubre <b>caja, cuadre, virtuales y reportes</b>. Aquí está la guía rápida de cada módulo, en orden de uso diario.<br><br>El inicio está organizado en dos bloques: <b>Día a día</b> (corte diario, histórico y desglose de efectivo) y <b>Cierre mensual</b> (cuadre, máquinas, virtuales y cierre de mes, en ese orden). Solo verás los módulos que tu usuario tenga permitidos.</div>
+    <div style="font-size:14px;color:var(--ink);">AdmBca es el sistema de administración de bancas del consorcio <b class="js-consorcio">—</b>. Cubre <b>caja, cuadre, virtuales y reportes</b>. Aquí está la guía rápida de cada módulo, en orden de uso diario.<br><br>El inicio está organizado en dos bloques: <b>Día a día</b> (corte diario, histórico, desglose de efectivo y depósitos de bancas) y <b>Cierre mensual</b> (cuadre, máquinas, virtuales y cierre de mes, en ese orden). Solo verás los módulos que tu usuario tenga permitidos.</div>
   </div>
 
   <div class="panel" style="background:linear-gradient(135deg,#fdf4ec,#f8e6d5);border-color:#e8c7a5;">
@@ -1622,7 +1636,8 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     1. Registra las <b>operaciones</b> de cada banca con el botón +.<br>
     2. En el <b>Corte Diario</b>, anota lo que el mensajero recogió de cada banca.<br>
     3. Envía la <b>ruta al mensajero</b> por WhatsApp.<br>
-    4. Cuenta el efectivo en <b>Desglose</b>.<br><br>
+    4. Cuenta el efectivo en <b>Desglose</b>.<br>
+    5. Anota en <b>Depósitos de bancas</b> lo que cada banca depositó al banco, con su soporte.<br><br>
     <b>Admin (tú):</b><br>
     • Todo lo anterior, más: <b>Cierre de Mes</b>, <b>reportes</b>, <b>virtuales</b>, <b>ajustes</b> (bancas, categorías, números de WhatsApp), y el <b>resumen de totales</b> que te llega solo a ti.</div>
   </div>
@@ -1646,6 +1661,17 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     • <b>📊 Enviar resumen (a mí)</b>: te manda a TU número el desglose por banca y los totales generales por renglón (Deportiva, Máquinas, cada virtual).<br>
     • <b>💵 Desglose de efectivo</b>: cuenta los billetes y monedas recibidos y compáralo con lo recolectado.<br><br>
     <b>Importante:</b> las transferencias (préstamos/devoluciones) son flujo de caja, <b>no afectan el pendiente operativo</b>. Solo el mensajero (collect) lo afecta.</div>
+  </div>
+
+  <div class="panel" style="background:linear-gradient(135deg,#eef7f2,#dff0e7);border-color:#c8e2d5;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><div style="width:30px;height:30px;border-radius:9px;background:var(--green-dim);color:#4cd6a0;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">$</div><h3 style="font-size:15px;font-weight:700;">Depósitos de bancas <span style="font-size:11px;color:var(--green);font-weight:800;">NUEVO v7.0</span></h3></div>
+    <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">Cuando una banca deposita dinero al banco, ese depósito <b>ya viene restado</b> en el balance de Deportiva que se inserta. Por eso la Deportiva puede salir en rojo aunque no lo esté. Aquí se anota aparte para ver la <b>Deportiva real</b>.<br><br>
+    • <b>Registrar</b>: elige si el depósito cubre <b>un día</b> o <b>un período</b> (desde–hasta, un solo monto), la <b>banca</b>, el <b>banco</b> (con <b>+ Otro banco</b> agregas uno nuevo), el <b>monto</b> y, si quieres, la referencia del volante. Usa la misma fecha con que se registró la Deportiva de ese día. Al guardar salta a la próxima banca.<br>
+    • <b>Soporte</b>: con <b>Tomar foto</b> fotografías el volante; con <b>Foto o PDF</b> eliges un archivo (hasta 10 MB). Se puede agregar después abriendo el depósito. En la lista, 📎 abre el soporte y "sin soporte" marca los que faltan.<br>
+    • <b>Corregir o borrar</b>: toca un depósito de la lista para editarlo o borrarlo. Si repites uno igual (misma banca, banco, monto y fechas), te pregunta antes.<br>
+    • <b>Resumen</b>: cuánto depositó cada banca y en qué banco, por mes, semana o fechas que elijas. Toca una banca para ver cada depósito. Se puede exportar a CSV.<br>
+    • <b>En el Inicio</b>: la tarjeta grande muestra <b>+ Depósitos de bancas</b> y el <b>Balance real de bancas</b>; en "Ingresos por categoría" la Deportiva sale como <b>Deportiva real</b> (sistema + depósitos), y la tabla <b>Deportiva por banca</b> lo desglosa.<br><br>
+    <b>Importante:</b> los depósitos <b>no cambian</b> el Corte Diario, el pendiente de las bancas ni el <b>Balance Neto del Mes</b> (que sigue igual al Cierre de Mes). Un período cuenta en el mes de su fecha final y no puede cruzar de un mes a otro: si pasa, regístralo en dos partes. Se necesita el permiso <b>Depósitos de bancas</b> (Ajustes → Usuarios).</div>
   </div>
 
   <div class="panel">
@@ -1903,6 +1929,20 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
   <iframe id="libretaFrame" title="Libreta de Clientes" style="width:100%;height:calc(100dvh - 170px);min-height:480px;border:0;border-radius:14px;background:var(--paper);display:block;"></iframe>
 </section>
 
+<section class="view" id="view-depositos">
+  <style>
+    .dep-lbl{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px;}
+    .dep-nota{font-size:11.5px;color:var(--muted);line-height:1.45;}
+    .dep-btn2{border:1.5px dashed #b9c6ce;background:#fafbfc;border-radius:11px;padding:12px 6px;font-size:13px;font-weight:700;color:#006a8a;cursor:pointer;font-family:inherit;}
+  </style>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+    <button onclick="go('dash')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Depósitos de bancas</div><div style="font-size:12px;color:var(--muted);">Lo que las bancas depositan al banco</div></div>
+  </div>
+  <div id="depTabs" style="display:flex;gap:4px;background:#e9eef1;border-radius:11px;padding:4px;margin-bottom:14px;"></div>
+  <div id="depBody"></div>
+</section>
+
 <section class="view" id="view-analisis">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
     <button onclick="go('dash')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
@@ -2110,7 +2150,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       <div class="si-act" style="color:var(--amber);" onclick="doLogout()">Salir</div>
     </div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v6.9 nube · Santo Domingo, RD</div>
+  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v7.0 nube · Santo Domingo, RD</div>
 </section>
 
 <!-- NAV -->
@@ -2173,7 +2213,7 @@ window.__supabase = createClient(
 window.dispatchEvent(new Event('supabase-ready'));
 </script>
 <script>
-/* ===================== AdmBca v6.9 ===================== */
+/* ===================== AdmBca v7.0 ===================== */
 function idConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.id)||null; }catch(e){ return null; } }
 function nomConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.nombre)||'AdmBca'; }catch(e){ return 'AdmBca'; } }
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -2513,6 +2553,14 @@ async function loadResto(){
     state._equiposReady=!eq.error&&!mt.error;
   }catch(e){ console.warn('empleados/equipos',e); state._empReady=false; state._equiposReady=false; }
 
+  // Depósitos de bancas (v7.0) — resiliente
+  try{
+    const [dp,bk]=await Promise.all([fetchAllSafe('depositos_banca','fecha_hasta'),fetchAllSafe('bancos_deposito','orden')]);
+    state.depositos=dp.error?[]:dp.data.map(depDesdeFila);
+    state.bancosDep=bk.error?[]:bk.data.map(b=>({_id:b.id,nombre:b.nombre,activo:b.activo!==false,orden:Number(b.orden)||0}));
+    state._depReady=!dp.error;
+  }catch(e){ console.warn('depositos',e); state.depositos=[]; state.bancosDep=[]; state._depReady=false; }
+
   state._restoListo=true;
   const av=document.getElementById('avisoCargando'); if(av) av.style.display='none';
   try{ renderDash(); }catch(e){}
@@ -2793,6 +2841,17 @@ function renderDash(){
   document.getElementById('heroExp').textContent='RD$'+fmt(c.exp);
   document.getElementById('heroOut').textContent='RD$'+fmt(c.salidasNetas);
   document.getElementById('heroInc').textContent='RD$'+fmt(c.inc);
+  // v7.0: depósitos de bancas (ya restados en la Deportiva insertada). Solo informativo:
+  // el Balance Neto del Mes de arriba NO cambia, para que siga igual al Cierre de Mes.
+  const depM=depositosMes(curYear,curMonth), depTot=depM.reduce((s,x)=>s+x.monto,0);
+  const hd=document.getElementById('heroDep');
+  if(hd){
+    if(depTot>0){
+      hd.style.display='block';
+      hd.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;"><span style="color:rgba(255,255,255,.62);font-size:11.5px;font-weight:600;">+ Depósitos de bancas al banco</span><span style="color:#7ce6b3;font-size:13px;font-weight:800;">RD$${fmt(depTot)}</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:5px;padding-top:6px;border-top:1px solid rgba(255,255,255,.13);"><span style="color:#fff;font-size:12px;font-weight:800;">Balance real de bancas</span><span style="color:#fff;font-size:14px;font-weight:800;">RD$${fmt(c.inc+depTot)}</span></div>`;
+    } else { hd.style.display='none'; hd.innerHTML=''; }
+  }
 
   // comparación con el mes anterior
   const pm=curMonth===0?11:curMonth-1, pa=curMonth===0?curYear-1:curYear;
@@ -2822,7 +2881,8 @@ function renderDash(){
 
   renderAlertas();
   renderFundList();
-  renderCatBreakdown(txns,c.inc);
+  renderCatBreakdown(txns,c.inc,depM);
+  renderDepInicio(txns,depM);
 }
 
 /* ---------- B5: avisos del inicio ---------- */
@@ -2899,9 +2959,13 @@ function renderFundList(){
     </div>`).join('');
 }
 
-function renderCatBreakdown(txns,totalInc){
+function renderCatBreakdown(txns,totalInc,depM){
   const incomes=txns.filter(t=>t.type==='income');
   const byCat={}; incomes.forEach(t=>byCat[t.category]=(byCat[t.category]||0)+t.amount);
+  // v7.0: la Deportiva se muestra real = sistema + depósitos de bancas al banco
+  const depTot=(depM||[]).reduce((s,x)=>s+x.monto,0);
+  const depSis=byCat['Deportiva']||0;
+  if(depTot>0){ byCat['Deportiva']=depSis+depTot; totalInc+=depTot; }
   const el=document.getElementById('catBreakdown');
   document.getElementById('catTotal').textContent='RD$'+fmt(totalInc);
   const entries=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
@@ -2912,7 +2976,8 @@ function renderCatBreakdown(txns,totalInc){
     let pct=totalInc>0?(amt/totalInc*100):0;
     if(pct<0)pct=0; if(pct>100)pct=100;
     const amtColor=amt<0?'var(--red)':'inherit';
-    return `<div class="cat-row"><div class="top"><div class="nm"><span class="cat-dot" style="background:${amt<0?'var(--red)':color}"></span>${cat}</div><div class="amt" style="color:${amtColor}">RD$${fmt(amt)}</div></div><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${amt<0?'var(--red)':color}"></div></div></div>`;
+    const real=cat==='Deportiva'&&depTot>0;
+    return `<div class="cat-row"><div class="top"><div class="nm"><span class="cat-dot" style="background:${amt<0?'var(--red)':color}"></span>${real?'Deportiva real':cat}</div><div class="amt" style="color:${amtColor}">RD$${fmt(amt)}</div></div><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${amt<0?'var(--red)':color}"></div></div>${real?`<div style="font-size:11.5px;color:var(--muted);margin-top:5px;">Sistema <b style="color:${depSis<0?'var(--red)':'var(--ink)'}">RD$${fmt(depSis)}</b> + depósitos al banco <b style="color:var(--ink)">RD$${fmt(depTot)}</b></div>`:''}</div>`;
   }).join('');
 }
 
@@ -4132,6 +4197,380 @@ function enviarNominaWhatsApp(){
   const tIng=filas.reduce((s,f)=>s+nomIngresos(f.d),0), tDesc=filas.reduce((s,f)=>s+nomDescuentos(f.d),0);
   t+=`\n*TOTAL A PAGAR: RD$${fmt(tIng-tDesc)}*\nIngresos RD$${fmt(tIng)} · Descuentos RD$${fmt(tDesc)}`;
   window.open('https://wa.me/'+corteWaNumber()+'?text='+encodeURIComponent(t),'_blank');
+}
+
+/* ===================== DEPÓSITOS DE BANCAS (v7.0) =====================
+   Lo que las bancas depositan al banco. Ese dinero YA viene restado en el
+   balance de Deportiva que se inserta, así que aquí solo se anota aparte para
+   mostrar la Deportiva real en el Inicio. NO toca el Corte Diario, el
+   pendiente de las bancas ni el Balance Neto del Mes.
+   Un depósito cubre un día o un período (desde–hasta) y cuenta en el mes de
+   negocio de su fecha final (misma regla que monthDate: el día 1 es del mes
+   anterior). Un período no puede cruzar de un mes de negocio a otro. */
+let depTab='reg', depCur=null, depModo='dia', depBanca='', depBanco='', depArchivo=null;
+let depPer='mes', depRDesde='', depRHasta='', depDetBanca=null, depF1Ult='', depF2Ult='';
+
+function escD(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function psCorto(n){ return String(n||'').replace('PRIME SPORT ','PS '); }
+function depMesDe(fecha){ const d=new Date(monthDate({type:'dep',date:fecha})+'T00:00:00'); return {anio:d.getFullYear(),mes:d.getMonth()}; }
+function depositosMes(anio,mes){ return (state.depositos||[]).filter(x=>{ const m=depMesDe(x.hasta); return m.anio===anio&&m.mes===mes; }); }
+function bancasDep(){ return sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false)); }
+function bancosDepActivos(){ return (state.bancosDep||[]).filter(b=>b.activo).sort((a,b)=>(a.orden-b.orden)||a.nombre.localeCompare(b.nombre,'es')); }
+function depDesdeFila(x){ return {_id:x.id,sucursal:normBranchName(x.sucursal),banco:x.banco,monto:Number(x.monto)||0,desde:x.fecha_desde,hasta:x.fecha_hasta,
+  ref:x.referencia||'',soportePath:x.soporte_path||'',soporteTipo:x.soporte_tipo||'',soporteNombre:x.soporte_nombre||'',creado:x.creado||''}; }
+function depFechaTxt(x){ return x.desde===x.hasta ? fmtDate(x.hasta) : `${fmtDate(x.desde)} – ${fmtDate(x.hasta)}`; }
+
+function openDepositos(){
+  if(!puedeVer('depositos')){ toast('No tienes acceso a esta sección.',false); return; }
+  if(!moduloListo()) return;
+  showOnlyView('view-depositos');
+  if(!puedeEditar('depositos')) depTab='res';
+  depCur=null; depArchivo=null;
+  renderDepositos();
+}
+function setDepTab(t){ depTab=t; depCur=null; depArchivo=null; depDetBanca=null; renderDepositos(); window.scrollTo(0,0); }
+function renderDepositos(){
+  const tabs=[['reg','Registrar'],['res','Resumen']].filter(x=>x[0]!=='reg'||puedeEditar('depositos'));
+  if(!tabs.some(x=>x[0]===depTab)) depTab=tabs[0][0];
+  document.getElementById('depTabs').innerHTML=tabs.map(([k,l])=>`<button type="button" onclick="setDepTab('${k}')" style="flex:1;border:none;border-radius:8px;padding:10px 4px;font-size:13px;font-weight:${depTab===k?800:700};font-family:inherit;cursor:pointer;background:${depTab===k?'#fff':'transparent'};color:${depTab===k?'var(--ink)':'var(--muted)'};box-shadow:${depTab===k?'0 1px 3px rgba(16,24,32,.12)':'none'};">${l}</button>`).join('');
+  if(state._depReady===false){ document.getElementById('depBody').innerHTML='<div class="empty-hint" style="padding:30px;">No se pudieron cargar los depósitos. Revisa tu conexión y vuelve a entrar.</div>'; return; }
+  if(depTab==='reg') renderDepRegistrar(); else renderDepResumen();
+}
+
+/* ---------- Registrar ---------- */
+function renderDepRegistrar(){
+  const e=depCur;
+  if(e){ depModo=e.desde===e.hasta?'dia':'periodo'; depBanca=e.sucursal; depBanco=e.banco; }
+  const f1=e?e.desde:(depF1Ult||yesterdayISO());
+  const f2=e?e.hasta:(depF2Ult||f1);
+  const hoyMes=depMesDe(todayISO());
+  const lista=depositosMes(hoyMes.anio,hoyMes.mes).slice().sort((a,b)=>(b.creado||'').localeCompare(a.creado||''));
+  const totalMes=lista.reduce((s,x)=>s+x.monto,0);
+  document.getElementById('depBody').innerHTML=`
+  <div class="panel" style="display:flex;flex-direction:column;gap:15px;">
+    ${e?`<div style="background:#eef6fb;border:1px solid #cfe3ee;border-radius:10px;padding:9px 11px;font-size:12.5px;font-weight:700;color:#006a8a;">Editando el depósito de ${escD(psCorto(e.sucursal))} · ${escD(depFechaTxt(e))}</div>`:''}
+    <div><span class="dep-lbl">El depósito cubre</span><div id="depModoBox" style="display:flex;gap:4px;background:#e9eef1;border-radius:11px;padding:4px;"></div></div>
+    <div id="depFechas" style="display:grid;gap:8px;">
+      <div><label class="dep-lbl" id="depF1Lbl" for="depF1">Fecha</label><input type="date" id="depF1" value="${f1}"></div>
+      <div id="depF2Box"><label class="dep-lbl" for="depF2">Hasta</label><input type="date" id="depF2" value="${f2}"></div>
+    </div>
+    <div id="depFechaNota" class="dep-nota" style="margin-top:-8px;"></div>
+    <div><span class="dep-lbl">Banca</span><div id="depBancaChips" style="display:flex;flex-wrap:wrap;gap:7px;"></div></div>
+    <div><span class="dep-lbl">Banco</span><div id="depBancoChips" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;"></div>
+      <div id="depNuevoBancoBox" style="display:none;gap:8px;margin-top:8px;align-items:center;">
+        <input id="depNuevoBanco" maxlength="40" placeholder="Nombre del banco" style="flex:1;">
+        <button type="button" id="btnAgregarBanco" onclick="agregarBancoDep()" style="border:none;background:var(--navy);color:#fff;border-radius:10px;padding:13px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Agregar</button>
+      </div></div>
+    <div><label class="dep-lbl" for="depMonto">Monto depositado</label><div class="amount-input"><span class="cur">RD$</span><input type="number" inputmode="decimal" step="0.01" min="0" id="depMonto" value="${e?e.monto:''}" placeholder="0.00"></div></div>
+    <div><label class="dep-lbl" for="depRef">Referencia del volante (opcional)</label><input id="depRef" maxlength="80" value="${escD(e?e.ref:'')}" placeholder="No. de transacción o nota"></div>
+    <div><span class="dep-lbl">Soporte del depósito (opcional)</span>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <button type="button" class="dep-btn2" onclick="document.getElementById('depCam').click()">Tomar foto</button>
+        <button type="button" class="dep-btn2" onclick="document.getElementById('depFile').click()">Foto o PDF</button>
+      </div>
+      <input type="file" id="depCam" accept="image/*" capture="environment" style="display:none" onchange="depElegirArchivo(this)">
+      <input type="file" id="depFile" accept="image/*,application/pdf" style="display:none" onchange="depElegirArchivo(this)">
+      <div id="depArchivoBox"></div>
+    </div>
+    <button class="btn-primary" id="btnGuardarDep" onclick="guardarDeposito()">${e?'Guardar cambios':'Guardar y seguir con la próxima banca'}</button>
+    ${e?`<div style="display:flex;gap:8px;">
+      <button type="button" onclick="cancelarEdicionDep()" style="flex:1;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Cancelar</button>
+      <button type="button" id="btnBorrarDep" onclick="borrarDeposito()" style="flex:1;border:1px solid #f0c9c4;background:#fdf1ef;color:var(--red);border-radius:11px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Borrar depósito</button>
+    </div>`:''}
+  </div>
+  <div class="panel">
+    <div class="panel-head"><h3>Registrados este mes</h3><span class="hint">${lista.length} depósito${lista.length===1?'':'s'}</span></div>
+    ${lista.length?lista.slice(0,40).map(x=>depFilaHTML(x,true)).join('')+`
+      <div style="display:flex;justify-content:space-between;align-items:center;background:#eaf7f0;border-radius:10px;padding:11px 12px;margin-top:8px;">
+        <span style="font-size:13px;font-weight:700;color:#146b49;">Total depositado en el mes</span>
+        <span style="font-size:15px;font-weight:800;color:#146b49;">RD$${fmt(totalMes)}</span></div>`
+      :'<div class="empty-hint" style="padding:18px;">Todavía no hay depósitos este mes.</div>'}
+    ${lista.length>40?`<div style="font-size:11.5px;color:var(--muted);margin-top:6px;">Se muestran los 40 más recientes. El resto está en Resumen.</div>`:''}
+  </div>`;
+  depSetModo(depModo,true);
+  depPintarArchivo();
+}
+function depFilaHTML(x,editable){
+  const sop = x.soportePath
+    ? `<button type="button" onclick="event.stopPropagation();verSoporteDep('${x._id}')" aria-label="Ver soporte" style="border:none;background:none;color:#006a8a;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit;padding:4px;">📎 ${/pdf/.test(x.soporteTipo)?'PDF':'Foto'}</button>`
+    : `<span style="font-size:11px;color:#a3651a;font-weight:700;">sin soporte</span>`;
+  const click = editable&&puedeEditar('depositos') ? `onclick="editarDeposito('${x._id}')" style="cursor:pointer;` : `style="`;
+  return `<div ${click}display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #edf1f3;">
+    <div style="min-width:0;"><div style="font-size:13.5px;font-weight:700;">${escD(psCorto(x.sucursal))} <span style="font-weight:600;color:var(--muted);font-size:12px;">· ${escD(x.banco)}</span></div>
+      <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">${x.desde===x.hasta?'':'Período '}${escD(depFechaTxt(x))}${x.ref?' · ref. '+escD(x.ref):''}</div></div>
+    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">${sop}<span style="font-size:14px;font-weight:800;">RD$${fmt(x.monto)}</span></div>
+  </div>`;
+}
+function depChipStyle(on){ return `border:1.5px solid ${on?'var(--cerulean)':'#dde4e8'};background:${on?'var(--cerulean)':'#fafbfc'};color:${on?'#fff':'var(--muted)'};border-radius:20px;padding:8px 13px;font-size:13px;font-weight:${on?700:600};cursor:pointer;font-family:inherit;`; }
+function depPintarChips(){
+  const bc=document.getElementById('depBancaChips'); if(!bc) return;
+  bc.innerHTML=bancasDep().map(b=>`<button type="button" data-v="${escD(b.name)}" onclick="depSel('banca',this.dataset.v)" style="${depChipStyle(depBanca===b.name)}">${escD(psCorto(b.name))}</button>`).join('');
+  const bk=bancosDepActivos();
+  if(depBanco && !bk.some(b=>b.nombre===depBanco)) bk.push({nombre:depBanco});
+  document.getElementById('depBancoChips').innerHTML=bk.map(b=>{ const on=depBanco===b.nombre;
+    return `<button type="button" data-v="${escD(b.nombre)}" onclick="depSel('banco',this.dataset.v)" style="border:1.5px solid ${on?'var(--cerulean)':'#dde4e8'};background:${on?'#e6f4f9':'#fafbfc'};color:${on?'#006a8a':'var(--muted)'};border-radius:11px;padding:11px 6px;font-size:13px;font-weight:${on?800:600};cursor:pointer;font-family:inherit;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escD(b.nombre)}</button>`; }).join('')
+    + `<button type="button" onclick="depMostrarNuevoBanco()" style="border:1.5px dashed #b9c6ce;background:transparent;color:#006a8a;border-radius:11px;padding:11px 6px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">+ Otro banco</button>`;
+}
+function depSel(k,v){ if(k==='banca') depBanca=v; else depBanco=v; depPintarChips(); }
+function depSetModo(m,silencioso){
+  depModo=m;
+  const box=document.getElementById('depModoBox'); if(!box) return;
+  box.innerHTML=[['dia','Un día'],['periodo','Un período']].map(([k,l])=>`<button type="button" onclick="depSetModo('${k}')" style="flex:1;border:none;border-radius:8px;padding:9px 4px;font-size:12.5px;font-weight:${depModo===k?800:700};font-family:inherit;cursor:pointer;background:${depModo===k?'#fff':'transparent'};color:${depModo===k?'var(--ink)':'var(--muted)'};box-shadow:${depModo===k?'0 1px 3px rgba(16,24,32,.12)':'none'};">${l}</button>`).join('');
+  const per=depModo==='periodo';
+  document.getElementById('depF2Box').style.display=per?'':'none';
+  document.getElementById('depFechas').style.gridTemplateColumns=per?'1fr 1fr':'1fr';
+  document.getElementById('depF1Lbl').textContent=per?'Desde':'Fecha';
+  document.getElementById('depFechaNota').innerHTML=per
+    ?'Un solo monto por todo el período. Cuenta en el mes de la fecha final; si el período cruza de un mes a otro, regístralo en dos partes.'
+    :'Usa la misma fecha con que se registró la Deportiva de ese día.';
+  if(per && !silencioso){ const a=document.getElementById('depF1'), b=document.getElementById('depF2'); if(b.value<a.value) b.value=a.value; }
+  depPintarChips();
+}
+function depMostrarNuevoBanco(){ const b=document.getElementById('depNuevoBancoBox'); b.style.display='flex'; document.getElementById('depNuevoBanco').focus(); }
+async function agregarBancoDep(){
+  const inp=document.getElementById('depNuevoBanco'); const nombre=inp.value.trim().replace(/\s+/g,' ');
+  if(!nombre){ toast('Escribe el nombre del banco',false); return; }
+  const ya=(state.bancosDep||[]).find(b=>b.nombre.toLowerCase()===nombre.toLowerCase());
+  if(ya){ depBanco=ya.nombre; if(!ya.activo){ ya.activo=true; sb.from('bancos_deposito').update({activo:true}).eq('id',ya._id).then(()=>{}); } document.getElementById('depNuevoBancoBox').style.display='none'; inp.value=''; depPintarChips(); return; }
+  return conBloqueo('btnAgregarBanco', async()=>{
+    try{
+      const orden=Math.max(0,...(state.bancosDep||[]).map(b=>b.orden||0))+1;
+      const {data,error}=await sb.from('bancos_deposito').insert({nombre,orden}).select();
+      if(error) throw error;
+      state.bancosDep.push({_id:data[0].id,nombre,activo:true,orden});
+      depBanco=nombre; inp.value=''; document.getElementById('depNuevoBancoBox').style.display='none';
+      depPintarChips(); toast('Banco agregado',true);
+    }catch(e){ console.error(e); toast('No se pudo agregar el banco. Revisa tu conexión.',false); }
+  });
+}
+function depElegirArchivo(input){
+  const f=input.files&&input.files[0]; input.value='';
+  if(!f) return;
+  if(!/^image\//.test(f.type) && f.type!=='application/pdf'){ toast('Solo se aceptan fotos o PDF',false); return; }
+  if(f.size>10*1024*1024){ toast('El archivo pasa de 10 MB. Usa uno más liviano.',false); return; }
+  depArchivo=f; depPintarArchivo();
+}
+function depPintarArchivo(){
+  const box=document.getElementById('depArchivoBox'); if(!box) return;
+  const actual=depCur&&depCur.soportePath;
+  if(depArchivo){
+    const pdf=depArchivo.type==='application/pdf';
+    box.innerHTML=`<div style="display:flex;align-items:center;gap:10px;background:#eef6fb;border:1px solid #cfe3ee;border-radius:11px;padding:9px 11px;margin-top:8px;">
+      <div style="width:34px;height:34px;border-radius:8px;background:${pdf?'#d64b3f':'#0086AD'};color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${pdf?'PDF':'FOTO'}</div>
+      <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escD(depArchivo.name||'foto.jpg')}</div><div style="font-size:11px;color:var(--muted);">${Math.max(1,Math.round(depArchivo.size/1024))} KB · ${actual?'reemplaza el soporte actual':'se sube al guardar'}</div></div>
+      <button type="button" onclick="depArchivo=null;depPintarArchivo()" aria-label="Quitar archivo" style="border:none;background:none;font-size:18px;color:var(--muted);cursor:pointer;padding:4px 8px;">×</button></div>`;
+  } else if(actual){
+    box.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f4f6f7;border-radius:11px;padding:9px 11px;margin-top:8px;font-size:12.5px;">
+      <span>Tiene soporte: <b>${escD(depCur.soporteNombre||'archivo')}</b></span>
+      <button type="button" onclick="verSoporteDep('${depCur._id}')" style="border:none;background:none;color:#006a8a;font-weight:800;cursor:pointer;font-family:inherit;">Ver</button></div>`;
+  } else box.innerHTML='';
+}
+async function depPrepararArchivo(file){
+  if(/^image\/(jpeg|png|webp)$/.test(file.type) && window.createImageBitmap){
+    try{
+      const img=await createImageBitmap(file);
+      const k=Math.min(1,1600/Math.max(img.width,img.height));
+      const c=document.createElement('canvas'); c.width=Math.round(img.width*k); c.height=Math.round(img.height*k);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',0.82));
+      if(blob && blob.size<file.size) return {blob,tipo:'image/jpeg',ext:'jpg'};
+    }catch(e){}
+  }
+  const ext=((file.name||'').split('.').pop()||'').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,5) || (file.type==='application/pdf'?'pdf':'jpg');
+  return {blob:file,tipo:file.type||'application/octet-stream',ext};
+}
+async function depSubirSoporte(depId,file){
+  const con=idConsorcio(); if(!con) throw new Error('sin consorcio');
+  const p=await depPrepararArchivo(file);
+  const path=`${con}/depositos/${depId}/${Date.now()}.${p.ext}`;
+  const {error}=await sb.storage.from('soportes').upload(path,p.blob,{contentType:p.tipo,upsert:false});
+  if(error) throw error;
+  return {path,tipo:p.tipo,nombre:String(file.name||('soporte.'+p.ext)).slice(0,120)};
+}
+async function verSoporteDep(id){
+  const x=(state.depositos||[]).find(d=>d._id===id); if(!x||!x.soportePath) return;
+  const w=window.open('','_blank');
+  try{
+    const {data,error}=await sb.storage.from('soportes').createSignedUrl(x.soportePath,600);
+    if(error) throw error;
+    if(w) w.location.href=data.signedUrl; else window.location.href=data.signedUrl;
+  }catch(e){ if(w) w.close(); console.error(e); toast('No se pudo abrir el soporte.',false); }
+}
+function editarDeposito(id){
+  if(!puedeEditar('depositos')) return;
+  depCur=(state.depositos||[]).find(d=>d._id===id)||null; depArchivo=null;
+  if(depCur){ depTab='reg'; renderDepositos(); window.scrollTo(0,0); }
+}
+function cancelarEdicionDep(){ depCur=null; depArchivo=null; renderDepositos(); }
+async function guardarDeposito(){
+  if(!puedeEditar('depositos')){ toast('No tienes permiso para editar.',false); return; }
+  const f1=document.getElementById('depF1').value;
+  const f2=depModo==='periodo'?document.getElementById('depF2').value:f1;
+  const monto=Math.round((parseFloat(document.getElementById('depMonto').value)||0)*100)/100;
+  if(!f1||!f2){ toast('Falta la fecha',false); return; }
+  if(f2<f1){ toast('La fecha final es antes de la inicial',false); return; }
+  const m1=depMesDe(f1), m2=depMesDe(f2);
+  if(m1.anio!==m2.anio||m1.mes!==m2.mes){ toast('El período cruza de un mes a otro: regístralo en dos partes.',false); return; }
+  if(f2>todayISO()){ toast('La fecha no puede ser futura',false); return; }
+  if(!depBanca){ toast('Elige la banca',false); return; }
+  if(!depBanco){ toast('Elige el banco',false); return; }
+  if(!(monto>0)){ toast('Escribe el monto depositado',false); return; }
+  const fila={sucursal:normBranchName(depBanca),banco:depBanco,monto,fecha_desde:f1,fecha_hasta:f2,
+    referencia:(document.getElementById('depRef').value||'').trim()||null};
+  if(!depCur){
+    const dup=(state.depositos||[]).find(x=>x.sucursal===fila.sucursal&&x.banco===fila.banco&&Math.abs(x.monto-monto)<0.005&&x.desde===f1&&x.hasta===f2);
+    if(dup && !confirm(`Ya hay un depósito igual: ${psCorto(fila.sucursal)}, ${fila.banco}, RD$${fmt(monto)}, ${depFechaTxt(dup)}.\n\n¿Registrarlo otra vez?`)) return;
+  }
+  return conBloqueo('btnGuardarDep', async()=>{
+    setSyncState('saving');
+    const editando=!!depCur; let reg;
+    try{
+      if(editando){
+        const {error}=await sb.from('depositos_banca').update(fila).eq('id',depCur._id);
+        if(error) throw error;
+        Object.assign(depCur,{sucursal:fila.sucursal,banco:fila.banco,monto,desde:f1,hasta:f2,ref:fila.referencia||''});
+        reg=depCur;
+      } else {
+        fila.creado_por=currentUser||null;
+        const {data,error}=await sb.from('depositos_banca').insert(fila).select();
+        if(error) throw error;
+        reg=depDesdeFila(data[0]); state.depositos.push(reg);
+      }
+    }catch(e){ console.error(e); setSyncState('error'); toast('NO se guardó. Revisa tu conexión.',false); return; }
+    if(depArchivo){
+      try{
+        const viejo=reg.soportePath;
+        const s=await depSubirSoporte(reg._id,depArchivo);
+        const {error}=await sb.from('depositos_banca').update({soporte_path:s.path,soporte_tipo:s.tipo,soporte_nombre:s.nombre}).eq('id',reg._id);
+        if(error){ sb.storage.from('soportes').remove([s.path]).then(()=>{}); throw error; }
+        reg.soportePath=s.path; reg.soporteTipo=s.tipo; reg.soporteNombre=s.nombre;
+        if(viejo) sb.storage.from('soportes').remove([viejo]).then(()=>{});
+      }catch(e){
+        console.error(e); setSyncState('error');
+        toast('El depósito se guardó, pero el soporte NO se subió. Ábrelo y vuelve a adjuntarlo.',false);
+        depArchivo=null; depCur=null; renderDepositos(); try{ renderDash(); }catch(_){}
+        return;
+      }
+    }
+    setSyncState('ok');
+    toast(editando?'Depósito actualizado':`Depósito de ${psCorto(fila.sucursal)} guardado`,true);
+    depF1Ult=f1; depF2Ult=f2;
+    if(!editando){ const bs=bancasDep(); const i=bs.findIndex(b=>b.name===depBanca); depBanca=(bs[i+1]||{}).name||''; }
+    depCur=null; depArchivo=null; renderDepositos();
+    try{ renderDash(); }catch(e){}
+  });
+}
+async function borrarDeposito(){
+  const x=depCur; if(!x||!puedeEditar('depositos')) return;
+  if(!confirm(`¿Borrar el depósito de ${psCorto(x.sucursal)} por RD$${fmt(x.monto)} (${depFechaTxt(x)})?`)) return;
+  return conBloqueo('btnBorrarDep', async()=>{
+    setSyncState('saving');
+    try{
+      const {error}=await sb.from('depositos_banca').delete().eq('id',x._id);
+      if(error) throw error;
+      if(x.soportePath) sb.storage.from('soportes').remove([x.soportePath]).then(()=>{});
+      state.depositos=state.depositos.filter(d=>d._id!==x._id);
+      setSyncState('ok'); toast('Depósito borrado',true);
+      depCur=null; depArchivo=null; renderDepositos(); try{ renderDash(); }catch(e){}
+    }catch(e){ console.error(e); setSyncState('error'); toast('NO se borró. Revisa tu conexión.',false); }
+  });
+}
+
+/* ---------- Resumen por banca y banco ---------- */
+function depRango(){
+  const hoy=todayISO();
+  if(depPer==='mes'||depPer==='mesant'){
+    let {anio,mes}=depMesDe(hoy); if(depPer==='mesant'){ mes--; if(mes<0){ mes=11; anio--; } }
+    return {titulo:`${MONTHS[mes]} ${anio}`, f:x=>{ const m=depMesDe(x.hasta); return m.anio===anio&&m.mes===mes; }};
+  }
+  if(depPer==='semana'){
+    const d=new Date(hoy+'T00:00:00'); const k=(d.getDay()+6)%7; d.setDate(d.getDate()-k); const lun=isoLocal(d);
+    return {titulo:'Esta semana', f:x=>x.hasta>=lun&&x.hasta<=hoy};
+  }
+  const a=depRDesde||sumarDias(hoy,-30), b=depRHasta||hoy;
+  return {titulo:`${fmtDate(a)} – ${fmtDate(b)}`, f:x=>x.hasta>=a&&x.hasta<=b};
+}
+function setDepPer(p){ depPer=p; depDetBanca=null; renderDepResumen(); }
+function depRangoFechas(){ depRDesde=document.getElementById('depRD').value; depRHasta=document.getElementById('depRH').value; renderDepResumen(); }
+function toggleDepDet(n){ depDetBanca = depDetBanca===n ? null : n; renderDepResumen(); }
+function renderDepResumen(){
+  const R=depRango();
+  const lista=(state.depositos||[]).filter(R.f);
+  const total=lista.reduce((s,x)=>s+x.monto,0);
+  const bancosOrden=bancosDepActivos().map(b=>b.nombre);
+  const bancos=[...new Set(lista.map(x=>x.banco))].sort((a,b)=>{ const ia=bancosOrden.indexOf(a), ib=bancosOrden.indexOf(b); return (ia<0?99:ia)-(ib<0?99:ib)||a.localeCompare(b,'es'); });
+  const filasB=bancasDep().map(b=>b.name);
+  lista.forEach(x=>{ if(!filasB.includes(x.sucursal)) filasB.push(x.sucursal); });
+  const cel={}; lista.forEach(x=>{ const k=x.sucursal+'|'+x.banco; cel[k]=(cel[k]||0)+x.monto; });
+  const porBanco=b=>lista.filter(x=>x.banco===b).reduce((s,x)=>s+x.monto,0);
+  const porBanca=n=>lista.filter(x=>x.sucursal===n).reduce((s,x)=>s+x.monto,0);
+  const chip=(k,l)=>`<button type="button" onclick="setDepPer('${k}')" style="${depChipStyle(depPer===k)}">${l}</button>`;
+  const cols=`grid-template-columns:minmax(52px,.9fr) repeat(${bancos.length},minmax(0,1fr)) minmax(0,1.1fr)`;
+  document.getElementById('depBody').innerHTML=`
+  <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px;">${chip('mes','Este mes')}${chip('mesant','Mes anterior')}${chip('semana','Esta semana')}${chip('rango','Elegir fechas')}</div>
+  ${depPer==='rango'?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+    <div><label class="dep-lbl" for="depRD">Desde</label><input type="date" id="depRD" value="${depRDesde||sumarDias(todayISO(),-30)}" onchange="depRangoFechas()"></div>
+    <div><label class="dep-lbl" for="depRH">Hasta</label><input type="date" id="depRH" value="${depRHasta||todayISO()}" onchange="depRangoFechas()"></div></div>`:''}
+  <div style="font-size:12px;color:var(--muted);font-weight:700;margin:0 2px 8px;">${escD(R.titulo)} · por fecha final del depósito</div>
+  ${!lista.length?'<div class="panel"><div class="empty-hint" style="padding:24px;">No hay depósitos en este período.</div></div>':`
+  <div style="display:grid;grid-template-columns:repeat(${Math.min(3,bancos.length)},minmax(0,1fr));gap:8px;margin-bottom:14px;">
+    ${bancos.map(b=>{ const t=porBanco(b), nb=new Set(lista.filter(x=>x.banco===b).map(x=>x.sucursal)).size;
+      return `<div class="panel" style="padding:11px 10px;margin:0;"><div style="font-size:11px;color:var(--muted);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escD(b)}</div><div style="font-size:15px;font-weight:800;margin-top:2px;">${fmt(t)}</div><div style="font-size:10.5px;color:var(--muted);">${Math.round(t/total*100)}% · ${nb} banca${nb===1?'':'s'}</div></div>`; }).join('')}
+  </div>
+  <div class="panel" style="padding:14px;">
+    <div class="panel-head"><h3>Por banca y banco</h3><span class="hint">RD$ · total ${fmt(total)}</span></div>
+    <div style="display:grid;${cols};gap:4px;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;padding:6px 0;border-bottom:1px solid #edf1f3;">
+      <span>Banca</span>${bancos.map(b=>`<span style="text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escD(b)}</span>`).join('')}<span style="text-align:right;">Total</span></div>
+    ${filasB.map(n=>{ const t=porBanca(n); const abierto=depDetBanca===n;
+      return `<div onclick="toggleDepDet(this.dataset.v)" data-v="${escD(n)}" style="display:grid;${cols};gap:4px;font-size:12.5px;padding:9px 0;border-bottom:1px solid #f1f4f5;cursor:${t?'pointer':'default'};${abierto?'background:#f4f9fb;':''}">
+        <span style="font-weight:700;">${escD(psCorto(n))}</span>
+        ${bancos.map(b=>{ const v=cel[n+'|'+b]||0; return `<span style="text-align:right;${v?'':'color:var(--muted-light);'}">${v?fmt(v):'—'}</span>`; }).join('')}
+        <span style="text-align:right;font-weight:800;${t?'':'color:var(--muted-light);'}">${t?fmt(t):'0'}</span></div>
+        ${abierto&&t?`<div style="background:#f4f9fb;border-radius:0 0 10px 10px;padding:2px 10px 6px;margin-bottom:4px;">${lista.filter(x=>x.sucursal===n).sort((a,b)=>b.hasta.localeCompare(a.hasta)).map(x=>depFilaHTML(x,true)).join('')}</div>`:''}`; }).join('')}
+    <div style="display:grid;${cols};gap:4px;font-size:12.5px;padding:10px 0 2px;font-weight:800;">
+      <span>Total</span>${bancos.map(b=>`<span style="text-align:right;">${fmt(porBanco(b))}</span>`).join('')}<span style="text-align:right;color:var(--green);">${fmt(total)}</span></div>
+    <div style="font-size:11.5px;color:var(--muted);margin-top:8px;">Toca una banca para ver cada depósito.</div>
+  </div>
+  <button type="button" onclick="exportarDepositosCSV()" style="width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Exportar (CSV)</button>`}`;
+}
+function exportarDepositosCSV(){
+  const R=depRango();
+  const lista=(state.depositos||[]).filter(R.f).sort((a,b)=>a.hasta.localeCompare(b.hasta)||a.sucursal.localeCompare(b.sucursal));
+  const q=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
+  const L=['Desde,Hasta,Banca,Banco,Monto,Referencia,Soporte'];
+  lista.forEach(x=>L.push([x.desde,x.hasta,q(x.sucursal),q(x.banco),x.monto.toFixed(2),q(x.ref),x.soportePath?'Sí':'No'].join(',')));
+  L.push(['','',q('TOTAL'),'',lista.reduce((s,x)=>s+x.monto,0).toFixed(2),'',''].join(','));
+  const url=URL.createObjectURL(new Blob(['﻿'+L.join('\n')],{type:'text/csv;charset=utf-8'}));
+  const a=document.createElement('a'); a.href=url; a.download=`depositos_bancas_${R.titulo.replace(/[^A-Za-z0-9]+/g,'_')}.csv`;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),2000);
+  toast('Archivo descargado',true);
+}
+
+/* ---------- Inicio: Deportiva real ---------- */
+function renderDepInicio(txns,depM){
+  const depTot=depM.reduce((s,x)=>s+x.monto,0);
+  const card=document.getElementById('depCardSub');
+  if(card){
+    const ay=yesterdayISO(); const ayer=(state.depositos||[]).filter(x=>x.hasta===ay).reduce((s,x)=>s+x.monto,0);
+    card.textContent = depTot>0 ? `Este mes: RD$${fmt(depTot)}${ayer?` · ayer RD$${fmt(ayer)}`:''}` : 'Lo que las bancas depositan al banco';
+  }
+  const panel=document.getElementById('depDeportivaPanel');
+  if(!panel) return;
+  if(!(depTot>0)){ panel.style.display='none'; panel.innerHTML=''; return; }
+  const sis={}; txns.filter(t=>t.type==='income'&&t.category==='Deportiva').forEach(t=>{ sis[t.branch]=(sis[t.branch]||0)+t.amount; });
+  const dep={}; depM.forEach(x=>{ dep[x.sucursal]=(dep[x.sucursal]||0)+x.monto; });
+  const nombres=bancasDep().map(b=>b.name); Object.keys(sis).concat(Object.keys(dep)).forEach(n=>{ if(!nombres.includes(n)&&!isOfficeBranch(n)) nombres.push(n); });
+  const filas=nombres.filter(n=>(sis[n]||0)!==0||(dep[n]||0)!==0);
+  const T={s:0,d:0}; filas.forEach(n=>{ T.s+=sis[n]||0; T.d+=dep[n]||0; });
+  const col=v=>v<0?'color:var(--red);':'';
+  const g='display:grid;grid-template-columns:1.1fr 1fr 1fr 1fr;gap:4px;';
+  panel.style.display='';
+  panel.innerHTML=`<div class="panel-head"><h3>Deportiva por banca</h3><span class="hint">mes · RD$</span></div>
+    <div style="${g}font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:6px 0;border-bottom:1px solid #edf1f3;"><span>Banca</span><span style="text-align:right;">Sistema</span><span style="text-align:right;">Depósitos</span><span style="text-align:right;">Real</span></div>
+    ${filas.map(n=>{ const s=sis[n]||0, d=dep[n]||0, r=s+d;
+      return `<div style="${g}font-size:13px;padding:7px 0;border-bottom:1px solid #f1f4f5;"><span style="font-weight:700;">${escD(psCorto(n))}</span><span style="text-align:right;${col(s)}">${fmt(s)}</span><span style="text-align:right;${d?'':'color:var(--muted-light);'}">${d?fmt(d):'—'}</span><span style="text-align:right;font-weight:800;${r<0?'color:var(--red);':'color:var(--green);'}">${fmt(r)}</span></div>`; }).join('')}
+    <div style="${g}font-size:13px;padding:9px 0 0;font-weight:800;"><span>Total</span><span style="text-align:right;${col(T.s)}">${fmt(T.s)}</span><span style="text-align:right;">${fmt(T.d)}</span><span style="text-align:right;${T.s+T.d<0?'color:var(--red);':'color:var(--green);'}">${fmt(T.s+T.d)}</span></div>
+    <div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.45;">Los depósitos ya vienen restados en el balance de Deportiva que se inserta. Aquí se suman de vuelta solo para ver la Deportiva real; el Corte Diario y el Balance Neto no cambian.</div>`;
 }
 
 /* ===================== EQUIPOS Y MANTENIMIENTO ===================== */
@@ -9593,6 +10032,7 @@ const MODULOS = [
   ['empleados','Empleados y Nómina','Fichas, nómina quincenal y préstamos'],
   ['equipos','Equipos y Mantenimiento','Inventario y servicios por banca'],
   ['libreta','Libreta de Clientes','Créditos, débitos, depósitos, retiros y bonos'],
+  ['depositos','Depósitos de bancas','Depósitos al banco, soportes y Deportiva real'],
   ['ajustes','Ajustes','Bancas, categorías y configuración']
 ];
 const NIVELES = [['no','Sin acceso'],['ver','Solo ver'],['editar','Ver y editar']];
