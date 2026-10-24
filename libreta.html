@@ -176,10 +176,16 @@ table.rpt tfoot td{font-weight:700;background:var(--soft);border-top:2px solid v
       <div class="field" id="lPassWrap"><label class="label" for="lPass">Contraseña</label><input id="lPass" type="password" autocomplete="current-password" minlength="6"></div>
       <button class="primary" type="submit" id="lSubmit">Entrar</button>
       <div class="row" style="justify-content:space-between">
-        <button type="button" class="ghost" id="lToggle">Crear cuenta</button>
+        <button type="button" class="ghost" id="lToggle" hidden>Crear cuenta</button>
         <button type="button" class="ghost" id="lForgot">Olvidé mi contraseña</button>
       </div>
       <p class="note" id="lMsg" style="margin:0" role="status"></p>
+    </form>
+    <form id="mfaForm" class="pane" style="padding:18px;display:flex;flex-direction:column;gap:12px" hidden>
+      <div class="field"><label class="label" for="mCode">Código de Google Authenticator</label><input id="mCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" required style="font-size:1.4rem;letter-spacing:.3em;text-align:center"></div>
+      <button class="primary" type="submit" id="mSubmit">Verificar</button>
+      <button type="button" class="ghost" id="mCancel">Usar otra cuenta</button>
+      <p class="note" id="mMsg" style="margin:0" role="status"></p>
     </form>
     <form id="recoverForm" class="pane" style="padding:18px;display:flex;flex-direction:column;gap:12px" hidden>
       <div class="field"><label class="label" for="rPass">Nueva contraseña</label><input id="rPass" type="password" autocomplete="new-password" minlength="8" required></div>
@@ -961,7 +967,7 @@ const SB_KEY="sb_publishable_JlxZdS70vitaGNqvI_4Q-g_OMGnRdrU";
 // Dentro del sistema principal (AdmBca) usa la misma sesión, sin pedir login otra vez
 const EMBED = (()=>{ try{ return new URLSearchParams(location.search).has("embed") && window.parent!==window && !!window.parent.__supabase; }catch(e){ return false; } })();
 if (EMBED) document.documentElement.classList.add("embed");
-const sb = EMBED ? window.parent.__supabase : supabase.createClient(SB_URL, SB_KEY, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } });
+const sb = EMBED ? window.parent.__supabase : supabase.createClient(SB_URL, SB_KEY, { auth:{ persistSession:true, storage:window.sessionStorage, autoRefreshToken:true, detectSessionInUrl:true } });
 let session=null, rol=null, reloadTimer=null, loading=false;
 
 function err(e){ const x=new Error(e?.message||"error"); x.code = (e?.code==="42501"||/row-level security|permission/i.test(e?.message||""))?"invalid_argument":"unavailable"; return x; }
@@ -1057,10 +1063,16 @@ downloads = { async save({filename,data}){
 /* ---------- acceso ---------- */
 function embedMsg(t){ $("appView").hidden=true; $("authView").hidden=false; $("loginForm").hidden=true; $("recoverForm").hidden=true; const p=$("authView").querySelector(".sub"); if(p) p.textContent=t; }
 let signupMode=false;
-function showAuth(msg){ $("appView").hidden=true; $("authView").hidden=false; $("recoverForm").hidden=true; $("loginForm").hidden=false; $("lMsg").textContent=msg||""; }
+function showMfa(msg){ $("appView").hidden=true; $("authView").hidden=false; $("loginForm").hidden=true; $("recoverForm").hidden=true; $("mfaForm").hidden=false; $("mMsg").textContent=msg||""; $("mCode").value=""; setTimeout(()=>$("mCode").focus(),30); }
+function showAuth(msg){ if($("mfaForm")) $("mfaForm").hidden=true; $("appView").hidden=true; $("authView").hidden=false; $("recoverForm").hidden=true; $("loginForm").hidden=false; $("lMsg").textContent=msg||""; }
 async function enter(){
   session=(await sb.auth.getSession()).data.session;
   if (!session) return EMBED ? embedMsg("Tu sesión del sistema se cerró. Vuelve a entrar al sistema.") : showAuth();
+  // Seguridad: fuera del sistema también se exige el código de Google Authenticator
+  if (!EMBED){
+    try{ const {data:al}=await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (al && al.nextLevel==="aal2" && al.currentLevel!=="aal2") return showMfa(); }catch(e){}
+  }
   const {data, error} = await sb.rpc("libreta_activar");
   rol = error ? null : data;
   if (!rol && EMBED) return embedMsg("Tu usuario todavía no tiene acceso a la Libreta. El administrador debe agregar tu correo en Libreta → Usuarios.");
@@ -1090,6 +1102,18 @@ $("loginForm").addEventListener("submit", async e=>{
   }catch(x){ $("lMsg").textContent = /invalid login/i.test(x.message)?"Correo o contraseña incorrectos.": /not confirmed/i.test(x.message)?"Confirma tu correo primero (revisa tu bandeja).": /signups? not allowed|disabled/i.test(x.message)?"El registro de cuentas nuevas está desactivado. Pide al administrador que te cree la cuenta.": x.message; }
   finally{ b.disabled=false; }
 });
+$("mfaForm").addEventListener("submit", async e=>{
+  e.preventDefault(); const code=$("mCode").value.trim(); const b=$("mSubmit"); b.disabled=true; $("mMsg").textContent="";
+  try{
+    const {data:fl,error:fe}=await sb.auth.mfa.listFactors(); if(fe) throw fe;
+    const f=(fl.totp||[]).find(x=>x.status==="verified")||(fl.totp||[])[0];
+    if(!f) throw new Error("Tu cuenta no tiene Google Authenticator configurado. Entra primero al sistema principal.");
+    const {error}=await sb.auth.mfa.challengeAndVerify({factorId:f.id, code}); if(error) throw error;
+    $("mfaForm").hidden=true; await enter();
+  }catch(x){ $("mMsg").textContent=/invalid|expired|code/i.test(x.message||"")?"Código incorrecto o vencido. Escribe el código que muestra ahora la app.":(x.message||"No se pudo verificar"); }
+  finally{ b.disabled=false; }
+});
+$("mCancel").addEventListener("click", async ()=>{ await sb.auth.signOut(); showAuth(); });
 $("lToggle").addEventListener("click", ()=>{ signupMode=!signupMode; $("lSubmit").textContent=signupMode?"Crear cuenta":"Entrar"; $("lToggle").textContent=signupMode?"Ya tengo cuenta":"Crear cuenta"; $("lPass").autocomplete=signupMode?"new-password":"current-password"; $("lMsg").textContent=signupMode?"Después de crearla, el administrador debe darte acceso.":""; });
 $("lForgot").addEventListener("click", async ()=>{
   const email=$("lEmail").value.trim(); if(!email){ $("lMsg").textContent="Escribe tu correo arriba y pulsa de nuevo."; return; }
