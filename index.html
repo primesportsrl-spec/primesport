@@ -1675,6 +1675,16 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     • Los símbolos <b>&lt;</b> y <b>&gt;</b> escritos en notas o nombres se muestran como ‹ ›: es una protección para que nadie pueda meter código en la pantalla de otro usuario.</div>
   </div>
 
+  <div class="panel" style="background:linear-gradient(135deg,#eef6fb,#e3f0f7);border-color:#cfe3ee;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><div style="width:30px;height:30px;border-radius:9px;background:var(--cerulean-dim);color:var(--cerulean-bright);display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">⛁</div><h3 style="font-size:15px;font-weight:700;">Respaldos y datos confiables <span style="font-size:11px;color:var(--cerulean);font-weight:800;">NUEVO v7.2</span></h3></div>
+    <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">
+    • <b>Respaldo completo</b> (administrador): Ajustes → <b>Respaldo completo</b> → Descargar. Baja un Excel con todas las tablas, incluida la Libreta. <b>Guárdalo fuera del teléfono</b> (correo, Drive o una memoria). Si pasan más de 7 días sin descargarlo, el Inicio te lo recuerda.<br>
+    • <b>Copia automática</b>: la base guarda sola una copia de todo cada domingo a las 3 AM y conserva las últimas 8 semanas, para recuperar datos si algo se borra por error.<br>
+    • <b>Doble registro</b>: si el mismo movimiento (misma banca, fecha, tipo y monto) se guarda dos veces en menos de 20 segundos, la base rechaza el segundo y te avisa.<br>
+    • <b>Montos</b>: un gasto o una salida debe ser mayor que cero; montos de más de 10 millones se rechazan.<br>
+    • <b>Errores de la app</b> (administrador): si algo falla en cualquier teléfono queda anotado. El Inicio avisa, y en Ajustes → <b>Errores de la app</b> ves qué pasó, a quién y en qué pantalla.</div>
+  </div>
+
   <div class="panel" style="background:linear-gradient(135deg,#eef7f2,#dff0e7);border-color:#c8e2d5;">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><div style="width:30px;height:30px;border-radius:9px;background:var(--green-dim);color:#4cd6a0;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">$</div><h3 style="font-size:15px;font-weight:700;">Depósitos de bancas <span style="font-size:11px;color:var(--green);font-weight:800;">NUEVO v7.0</span></h3></div>
     <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">Cuando una banca deposita dinero al banco, ese depósito <b>ya viene restado</b> en el balance de Deportiva que se inserta. Por eso la Deportiva puede salir en rojo aunque no lo esté. Aquí se anota aparte para ver la <b>Deportiva real</b>.<br><br>
@@ -1941,6 +1951,14 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
   <iframe id="libretaFrame" title="Libreta de Clientes" style="width:100%;height:calc(100dvh - 170px);min-height:480px;border:0;border-radius:14px;background:var(--paper);display:block;"></iframe>
 </section>
 
+<section class="view" id="view-errores">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="go('settings')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Errores de la app</div><div style="font-size:12px;color:var(--muted);">Lo que falló en los últimos 7 días, en cualquier teléfono</div></div>
+  </div>
+  <div id="errLista"></div>
+</section>
+
 <section class="view" id="view-clave">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
     <button onclick="go('settings')" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
@@ -2099,6 +2117,11 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       <div class="si-txt"><div class="t">Clave maestra</div><div class="d">Para reabrir cortes, meses y lecturas maestras</div></div>
       <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" style="width:18px;height:18px;"><polyline points="9 18 15 12 9 6"/></svg>
     </div>
+    <div class="set-item" id="setItemErrores" onclick="openErroresApp()" style="cursor:pointer;display:none;">
+      <div class="si-ic" style="background:var(--red-dim);color:#f08980;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <div class="si-txt"><div class="t">Errores de la app</div><div class="d">Fallas registradas en los últimos 7 días</div></div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" style="width:18px;height:18px;"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
     <div class="set-item" id="setItemBitacora" onclick="openBitacora()" style="cursor:pointer;display:none;">
       <div class="si-ic" style="background:#2a2440;color:#b9a5e8;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v5l3 2"/><circle cx="12" cy="12" r="9"/></svg></div>
       <div class="si-txt"><div class="t">Bitácora</div><div class="d">Quién cambió qué, y cuándo</div></div>
@@ -2163,8 +2186,8 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
   <div class="set-list">
     <div class="set-item">
       <div class="si-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
-      <div class="si-txt"><div class="t">Respaldar datos</div><div class="d">Descargar copia de seguridad</div></div>
-      <div class="si-act" onclick="backupData()">Exportar</div>
+      <div class="si-txt"><div class="t">Respaldo completo</div><div class="d" id="respaldoDesc">Excel con todas las tablas, guárdalo fuera del teléfono</div></div>
+      <div class="si-act" id="btnRespaldo" onclick="respaldoCompleto()">Descargar</div>
     </div>
     <div class="set-item">
       <div class="si-ic" style="background:var(--cerulean-dim);color:var(--cerulean-bright);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg></div>
@@ -2182,7 +2205,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       <div class="si-act" style="color:var(--amber);" onclick="doLogout()">Salir</div>
     </div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v7.1 nube · Santo Domingo, RD</div>
+  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v7.2 nube · Santo Domingo, RD</div>
 </section>
 
 <!-- NAV -->
@@ -2245,8 +2268,8 @@ window.__supabase = createClient(
 window.dispatchEvent(new Event('supabase-ready'));
 </script>
 <script>
-/* ===================== AdmBca v7.1 ===================== */
-const APP_VERSION='7.1';
+/* ===================== AdmBca v7.2 ===================== */
+const APP_VERSION='7.2';
 function idConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.id)||null; }catch(e){ return null; } }
 function nomConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.nombre)||'AdmBca'; }catch(e){ return 'AdmBca'; } }
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -2352,6 +2375,7 @@ function cargarHtml2Canvas(){
 }
 
 function setSyncState(s){ // 'ok' | 'saving' | 'error'
+  if(s==='error' && typeof reportarError==='function') reportarError('Falló un guardado: '+(__ultimoError||'sin detalle'), (document.querySelector('.view.active')||{}).id||'');
   const d=document.getElementById('syncDot');
   if(!d)return;
   d.className='sync-dot'+(s==='saving'?' saving':s==='error'?' error':'');
@@ -2600,6 +2624,7 @@ async function loadResto(){
   }catch(e){ console.warn('depositos',e); state.depositos=[]; state.bancosDep=[]; state._depReady=false; }
 
   cargarEstadoClave();
+  cargarErroresRecientes();
   chequearVersion();
 
   state._restoListo=true;
@@ -2975,6 +3000,15 @@ function renderAlertas(){
     else if(pend.length) avisos.push({c:'#0086AD',bg:'#eef6fb',bd:'#cfe3ee',t:`${pend.length} incentivo(s) sin pagar`,d:`RD$${fmt(pend.reduce((s,x)=>s+x.monto,0))} de ${MONTHS[m-1]} · genera el archivo del banco`,go:'openIncentivos()'});
   }
 
+  // v7.2: respaldo semanal y errores de la app (solo administrador)
+  if(esAdmin() && state._configReady){
+    const ds=diasSinRespaldo();
+    if(ds===null||ds>7) avisos.push({c:'#0b6b4f',bg:'#eef7f2',bd:'#c8e2d5',t:ds===null?'Descarga tu primer respaldo completo':`Hace ${ds} días que no descargas el respaldo`,d:'Ajustes → Respaldo completo. Guárdalo fuera del teléfono.',go:"go('settings')"});
+  }
+  if(esAdmin() && (state.erroresApp||[]).length){
+    const n=state.erroresApp.length;
+    avisos.push({c:'#b23b31',bg:'#fdf1ef',bd:'#f0c9c4',t:`${n} error${n===1?'':'es'} de la app esta semana`,d:state.erroresApp[0].mensaje,go:'openErroresApp()'});
+  }
   // v7.1: la clave maestra vieja estuvo en el código público
   if(esAdmin() && state.claveEstado && state.claveEstado.debe_cambiar)
     avisos.unshift({c:'#a3651a',bg:'#fdf6e8',bd:'#ecd9ac',t:'Cambia la clave maestra',d:'La clave anterior estuvo visible en el código. Toca aquí para poner una nueva.',go:'openClaveMaestra()'});
@@ -4241,6 +4275,96 @@ function enviarNominaWhatsApp(){
   const tIng=filas.reduce((s,f)=>s+nomIngresos(f.d),0), tDesc=filas.reduce((s,f)=>s+nomDescuentos(f.d),0);
   t+=`\n*TOTAL A PAGAR: RD$${fmt(tIng-tDesc)}*\nIngresos RD$${fmt(tIng)} · Descuentos RD$${fmt(tDesc)}`;
   window.open('https://wa.me/'+corteWaNumber()+'?text='+encodeURIComponent(t),'_blank');
+}
+
+/* ===================== RESPALDO COMPLETO (v7.2) =====================
+   Supabase en plan gratuito no guarda copias restaurables. Este botón baja un
+   Excel con TODAS las tablas del consorcio (una hoja por tabla, datos tal cual
+   están en la base). La base además guarda sola una copia interna cada domingo
+   (8 semanas). Si pasan más de 7 días sin descargar, el Inicio lo recuerda. */
+const TABLAS_RESPALDO=['movimientos','sucursales','cierres_dia','cierres_mes','desglose_efectivo','denominaciones','arqueos_caja',
+  'categorias_gasto','categorias_ingreso','categorias_salida','tipos_aporte','cuadre_banca_ingreso','cuadre_banca_gasto','cuadre_oficina_gasto',
+  'maquinas','lecturas_maquina','maquinas_config_banca','maquinas_gastos_mes','maquinas_pog_mes',
+  'virtuales_proveedores','virtuales_config','virtuales_registros','virtuales_sucursales_estado','virtuales_renglones_estado',
+  'empleados','empleado_cuenta','nomina_periodos','nomina_detalle','incentivos','regalia','equipos','mantenimientos',
+  'depositos_banca','bancos_deposito','app_config','libreta_clientes','libreta_movimientos','libreta_ajustes','libreta_miembros'];
+function cargarScript(src){ return new Promise((ok,no)=>{ if([...document.scripts].some(x=>x.src===src)) return ok(); const sc=document.createElement('script'); sc.src=src; sc.onload=ok; sc.onerror=()=>no(new Error('no se pudo cargar '+src)); document.head.appendChild(sc); }); }
+async function filasCrudas(table){
+  const PAGE=1000; let all=[], from=0;
+  while(true){
+    const {data,error}=await sb.from(table).select('*').range(from,from+PAGE-1);
+    if(error) return {data:[],error};
+    if(!data||!data.length) break;
+    all=all.concat(data); if(data.length<PAGE) break; from+=PAGE; if(from>500000) break;
+  }
+  return {data:all,error:null};
+}
+async function respaldoCompleto(){
+  if(!esAdmin()){ toast('Solo el administrador puede descargar el respaldo completo.',false); return; }
+  return conBloqueo('btnRespaldo', async()=>{
+    try{
+      setSyncState('saving');
+      if(!window.XLSX) await cargarScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
+      const wb=XLSX.utils.book_new(); const resumen=[['Tabla','Filas','Estado']]; let total=0;
+      for(const t of TABLAS_RESPALDO){
+        const r=await filasCrudas(t);
+        if(r.error){ resumen.push([t,0,'sin acceso o no existe']); continue; }
+        const filas=r.data.map(row=>{ const o={}; for(const k in row){ const v=row[k]; let x=(v!==null&&typeof v==='object')?JSON.stringify(v):v; if(typeof x==='string'&&x.length>32000) x=x.slice(0,32000)+'…'; o[k]=x; } return o; });
+        const ws=filas.length?XLSX.utils.json_to_sheet(filas):XLSX.utils.aoa_to_sheet([['(vacía)']]);
+        XLSX.utils.book_append_sheet(wb,ws,t.slice(0,31));
+        resumen.push([t,filas.length,'ok']); total+=filas.length;
+      }
+      const ahora=new Date();
+      resumen.unshift(['Respaldo AdmBca v'+APP_VERSION,nomConsorcio(),ahora.toLocaleString('es-DO')],[]);
+      resumen.push([],['TOTAL',total,'']);
+      XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(resumen),'RESUMEN');
+      wb.SheetNames.unshift(wb.SheetNames.pop());
+      const nombre=`Respaldo_${nomConsorcio().replace(/[^A-Za-z0-9]+/g,'_')}_${isoLocal(ahora)}.xlsx`;
+      XLSX.writeFile(wb,nombre);
+      try{ await sb.from('app_config').upsert({consorcio_id:idConsorcio(),clave:'ultimo_respaldo',valor:ahora.toISOString(),actualizado:ahora.toISOString()},{onConflict:'consorcio_id,clave'}); }catch(e){}
+      state.config=state.config||{}; state.config.ultimo_respaldo=ahora.toISOString();
+      setSyncState('ok'); toast(`Respaldo descargado: ${total.toLocaleString('es-DO')} filas. Guárdalo fuera del teléfono (correo, Drive o USB).`,true);
+      pintarRespaldoDesc(); try{ renderAlertas(); }catch(e){}
+    }catch(e){ console.error(e); setSyncState('error'); toast('No se pudo generar el respaldo: '+(e.message||''),false); }
+  });
+}
+function diasSinRespaldo(){ const u=state.config&&state.config.ultimo_respaldo; if(!u) return null; return Math.floor((Date.now()-new Date(u).getTime())/86400000); }
+function pintarRespaldoDesc(){ const el=document.getElementById('respaldoDesc'); if(!el) return; const d=diasSinRespaldo(); el.textContent = d===null ? 'Excel con todas las tablas · nunca descargado' : `Excel con todas las tablas · último hace ${d} día${d===1?'':'s'}`; }
+
+/* ===================== REGISTRO DE ERRORES (v7.2) =====================
+   Si algo falla en cualquier teléfono, queda anotado en la base (tabla
+   errores_app) y el administrador lo ve en el Inicio y en Ajustes. */
+var __errEnviados=0, __errVistos={}, __ultimoError='';
+const __consoleError=console.error.bind(console);
+console.error=function(...a){ try{ __ultimoError=a.map(x=>x&&x.message?x.message:(typeof x==='string'?x:JSON.stringify(x))).join(' ').slice(0,600); }catch(e){} __consoleError(...a); };
+async function reportarError(mensaje,detalle){
+  try{
+    if(!sb||!currentUser) return;
+    const m=String(mensaje||'').slice(0,900); if(!m) return;
+    if(__errVistos[m]||__errEnviados>=15) return; __errVistos[m]=1; __errEnviados++;
+    const pant=(document.querySelector('.view.active')||{}).id||'';
+    await sb.from('errores_app').insert({mensaje:m,detalle:String(detalle||'').slice(0,3500),version:APP_VERSION,pantalla:pant,correo:currentUser,navegador:navigator.userAgent.slice(0,200)});
+  }catch(e){}
+}
+window.addEventListener('error',e=>{ if(e&&e.message) reportarError(e.message,(e.filename||'')+':'+(e.lineno||'')+' '+(e.error&&e.error.stack||'')); });
+window.addEventListener('unhandledrejection',e=>{ const r=e&&e.reason; reportarError('Promesa: '+(r&&r.message||String(r)),r&&r.stack||''); });
+async function cargarErroresRecientes(){
+  if(!esAdmin()) return;
+  try{
+    const desde=new Date(Date.now()-7*86400000).toISOString();
+    const {data,error}=await sb.from('errores_app').select('id,creado,correo,version,pantalla,mensaje,detalle').gte('creado',desde).order('creado',{ascending:false}).limit(100);
+    if(!error){ state.erroresApp=(data||[]).map(limpiarFila); try{ renderAlertas(); }catch(e){} }
+  }catch(e){}
+}
+function openErroresApp(){
+  if(!esAdmin()) return;
+  showOnlyView('view-errores');
+  const l=state.erroresApp||[];
+  document.getElementById('errLista').innerHTML = l.length ? l.map(x=>`<div class="panel" style="padding:11px 13px;margin-bottom:8px;">
+      <div style="font-size:12.5px;font-weight:800;color:var(--red);word-break:break-word;">${x.mensaje}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px;">${new Date(x.creado).toLocaleString('es-DO')} · ${x.correo||''} · v${x.version||'?'} · ${String(x.pantalla||'').replace('view-','')}</div>
+      ${x.detalle?`<details style="margin-top:6px;font-size:11px;color:var(--muted);"><summary>Detalle técnico</summary><div style="white-space:pre-wrap;word-break:break-word;margin-top:4px;">${x.detalle}</div></details>`:''}
+    </div>`).join('') : '<div class="empty-hint" style="padding:30px;">Sin errores en los últimos 7 días.</div>';
 }
 
 /* ===================== AVISO DE VERSIÓN NUEVA (v7.1) =====================
@@ -5792,10 +5916,17 @@ function bankPending(branch){
   // pending = cuadre operativo acumulado - lo que el mensajero ha recolectado
   // Las transferencias (préstamos/devoluciones) NO afectan el pendiente del cuadre
   // porque no son cuadre operativo — son flujo de caja aparte.
-  let totalCuadre=0;
-  const dates=new Set(state.txns.filter(t=>t.branch===branch&&t.type!=='collect').map(t=>t.date));
-  dates.forEach(d=>{ totalCuadre+=dayCuadre(branch,d); });
-  const totalCollected=state.txns.filter(t=>t.type==='collect'&&t.branch===branch).reduce((s,t)=>s+t.moved,0);
+  // v7.2: una sola pasada por los movimientos. Da EXACTAMENTE lo mismo que sumar
+  // dayCuadre() día por día (antes recorría todo una vez por cada día: crecía al cuadrado).
+  let totalCuadre=0, totalCollected=0;
+  for(const t of state.txns){
+    if(t.branch!==branch) continue;
+    if(t.type==='collect'){ totalCollected+=t.moved; continue; }
+    if(t.isOffice) continue;
+    if(t.type==='income') totalCuadre+=t.amount;
+    else if(t.type==='expense') totalCuadre-=t.amount;
+    else if(t.type==='out' && t.outKind!=='transfer') totalCuadre-=t.amount;
+  }
   return totalCuadre-totalCollected;
 }
 
@@ -10067,7 +10198,16 @@ async function wipeData(){
 
 /* ---------- TOAST ---------- */
 let toastTimer;
-function toast(msg,ok){ const t=document.getElementById('toast'); document.getElementById('toastMsg').textContent=msg; t.querySelector('svg').style.display=ok?'block':'none'; t.style.background=ok?'var(--navy)':'var(--red)'; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2200); }
+function toast(msg,ok){
+  // v7.2: si la base rechazó el guardado por una regla, se dice el motivo real
+  if(!ok && /^NO se (guardó|borró)/.test(msg||'') && typeof __ultimoError==='string'){
+    if(/DUPLICADO/.test(__ultimoError)) msg='Ya estaba guardado: ese mismo movimiento se registró hace unos segundos. Revisa antes de repetirlo.';
+    else if(/DIA_CERRADO/.test(__ultimoError)) msg='Ese día tiene el corte cerrado. Reábrelo con la clave maestra para corregir.';
+    else if(/LECTURA_MAESTRA/.test(__ultimoError)) msg='Esa lectura es maestra. Quítale el candado con la clave maestra.';
+    else if(/movimientos_montos_validos/.test(__ultimoError)) msg='El monto no es válido (un gasto o salida debe ser mayor que cero).';
+    __ultimoError='';
+  }
+  const t=document.getElementById('toast'); document.getElementById('toastMsg').textContent=msg; t.querySelector('svg').style.display=ok?'block':'none'; t.style.background=ok?'var(--navy)':'var(--red)'; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2200); }
 
 /* ---------- LOGIN & INIT ---------- */
 function setLoginLogo(){ /* text logo, nothing to copy */ }
@@ -10191,6 +10331,9 @@ function aplicarPermisos(){
   if(bit) bit.style.display = esAdmin() ? '' : 'none';
   const ck=document.getElementById('setItemClave');
   if(ck) ck.style.display = esAdmin() ? '' : 'none';
+  const ea=document.getElementById('setItemErrores');
+  if(ea) ea.style.display = esAdmin() ? '' : 'none';
+  try{ pintarRespaldoDesc(); }catch(e){}
   const rev=document.getElementById('setItemRevision');
   if(rev) rev.style.display = puedeVer('corte') ? '' : 'none';
   const an=document.getElementById('setItemAnalisis');
