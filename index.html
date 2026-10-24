@@ -41,6 +41,19 @@
   .month-pill{background:var(--navy-soft);border:1px solid var(--navy-line);padding:7px 13px;border-radius:20px;font-size:12.5px;font-weight:600;color:var(--muted-light);display:flex;align-items:center;gap:6px;cursor:pointer;}
   .month-pill svg{width:13px;height:13px;}
   .view{display:none;padding:18px 16px 8px;animation:fade .25s ease;}
+  /* v7.3: computadora. En pantallas de 960 px o más el contenido se centra y el
+     Inicio se divide en dos columnas; el Corte Diario muestra las bancas en dos. */
+  @media (min-width:960px){
+    header .header-row{max-width:1200px;margin:0 auto;}
+    .view{max-width:1200px;margin:0 auto;padding:22px 28px 10px;}
+    .dash-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:22px;align-items:start;}
+    #corteList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start;}
+    #corteList > .panel{margin-bottom:0 !important;}
+    #corteList > .empty-hint{grid-column:1/-1;}
+    .hoy-strip{grid-template-columns:repeat(4,minmax(0,1fr)) !important;}
+    #dashAlertas > div{display:grid !important;grid-template-columns:repeat(2,minmax(0,1fr));}
+  }
+  @media (min-width:1400px){ header .header-row, .view{max-width:1320px;} }
   .view.active{display:block;}
   @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
   .section-label{font-size:11px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);margin:4px 2px 12px;}
@@ -354,9 +367,15 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       <img class="logo-img js-logo" alt="prime sport">
       <div class="sub" style="margin-top:0;align-self:center;">Control<br>Financiero</div>
     </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+    <div class="month-pill" id="consPill" onclick="abrirSelectorConsorcio()" style="display:none;cursor:pointer;" title="Cambiar de consorcio">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/></svg>
+      <span id="consPillTxt">—</span><span style="font-size:10px;">▾</span>
+    </div>
     <div class="month-pill" onclick="openMonthModal()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       <span id="monthLabel">—</span>
+    </div>
     </div>
   </div>
 </header>
@@ -368,6 +387,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
 </div>
 
 <section class="view active" id="view-dash">
+  <div id="hoyStrip" class="hoy-strip" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px;"></div>
   <div id="avisoCargando" style="display:none;background:#eef6fb;border:1px solid #cfe3ee;color:#2f6f86;border-radius:11px;padding:10px 12px;font-size:12.5px;font-weight:600;margin-bottom:12px;">Cargando los datos del cierre mensual…</div>
   <div class="hero-card">
     <div class="label">Balance Neto del Mes</div>
@@ -389,6 +409,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
   </div>
   <div id="dashAlertas"></div>
 
+  <div class="dash-cols"><div class="dash-izq">
   <div data-grupo="dia">
   <div class="grp-title" style="font-size:11.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin:4px 2px 10px;">Día a día</div>
 <div style="display:flex;gap:11px;margin-bottom:16px;">
@@ -532,6 +553,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
   </div>
   </div>
 </div>
+  </div><div class="dash-der">
 
 <div class="stat-grid">
     <div class="stat">
@@ -562,6 +584,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     <div id="catBreakdown"></div>
   </div>
   <div class="panel" id="depDeportivaPanel" style="display:none;"></div>
+  </div></div>
 </section>
 
 <!-- REGISTRO -->
@@ -1675,6 +1698,15 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     • Los símbolos <b>&lt;</b> y <b>&gt;</b> escritos en notas o nombres se muestran como ‹ ›: es una protección para que nadie pueda meter código en la pantalla de otro usuario.</div>
   </div>
 
+  <div class="panel" style="background:linear-gradient(135deg,#f1f0fa,#e6e3f5);border-color:#d3cdee;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><div style="width:30px;height:30px;border-radius:9px;background:#2a2440;color:#b9a5e8;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">▣</div><h3 style="font-size:15px;font-weight:700;">Uso diario <span style="font-size:11px;color:#5a4a8a;font-weight:800;">NUEVO v7.3</span></h3></div>
+    <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">
+    • <b>Arriba del Inicio</b>, cuatro cifras: <b>Recogido hoy</b>, <b>Pendiente en bancas</b>, <b>Deportiva del mes</b> (real, con depósitos) y <b>Gastos del mes</b>. Toca una para ir a su pantalla.<br>
+    • <b>En la computadora</b> la app se centra y el Inicio se divide en dos columnas: a la izquierda los módulos, a la derecha las cifras y tablas. El Corte Diario muestra las bancas en dos columnas. En el celular todo sigue igual.<br>
+    • <b>Varios consorcios</b>: si tu usuario tiene acceso a más de uno, arriba aparece su nombre con ▾. Tócalo para cambiar; la app se recarga con los datos y permisos de ese consorcio.<br>
+    • <b>Libreta de Clientes</b>: basta con dar el permiso <b>Libreta de Clientes</b> en Ajustes → Usuarios (Ver = solo lectura, Ver y editar = editor). El administrador de PRIME SPORT entra como administrador. Ya no hace falta agregar a la persona aparte dentro de la Libreta.</div>
+  </div>
+
   <div class="panel" style="background:linear-gradient(135deg,#eef6fb,#e3f0f7);border-color:#cfe3ee;">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><div style="width:30px;height:30px;border-radius:9px;background:var(--cerulean-dim);color:var(--cerulean-bright);display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">⛁</div><h3 style="font-size:15px;font-weight:700;">Respaldos y datos confiables <span style="font-size:11px;color:var(--cerulean);font-weight:800;">NUEVO v7.2</span></h3></div>
     <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">
@@ -2205,7 +2237,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       <div class="si-act" style="color:var(--amber);" onclick="doLogout()">Salir</div>
     </div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v7.2 nube · Santo Domingo, RD</div>
+  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v7.3 nube · Santo Domingo, RD</div>
 </section>
 
 <!-- NAV -->
@@ -2268,8 +2300,8 @@ window.__supabase = createClient(
 window.dispatchEvent(new Event('supabase-ready'));
 </script>
 <script>
-/* ===================== AdmBca v7.2 ===================== */
-const APP_VERSION='7.2';
+/* ===================== AdmBca v7.3 ===================== */
+const APP_VERSION='7.3';
 function idConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.id)||null; }catch(e){ return null; } }
 function nomConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.nombre)||'AdmBca'; }catch(e){ return 'AdmBca'; } }
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -2949,6 +2981,28 @@ function renderDash(){
   renderFundList();
   renderCatBreakdown(txns,c.inc,depM);
   renderDepInicio(txns,depM);
+  renderHoy(c,txns,depM);
+}
+
+/* v7.3: las 4 cifras que se miran primero, arriba del Inicio */
+function renderHoy(c,txns,depM){
+  const el=document.getElementById('hoyStrip'); if(!el) return;
+  const hoy=todayISO();
+  const recogidoHoy=state.txns.filter(t=>t.type==='collect'&&t.date===hoy).reduce((s,t)=>s+(t.moved||0),0);
+  const bancas=state.branches.filter(b=>!b.isOffice&&b.activa!==false);
+  let pend=0, nPend=0; bancas.forEach(b=>{ const v=bankPending(b.name); if(Math.abs(v)>=1){ pend+=v; nPend++; } });
+  const depTot=(depM||[]).reduce((s,x)=>s+x.monto,0);
+  const deporSis=txns.filter(t=>t.type==='income'&&t.category==='Deportiva').reduce((s,t)=>s+t.amount,0);
+  const deporReal=deporSis+depTot;
+  const tile=(t,v,sub,color,go)=>`<div ${go?`onclick="${go}" `:''}style="background:#fff;border:1px solid #e8edf0;border-radius:13px;padding:11px 12px;box-shadow:var(--shadow);${go?'cursor:pointer;':''}min-width:0;">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);">${t}</div>
+      <div style="font-size:16.5px;font-weight:800;letter-spacing:-.3px;margin-top:2px;color:${color||'var(--ink)'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${v}</div>
+      <div style="font-size:10.5px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${sub}</div></div>`;
+  el.innerHTML =
+    tile('Recogido hoy','RD$'+fmt(recogidoHoy),'lo que entró hoy por mensajero',null,puedeVer('corte')?'openCorte()':'') +
+    tile('Pendiente en bancas','RD$'+fmt(pend),nPend?`${nPend} banca${nPend===1?'':'s'} con saldo`:'todo recogido',pend>0?'var(--amber)':(pend<0?'var(--red)':'var(--green)'),puedeVer('corte')?'openCorte()':'') +
+    tile('Deportiva del mes','RD$'+fmt(deporReal),depTot>0?'real (sistema + depósitos)':'según el sistema',deporReal<0?'var(--red)':'var(--green)',puedeVer('depositos')?'openDepositos()':'') +
+    tile('Gastos del mes','RD$'+fmt(c.exp),`${MONTHS_SHORT[curMonth]} ${curYear}`,null,'');
 }
 
 /* ---------- B5: avisos del inicio ---------- */
@@ -10585,13 +10639,22 @@ async function startApp(){
 // Consorcio activo (RLS solo devuelve el del usuario conectado)
 async function loadConsorcio(){
   try{
-    const { data, error } = await sb.from('consorcios').select('id,codigo,nombre').limit(1);
-    if(error) throw error;
-    state.consorcio = (data&&data[0]) ? data[0] : null;
+    // v7.3: con varios consorcios se usa el ACTIVO de la sesión (antes tomaba
+    // "el primero" y esperaba un solo vínculo por usuario).
+    let lista=[];
+    try{ const r=await sb.rpc('mis_consorcios'); if(!r.error&&Array.isArray(r.data)) lista=r.data; }catch(e){}
+    state.misConsorcios=lista;
+    let act=lista.find(x=>x.es_activo)||null;
+    if(!act){
+      const { data, error } = await sb.from('consorcios').select('id,codigo,nombre').limit(1);
+      if(error) throw error;
+      act=(data&&data[0])||null;
+    }
+    state.consorcio = act ? {id:act.id,codigo:act.codigo,nombre:act.nombre} : null;
     const { data:u } = await sb.auth.getUser();
     const uid = u && u.user && u.user.id;
-    if(uid){
-      const { data:v } = await sb.from('usuarios_consorcio').select('rol,permisos,activo').eq('user_id',uid).maybeSingle();
+    if(uid && state.consorcio){
+      const { data:v } = await sb.from('usuarios_consorcio').select('rol,permisos,activo').eq('user_id',uid).eq('consorcio_id',state.consorcio.id).maybeSingle();
       state.rol = (v&&v.rol)||'usuario';
       state.permisos = (v&&v.permisos)||{};
     }
@@ -10599,6 +10662,35 @@ async function loadConsorcio(){
   aplicarPermisos();
   const nom = (state.consorcio&&state.consorcio.nombre) || '—';
   document.querySelectorAll('.js-consorcio').forEach(el=>{ el.textContent=nom; });
+  pintarSelectorConsorcio();
+}
+function pintarSelectorConsorcio(){
+  const p=document.getElementById('consPill'); if(!p) return;
+  const l=state.misConsorcios||[];
+  if(l.length>1){ p.style.display='flex'; document.getElementById('consPillTxt').textContent=(state.consorcio&&state.consorcio.nombre)||'Consorcio'; }
+  else p.style.display='none';
+}
+function abrirSelectorConsorcio(){
+  const l=state.misConsorcios||[]; if(l.length<2) return;
+  const w=document.createElement('div');
+  w.style.cssText='position:fixed;inset:0;background:rgba(10,18,24,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:18px;';
+  w.innerHTML=`<div style="background:#fff;border-radius:16px;padding:16px;width:min(380px,100%);display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-lg);">
+    <div style="font-size:15px;font-weight:800;margin-bottom:4px;">Cambiar de consorcio</div>
+    ${l.map(x=>`<button type="button" data-id="${x.id}" style="display:flex;justify-content:space-between;align-items:center;gap:10px;border:1.5px solid ${x.es_activo?'var(--cerulean)':'#dde4e8'};background:${x.es_activo?'#e6f4f9':'#fafbfc'};border-radius:11px;padding:13px 14px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;color:var(--ink);text-align:left;">
+      <span>${String(x.nombre).replace(/[<>]/g,'')}</span><span style="font-size:11px;color:var(--muted);font-weight:700;">${x.rol==='admin'?'Administrador':'Usuario'}${x.es_activo?' · actual':''}</span></button>`).join('')}
+    <button type="button" data-x style="border:none;background:none;color:var(--muted);font-weight:700;padding:10px;font-family:inherit;cursor:pointer;">Cancelar</button></div>`;
+  w.onclick=async e=>{
+    if(e.target===w||e.target.closest('[data-x]')){ w.remove(); return; }
+    const b=e.target.closest('[data-id]'); if(!b) return;
+    const id=b.getAttribute('data-id'); if(state.consorcio&&id===state.consorcio.id){ w.remove(); return; }
+    b.disabled=true; b.style.opacity='.6';
+    try{
+      const {data,error}=await sb.rpc('cambiar_consorcio',{p_consorcio:id});
+      if(error||data!=='OK') throw error||new Error(data);
+      location.replace(location.pathname+'?c='+Date.now());
+    }catch(err){ console.error(err); toast('No se pudo cambiar de consorcio.',false); b.disabled=false; b.style.opacity=''; }
+  };
+  document.body.appendChild(w);
 }
 
 async function doLogout(){
