@@ -1698,6 +1698,15 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     • Los símbolos <b>&lt;</b> y <b>&gt;</b> escritos en notas o nombres se muestran como ‹ ›: es una protección para que nadie pueda meter código en la pantalla de otro usuario.</div>
   </div>
 
+  <div class="panel" style="background:linear-gradient(135deg,#fdf4ec,#f8e6d5);border-color:#e8c7a5;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><div style="width:30px;height:30px;border-radius:9px;background:#3a2a12;color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">↗</div><h3 style="font-size:15px;font-weight:700;">Rentabilidad y Bitácora <span style="font-size:11px;color:#a37416;font-weight:800;">NUEVO v7.4</span></h3></div>
+    <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">
+    • <b>Análisis → Ingresos según</b>: por defecto usa el <b>Cuadre Mensual</b> (Balance de bancas + Máquinas neto + tu parte de Virtuales), que es tu resultado oficial por banca y tiene datos desde enero. También puedes verlo según los movimientos diarios (desde junio).<br>
+    • <b>Depósitos</b>: con el Cuadre Mensual no se suman, porque el Balance de bancas ya es lo real (venta menos premios). Solo al ver "Movimientos diarios" aparece la casilla para sumarlos, porque ahí vienen restados.<br>
+    • <b>Ficha de banca</b>: en "Rentabilidad por banca", toca una banca. Ves mes a mes sus ingresos por renglón, gastos, resultado y margen, su mejor y peor mes, y en qué se le va el dinero. Los meses sin gastos cargados se marcan "sin gastos".<br>
+    • <b>Bitácora</b>: además de tipo y acción, filtra por <b>usuario</b>, <b>banca</b> y <b>fechas</b>. Ahora incluye depósitos, arqueos, nómina, incentivos, mantenimientos y cada uso de la clave maestra. El botón <b>CSV</b> baja lo filtrado.</div>
+  </div>
+
   <div class="panel" style="background:linear-gradient(135deg,#f1f0fa,#e6e3f5);border-color:#d3cdee;">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><div style="width:30px;height:30px;border-radius:9px;background:#2a2440;color:#b9a5e8;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">▣</div><h3 style="font-size:15px;font-weight:700;">Uso diario <span style="font-size:11px;color:#5a4a8a;font-weight:800;">NUEVO v7.3</span></h3></div>
     <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">
@@ -2037,15 +2046,27 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     <div class="fld" style="flex:1;margin:0;"><label style="font-size:11px;">Desde</label><input type="month" id="anDesde" onchange="renderAnalisis()"></div>
     <div class="fld" style="flex:1;margin:0;"><label style="font-size:11px;">Hasta</label><input type="month" id="anHasta" onchange="renderAnalisis()"></div>
   </div>
-  <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-bottom:14px;cursor:pointer;">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+    <label for="anFuente" style="font-size:12px;font-weight:700;color:var(--muted);">Ingresos según</label>
+    <select id="anFuente" onchange="renderAnalisis()" style="flex:1;min-width:200px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font-size:12.5px;font-family:inherit;background:#fff;color:var(--ink);">
+      <option value="cuadre">Cuadre Mensual (oficial, desde enero)</option>
+      <option value="diario">Movimientos diarios (desde junio)</option>
+    </select>
+  </div>
+  <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-bottom:6px;cursor:pointer;">
     <input type="checkbox" id="anProrrateo" checked onchange="renderAnalisis()" style="width:16px;height:16px;">
     Cargar a cada banca su parte de los gastos de Administración
+  </label>
+  <label id="anDepositosLbl" style="display:none;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-bottom:14px;cursor:pointer;">
+    <input type="checkbox" id="anDepositos" checked onchange="renderAnalisis()" style="width:16px;height:16px;">
+    Sumar los depósitos de bancas al banco (Deportiva real)
   </label>
 
   <div id="anAviso"></div>
   <div id="anHero"></div>
   <div id="anGrafico"></div>
   <div id="anRanking"></div>
+  <div id="anFicha"></div>
   <div id="anMatriz"></div>
   <div id="anRenglones"></div>
   <div id="anGastos"></div>
@@ -2107,15 +2128,35 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       <option value="virtuales_registros">Virtuales</option>
       <option value="cierres_dia">Cortes diarios</option>
       <option value="cierres_mes">Cierres de mes</option>
+      <option value="depositos_banca">Depósitos de bancas</option>
+      <option value="arqueos_caja">Arqueos de caja</option>
+      <option value="empleados">Empleados</option>
+      <option value="empleado_cuenta">Préstamos y faltantes</option>
+      <option value="nomina_detalle">Nómina</option>
+      <option value="incentivos">Incentivos</option>
+      <option value="mantenimientos">Mantenimientos</option>
+      <option value="clave_maestra">Clave maestra</option>
     </select>
     <select id="bitAccion" onchange="cargarBitacora()" style="flex:1;padding:10px 12px;border:1px solid var(--line);border-radius:11px;font-size:12.5px;font-family:inherit;background:#fff;color:var(--ink);">
       <option value="">Toda acción</option>
       <option value="INSERT">Creados</option>
       <option value="UPDATE">Cambiados</option>
       <option value="DELETE">Borrados</option>
+      <option value="DESBLOQUEO">Desbloqueos con clave</option>
+      <option value="CLAVE_INCORRECTA">Clave incorrecta</option>
+      <option value="CAMBIO_CLAVE">Cambio de clave</option>
     </select>
   </div>
-  <div style="font-size:11.5px;color:var(--muted);margin-bottom:12px;line-height:1.5;">Se registran los últimos movimientos, cuadres, cortes y cierres. Los borrados guardan cómo estaba el registro antes de desaparecer.</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+    <select id="bitUsuario" onchange="cargarBitacora()" style="padding:10px 12px;border:1px solid var(--line);border-radius:11px;font-size:12.5px;font-family:inherit;background:#fff;color:var(--ink);"><option value="">Todos los usuarios</option></select>
+    <select id="bitBanca" onchange="cargarBitacora()" style="padding:10px 12px;border:1px solid var(--line);border-radius:11px;font-size:12.5px;font-family:inherit;background:#fff;color:var(--ink);"><option value="">Todas las bancas</option></select>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-bottom:10px;align-items:end;">
+    <div><label for="bitDesde" style="display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px;">Desde</label><input type="date" id="bitDesde" onchange="cargarBitacora()" style="padding:9px 10px;font-size:13px;"></div>
+    <div><label for="bitHasta" style="display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px;">Hasta</label><input type="date" id="bitHasta" onchange="cargarBitacora()" style="padding:9px 10px;font-size:13px;"></div>
+    <button id="btnBitCsv" onclick="exportarBitacoraCSV()" style="border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:11px 12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">CSV</button>
+  </div>
+  <div style="font-size:11.5px;color:var(--muted);margin-bottom:12px;line-height:1.5;">Se registra cada movimiento, cuadre, corte, cierre, depósito, nómina y uso de la clave maestra. Los borrados guardan cómo estaba el registro antes de desaparecer. Filtra por usuario, banca o fechas, y baja lo filtrado con CSV.</div>
   <div id="bitLista"></div>
   <button id="bitMas" onclick="cargarBitacora(true)" style="display:none;width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin:12px 0 24px;">Ver más</button>
 </section>
@@ -2237,7 +2278,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       <div class="si-act" style="color:var(--amber);" onclick="doLogout()">Salir</div>
     </div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v7.3 nube · Santo Domingo, RD</div>
+  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v7.4 nube · Santo Domingo, RD</div>
 </section>
 
 <!-- NAV -->
@@ -2300,8 +2341,8 @@ window.__supabase = createClient(
 window.dispatchEvent(new Event('supabase-ready'));
 </script>
 <script>
-/* ===================== AdmBca v7.3 ===================== */
-const APP_VERSION='7.3';
+/* ===================== AdmBca v7.4 ===================== */
+const APP_VERSION='7.4';
 function idConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.id)||null; }catch(e){ return null; } }
 function nomConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.nombre)||'AdmBca'; }catch(e){ return 'AdmBca'; } }
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -5036,8 +5077,39 @@ function mesesDelRango(){
 function bancasActivas(){ return sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false&&enGrupo(b.name))).map(b=>b.name); }
 function anIncluyeProrrateo(){ const el=document.getElementById('anProrrateo'); return !el||el.checked; }
 
+/* v7.4: fuente de ingresos. "cuadre" = lo mismo que el Cuadre Mensual por banca
+   (Balance de bancas + Máquinas neto + tu parte de Virtuales), que es el estado
+   de resultados oficial y tiene datos desde enero. "diario" = ingresos del día a día. */
+function anFuente(){ const el=document.getElementById('anFuente'); return el?el.value:'cuadre'; }
+function anSumaDepositos(){ const el=document.getElementById('anDepositos'); return !el||el.checked; }
+function anDepositosBanca(branch, anio, mes){
+  if(!anSumaDepositos()) return 0;
+  return depositosMes(anio, mes-1).filter(x=>x.sucursal===branch).reduce((s,x)=>s+x.monto,0);
+}
+function cbIngresosMes(branch, anio, mes){
+  const am=cbMesCur, aa=cbAnioCur; const r={total:0,cats:{}};
+  try{
+    cbMesCur=mes; cbAnioCur=anio;
+    const bce=CB_INGRESO_CATS.reduce((s,c)=>s+cbIngresoVal(branch,c),0);
+    const maq=cbMaqNetoBanca(branch), vir=cbVirtNetoBanca(branch);
+    if(bce) r.cats['Balance de bancas']=bce;
+    if(maq) r.cats['Máquinas (neto)']=maq;
+    if(vir) r.cats['Virtuales (tu parte)']=vir;
+    r.total=bce+maq+vir;
+  }finally{ cbMesCur=am; cbAnioCur=aa; }
+  return r;
+}
 /* Ingresos de una banca en un mes, abiertos por renglón. */
 function anIngresos(branch, anio, mes){
+  let r;
+  if(anFuente()==='cuadre') r=cbIngresosMes(branch, anio, mes);
+  else r=anIngresosDiario(branch, anio, mes);
+  // El Balance de bancas del Cuadre Mensual ya es lo real (venta menos premios): ahí NO se suman depósitos.
+  const dep = anFuente()==='diario' ? anDepositosBanca(branch, anio, mes) : 0;
+  if(dep){ r.cats['Depósitos de bancas']=(r.cats['Depósitos de bancas']||0)+dep; r.total+=dep; }
+  return r;
+}
+function anIngresosDiario(branch, anio, mes){
   const r={total:0, cats:{}};
   state.txns.forEach(t=>{
     if(t.type!=='income'||t.branch!==branch) return;
@@ -5204,6 +5276,7 @@ function renderAnalisis(){
   if(!anDesdeCur||!anHastaCur) return;
   if(anDesdeCur>anHastaCur){ const t=anDesdeCur; anDesdeCur=anHastaCur; anHastaCur=t;
     document.getElementById('anDesde').value=anDesdeCur; document.getElementById('anHasta').value=anHastaCur; }
+  { const dl=document.getElementById('anDepositosLbl'); if(dl) dl.style.display = anFuente()==='diario' ? 'flex' : 'none'; }
   const D=anDatos(), P=anDatosPrevios();
 
   // aviso: meses sin gastos cargados distorsionan la rentabilidad
@@ -5242,13 +5315,13 @@ function renderAnalisis(){
   document.getElementById('anRanking').innerHTML = rank.length ? `
     <div class="panel" style="padding:14px;margin-bottom:12px;">
       <div style="font-size:13px;font-weight:800;margin-bottom:4px;">Rentabilidad por banca</div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">De la que más deja a la que menos${anIncluyeProrrateo()?' · con Administración prorrateada':' · sin cargar Administración'}</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">De la que más deja a la que menos · ${anFuente()==='cuadre'?'según el Cuadre Mensual':'según los movimientos diarios'}${anFuente()==='diario'&&anSumaDepositos()?' · con depósitos':''}${anIncluyeProrrateo()?' · con Administración prorrateada':' · sin cargar Administración'} · <b>toca una banca para ver su ficha</b></div>
       <table class="an-tbl"><thead><tr><th>Banca</th><th>Ingresos</th><th>Gastos</th><th>Resultado</th><th>Margen</th></tr></thead><tbody>
       ${rank.map((r,i)=>{
         const medalla = i===0?'🥇' : (i===rank.length-1?'🔻':'');
         const prevR = P&&P.porBanca[r.banca] ? P.porBanca[r.banca].resultado : null;
-        return `<tr>
-          <td>${medalla} ${r.banca.replace('PRIME SPORT','PS')}${prevR!==null?' '+anPct(r.resultado,prevR):''}</td>
+        return `<tr data-banca="${escD(r.banca)}" onclick="anFicha(this.dataset.banca)" style="cursor:pointer;">
+          <td>${medalla} ${escD(r.banca.replace('PRIME SPORT','PS'))}${prevR!==null?' '+anPct(r.resultado,prevR):''}</td>
           <td>${fmt(r.ingresos)}</td>
           <td style="color:var(--muted);">${fmt(r.gastos)}</td>
           <td style="font-weight:800;color:${colorRes(r.resultado)};">${fmt(r.resultado)}</td>
@@ -5283,6 +5356,38 @@ function renderAnalisis(){
   document.getElementById('anRenglones').innerHTML=anBarrasH('Ingresos por renglón', D.renglones, '#0086AD', P?P.renglones:null);
   document.getElementById('anGastos').innerHTML=anBarrasH('En qué se va el dinero', D.gastosCat, '#e07a2b', P?P.gastosCat:null);
   document.getElementById('anProyeccion').innerHTML=anProyeccionHtml(D);
+  if(anFichaBanca && D.bancas.includes(anFichaBanca)) anFicha(anFichaBanca, D, true); else document.getElementById('anFicha').innerHTML='';
+}
+
+/* v7.4: ficha de una banca — mes a mes, de dónde sale la ganancia y en qué se va. */
+let anFichaBanca=null;
+function anFicha(banca, D, silencio){
+  D=D||anDatos(); anFichaBanca=banca;
+  const b=D.porBanca[banca]; if(!b){ document.getElementById('anFicha').innerHTML=''; return; }
+  const cats=[...new Set(D.meses.flatMap(m=>Object.keys(b.meses[m.clave].catsIng)))];
+  const gas={}; D.meses.forEach(m=>{ const c=b.meses[m.clave].catsGas; Object.keys(c).forEach(k=>gas[k]=(gas[k]||0)+c[k]); });
+  const filas=D.meses.map(m=>{ const c=b.meses[m.clave]; const vacio=Math.abs(c.ingresos)<1&&Math.abs(c.gastos)<1;
+    return `<tr${vacio?' style="opacity:.45;"':''}><td>${MONTHS_SHORT[m.mes-1]} ${String(m.anio).slice(2)}</td>${cats.map(k=>`<td>${c.catsIng[k]?fmt(c.catsIng[k]):'—'}</td>`).join('')}
+      <td style="font-weight:700;">${fmt(c.ingresos)}</td><td style="color:var(--muted);">${c.gastos?fmt(c.gastos):'<span title="Sin gastos cargados" style="color:#a37416;">sin gastos</span>'}</td>
+      <td style="font-weight:800;color:${colorRes(c.resultado)};">${fmt(c.resultado)}</td><td style="color:${c.margen!==null?colorRes(c.margen):'var(--muted)'};font-weight:700;">${c.margen!==null?(c.margen*100).toFixed(0)+'%':'—'}</td></tr>`; }).join('');
+  const tot=`<tr style="border-top:2px solid var(--navy);"><td>TOTAL</td>${cats.map(k=>`<td>${fmt(D.meses.reduce((s,m)=>s+(b.meses[m.clave].catsIng[k]||0),0))}</td>`).join('')}
+      <td style="font-weight:800;">${fmt(b.ingresos)}</td><td style="color:var(--muted);">${fmt(b.gastos)}</td><td style="font-weight:800;color:${colorRes(b.resultado)};">${fmt(b.resultado)}</td><td style="font-weight:700;">${b.margen!==null?(b.margen*100).toFixed(0)+'%':'—'}</td></tr>`;
+  const mejor=D.meses.slice().sort((x,y)=>b.meses[y.clave].resultado-b.meses[x.clave].resultado)[0];
+  const peor=D.meses.slice().sort((x,y)=>b.meses[x.clave].resultado-b.meses[y.clave].resultado)[0];
+  document.getElementById('anFicha').innerHTML=`
+    <div class="panel" style="padding:14px;margin-bottom:12px;border:2px solid var(--cerulean);">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:4px;">
+        <div style="font-size:15px;font-weight:800;">Ficha · ${escD(banca)}</div>
+        <button onclick="anFichaBanca=null;document.getElementById('anFicha').innerHTML=''" aria-label="Cerrar ficha" style="border:none;background:#eef2f4;border-radius:9px;width:32px;height:32px;font-size:16px;cursor:pointer;">×</button>
+      </div>
+      <div style="font-size:11.5px;color:var(--muted);margin-bottom:10px;">Resultado del período: <b style="color:${colorRes(b.resultado)};">RD$${fmt(b.resultado)}</b>${b.margen!==null?` · margen ${(b.margen*100).toFixed(1)}%`:''}${mejor?` · mejor mes ${MONTHS_SHORT[mejor.mes-1]} (RD$${fmt(b.meses[mejor.clave].resultado)})`:''}${peor&&peor!==mejor?` · peor ${MONTHS_SHORT[peor.mes-1]} (RD$${fmt(b.meses[peor.clave].resultado)})`:''}</div>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+        <table class="an-tbl" style="min-width:${260+cats.length*90}px;"><thead><tr><th>Mes</th>${cats.map(k=>`<th>${escD(k)}</th>`).join('')}<th>Ingresos</th><th>Gastos</th><th>Resultado</th><th>Margen</th></tr></thead>
+        <tbody>${filas}${tot}</tbody></table>
+      </div>
+    </div>
+    ${anBarrasH('En qué se le va el dinero a '+escD(banca.replace('PRIME SPORT','PS')), gas, '#e07a2b', null)}`;
+  if(!silencio) document.getElementById('anFicha').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 /* ---------- Proyección ----------
@@ -5612,15 +5717,55 @@ function openBitacora(){
   if(!esAdmin()){ toast('Solo un administrador puede ver la bitácora.',false); return; }
   showOnlyView('view-bitacora');
   bitOffset=0;
+  const bs=document.getElementById('bitBanca');
+  if(bs && bs.options.length<=1) bs.insertAdjacentHTML('beforeend', sortBranchesNum(state.branches.slice()).map(b=>`<option value="${escD(b.name)}">${escD(b.name)}</option>`).join(''));
+  const us=document.getElementById('bitUsuario');
+  if(us && us.options.length<=1){ sb.rpc('listar_usuarios').then(({data})=>{ (data||[]).forEach(u=>{ if(u.email) us.insertAdjacentHTML('beforeend',`<option value="${escD(u.email)}">${escD(u.email)}</option>`); }); }).catch(()=>{}); }
   document.getElementById('bitLista').innerHTML='<div class="empty-hint" style="padding:30px 10px;">Cargando…</div>';
   cargarBitacora();
 }
 
 const BIT_TABLAS={movimientos:'Movimiento',cuadre_banca_gasto:'Gasto de banca',cuadre_oficina_gasto:'Gasto de oficina',
-                  virtuales_registros:'Virtuales',cierres_dia:'Corte diario',cierres_mes:'Cierre de mes'};
+                  virtuales_registros:'Virtuales',cierres_dia:'Corte diario',cierres_mes:'Cierre de mes',
+                  depositos_banca:'Depósito de banca',bancos_deposito:'Banco',arqueos_caja:'Arqueo de caja',empleados:'Empleado',
+                  empleado_cuenta:'Préstamo / faltante',nomina_detalle:'Nómina',nomina_periodos:'Período de nómina',incentivos:'Incentivo',
+                  mantenimientos:'Mantenimiento',equipos:'Equipo',clave_maestra:'Clave maestra'};
 const BIT_ACCIONES={INSERT:{t:'Creó',c:'#1f9d6b',bg:'var(--green-dim)'},
                     UPDATE:{t:'Cambió',c:'#a37416',bg:'#3a3016'},
-                    DELETE:{t:'Borró',c:'#d3564b',bg:'var(--red-dim)'}};
+                    DELETE:{t:'Borró',c:'#d3564b',bg:'var(--red-dim)'},
+                    DESBLOQUEO:{t:'Desbloqueó',c:'#0086AD',bg:'var(--cerulean-dim)'},
+                    CLAVE_INCORRECTA:{t:'Clave mala',c:'#d3564b',bg:'var(--red-dim)'},
+                    CAMBIO_CLAVE:{t:'Cambió clave',c:'#a37416',bg:'#3a3016'}};
+function bitFiltrar(q){
+  const tabla=document.getElementById('bitTabla').value, accion=document.getElementById('bitAccion').value;
+  const usr=(document.getElementById('bitUsuario')||{}).value, banca=(document.getElementById('bitBanca')||{}).value;
+  const de=(document.getElementById('bitDesde')||{}).value, ha=(document.getElementById('bitHasta')||{}).value;
+  if(tabla) q=q.eq('tabla',tabla);
+  if(accion) q=q.eq('accion',accion);
+  if(usr) q=q.eq('correo',usr);
+  if(de) q=q.gte('creado',de+'T00:00:00');
+  if(ha) q=q.lt('creado',sumarDias(ha,1)+'T00:00:00');
+  if(banca){ const b=banca.replace(/"/g,''); q=q.or(`despues->>sucursal.eq."${b}",antes->>sucursal.eq."${b}"`); }
+  return q;
+}
+async function exportarBitacoraCSV(){
+  return conBloqueo('btnBitCsv', async()=>{
+    try{
+      let all=[], from=0;
+      while(from<5000){
+        const {data,error}=await bitFiltrar(sb.from('bitacora').select('*').order('id',{ascending:false})).range(from,from+999);
+        if(error) throw error; all=all.concat(data||[]); if(!data||data.length<1000) break; from+=1000;
+      }
+      const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+      const sinHtml=h=>String(h||'').replace(/<[^>]*>/g,' ').replace(/&gt;/g,'>').replace(/&lt;/g,'<').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/\s+/g,' ').trim();
+      const L=['Fecha,Usuario,Acción,Registro,Detalle,Cambios'];
+      all.forEach(r=>{ const ac=BIT_ACCIONES[r.accion]; L.push([q(new Date(r.creado).toLocaleString('es-DO')),q(r.correo),q(ac?ac.t:r.accion),q(BIT_TABLAS[r.tabla]||r.tabla),q(bitQue(r)),q(sinHtml(bitCambios(r)))].join(',')); });
+      const url=URL.createObjectURL(new Blob(['\ufeff'+L.join('\n')],{type:'text/csv;charset=utf-8'}));
+      const a=document.createElement('a'); a.href=url; a.download=`bitacora_${todayISO()}.csv`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),2000);
+      toast(`Bitácora exportada: ${all.length} registro(s)`,true);
+    }catch(e){ console.error(e); toast('No se pudo exportar la bitácora.',false); }
+  });
+}
 
 /* Resume en una línea de qué registro se trata. */
 function bitQue(r){
@@ -5631,6 +5776,10 @@ function bitQue(r){
     return `${que} · ${d.sucursal||''} · RD$${fmt(monto)} · ${d.fecha||''}`;
   }
   if(r.tabla==='cierres_dia') return `Jornada ${d.fecha||''}`;
+  if(r.tabla==='depositos_banca') return `${d.banco||''} · ${d.sucursal||''} · RD$${fmt(Number(d.monto||0))} · ${d.fecha_desde===d.fecha_hasta?(d.fecha_hasta||''):(d.fecha_desde||'')+' a '+(d.fecha_hasta||'')}`;
+  if(r.tabla==='clave_maestra') return (r.despues&&r.despues.motivo)?`Para: ${r.despues.motivo}`:'Clave maestra';
+  if(r.tabla==='empleados') return `${d.nombre||''}${d.sucursal?' · '+d.sucursal:''}`;
+  if(r.tabla==='bancos_deposito') return d.nombre||'';
   if(r.tabla==='cierres_mes') return `${MONTHS[(d.mes||1)-1]||''} ${d.anio||''}`;
   if(r.tabla==='virtuales_registros') return `${d.empresa||''} · ${d.sucursal||''} · ${MONTHS_SHORT[(d.mes||1)-1]||''} ${d.anio||''}`;
   if(r.tabla==='cuadre_oficina_gasto') return `${d.categoria||''} · RD$${fmt(Number(d.monto||0))} · ${MONTHS_SHORT[(d.mes||1)-1]||''} ${d.anio||''}`;
@@ -5647,9 +5796,9 @@ function bitCambios(r){
     const a=r.antes[k], b=r.despues[k];
     if(JSON.stringify(a)===JSON.stringify(b)) return;
     const num=!isNaN(parseFloat(a))&&!isNaN(parseFloat(b));
-    const va=num?'RD$'+fmt(Number(a)):(a===null||a===''?'—':String(a));
-    const vb=num?'RD$'+fmt(Number(b)):(b===null||b===''?'—':String(b));
-    filas.push(`<div style="font-size:11.5px;color:var(--muted);margin-top:3px;"><b style="color:var(--ink);">${k}</b>: ${va} → <b style="color:var(--ink);">${vb}</b></div>`);
+    const va=num?'RD$'+fmt(Number(a)):(a===null||a===''?'—':(typeof a==='object'?JSON.stringify(a):String(a)));
+    const vb=num?'RD$'+fmt(Number(b)):(b===null||b===''?'—':(typeof b==='object'?JSON.stringify(b):String(b)));
+    filas.push(`<div style="font-size:11.5px;color:var(--muted);margin-top:3px;"><b style="color:var(--ink);">${escD(k)}</b>: ${escD(va)} → <b style="color:var(--ink);">${escD(vb)}</b></div>`);
   });
   return filas.join('');
 }
@@ -5662,10 +5811,7 @@ async function cargarBitacora(mas){
   if(!mas){ bitOffset=0; cont.innerHTML='<div class="empty-hint" style="padding:30px 10px;">Cargando…</div>'; }
   const PAGE=40;
   try{
-    let q=sb.from('bitacora').select('*').order('id',{ascending:false}).range(bitOffset,bitOffset+PAGE-1);
-    if(tabla) q=q.eq('tabla',tabla);
-    if(accion) q=q.eq('accion',accion);
-    const {data,error}=await q;
+    const {data,error}=await bitFiltrar(sb.from('bitacora').select('*').order('id',{ascending:false})).range(bitOffset,bitOffset+PAGE-1);
     if(error) throw error;
     bitHayMas = data.length===PAGE;
     if(!mas) cont.innerHTML='';
@@ -5682,13 +5828,13 @@ async function cargarBitacora(mas){
       return `<div class="panel" style="padding:11px 13px;margin-bottom:8px;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
           <span style="background:${ac.bg};color:${ac.c};font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:6px;text-transform:uppercase;letter-spacing:.4px;">${ac.t}</span>
-          <span style="font-size:11.5px;font-weight:700;color:var(--muted);">${BIT_TABLAS[r.tabla]||r.tabla}</span>
+          <span style="font-size:11.5px;font-weight:700;color:var(--muted);">${escD(BIT_TABLAS[r.tabla]||r.tabla)}</span>
           <span style="flex:1;"></span>
           <span style="font-size:11px;color:var(--muted);white-space:nowrap;">${cuando}</span>
         </div>
-        <div style="font-size:13px;font-weight:700;color:var(--ink);">${bitQue(r)}</div>
+        <div style="font-size:13px;font-weight:700;color:var(--ink);">${escD(bitQue(r))}</div>
         ${bitCambios(r)}
-        <div style="font-size:11px;color:var(--muted);margin-top:5px;">${quien}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:5px;">${escD(quien)}</div>
       </div>`;
     }).join(''));
     bitOffset+=data.length;
