@@ -1742,7 +1742,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     • <b>Corregir o borrar</b>: toca un depósito de la lista para editarlo o borrarlo. Si repites uno igual (misma banca, banco, monto y fechas), te pregunta antes.<br>
     • <b>Resumen</b>: cuánto depositó cada banca y en qué banco, por mes, semana o fechas que elijas. Toca una banca para ver cada depósito. Se puede exportar a CSV.<br>
     • <b>En el Inicio</b>: la tarjeta grande muestra <b>+ Depósitos de bancas</b> y el <b>Balance real de bancas</b>; en "Ingresos por categoría" la Deportiva sale como <b>Deportiva real</b> (sistema + depósitos), y la tabla <b>Deportiva por banca</b> lo desglosa.<br><br>
-    <b>Importante:</b> los depósitos <b>no cambian</b> el Corte Diario, el pendiente de las bancas ni el <b>Balance Neto del Mes</b> (que sigue igual al Cierre de Mes). Un período cuenta en el mes de su fecha final y no puede cruzar de un mes a otro: si pasa, regístralo en dos partes. Se necesita el permiso <b>Depósitos de bancas</b> (Ajustes → Usuarios).</div>
+    <b>Importante:</b> los depósitos <b>no cambian</b> el Corte Diario, el pendiente de las bancas ni el <b>Balance Neto del Mes</b> (que sigue igual al Cierre de Mes). Los depósitos cuentan por <b>mes de calendario</b>: el del <b>día 1</b> es del mes que empieza (el 1/10 es de octubre). Un período cuenta en el mes de su fecha final y no puede cruzar de un mes a otro: si pasa, regístralo en dos partes. Se necesita el permiso <b>Depósitos de bancas</b> (Ajustes → Usuarios).</div>
   </div>
 
   <div class="panel">
@@ -2302,7 +2302,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       <div class="si-act" style="color:var(--amber);" onclick="doLogout()">Salir</div>
     </div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v7.5 nube · Santo Domingo, RD</div>
+  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v7.5.1 nube · Santo Domingo, RD</div>
 </section>
 
 <!-- NAV -->
@@ -2365,8 +2365,8 @@ window.__supabase = createClient(
 window.dispatchEvent(new Event('supabase-ready'));
 </script>
 <script>
-/* ===================== AdmBca v7.5 ===================== */
-const APP_VERSION='7.5';
+/* ===================== AdmBca v7.5.1 ===================== */
+const APP_VERSION='7.5.1';
 function idConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.id)||null; }catch(e){ return null; } }
 function nomConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.nombre)||'AdmBca'; }catch(e){ return 'AdmBca'; } }
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -4566,7 +4566,8 @@ let depPer='mes', depRDesde='', depRHasta='', depDetBanca=null, depF1Ult='', dep
 
 function escD(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function psCorto(n){ return String(n||'').replace('PRIME SPORT ','PS '); }
-function depMesDe(fecha){ const d=new Date(monthDate({type:'dep',date:fecha})+'T00:00:00'); return {anio:d.getFullYear(),mes:d.getMonth()}; }
+// v7.5.1: los depósitos cuentan por MES DE CALENDARIO (del 1 al 31). El del día 1 es del mes que empieza.
+function depMesDe(fecha){ const d=new Date(fecha+'T00:00:00'); return {anio:d.getFullYear(),mes:d.getMonth()}; }
 function depositosMes(anio,mes){ return (state.depositos||[]).filter(x=>{ const m=depMesDe(x.hasta); return m.anio===anio&&m.mes===mes; }); }
 function bancasDep(){ return sortBranchesNum(state.branches.filter(b=>!b.isOffice&&b.activa!==false)); }
 function bancosDepActivos(){ return (state.bancosDep||[]).filter(b=>b.activo).sort((a,b)=>(a.orden-b.orden)||a.nombre.localeCompare(b.nombre,'es')); }
