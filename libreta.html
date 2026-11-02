@@ -607,22 +607,22 @@ function renderReport(){
       <section class="pane">
         <h2>Cuadre del período</h2>
         <div class="eq">
-          <span>Lo que debías al inicio (neto)${T.arr?` <span class="note">incluye ${fmt(T.arr)} de saldos iniciales con fecha en el período</span>`:""}</span><span class="num ${cls(T.start)}">${fmt(T.start)}</span>
-          <span>+ Depósitos de clientes</span><span class="num">${fmt(T.deposito)}</span>
-          <span>− Retiros pagados</span><span class="num">${fmt(-T.retiro)}</span>
-          <span>− Resultado del juego (pierden − ganan)</span><span class="num">${fmt(-T.juego)}</span>
-          <span>+ Bonos por depósito</span><span class="num">${fmt(T.bono_deposito)}</span>
-          <span>+ Bonos por pérdida</span><span class="num">${fmt(T.bono_perdida)}</span>
-          <span class="tot">= Lo que debes al cierre (neto)</span><span class="num tot ${cls(T.fin)}">${fmt(T.fin)}</span>
+          <span>Balance pendiente${T.arr?` <span class="note">incluye ${fmt(-T.arr)} de saldos iniciales con fecha en el período</span>`:""}</span><span class="num ${cls(-T.start)}">${fmt(-T.start)}</span>
+          <span>+ Depósitos de clientes</span><span class="num ${cls(T.deposito)}">${fmt(T.deposito)}</span>
+          <span>− Retiros o jugadas ganadoras</span><span class="num ${cls(-T.retiro)}">${fmt(-T.retiro)}</span>
+          <span>+ Resultado de las apuestas (pierden − ganan)</span><span class="num ${cls(T.juego)}">${fmt(T.juego)}</span>
+          <span>− Bonos por depósito</span><span class="num ${cls(-T.bono_deposito)}">${fmt(-T.bono_deposito)}</span>
+          <span>− Bonos por pérdida</span><span class="num ${cls(-T.bono_perdida)}">${fmt(-T.bono_perdida)}</span>
+          <span class="tot">= Balance al cierre</span><span class="num tot ${cls(-T.start+T.deposito-T.retiro+T.juego-T.bonos)}">${fmt(-T.start+T.deposito-T.retiro+T.juego-T.bonos)}</span>
         </div>
         <div class="summary" style="grid-template-columns:repeat(3,minmax(0,1fr))">
           <div><span class="label">Resultado del juego</span><span class="v num ${T.juego>=0?"pos":"neg"}">${fmt(T.juego)}</span></div>
-          <div><span class="label">Bonos dados</span><span class="v num">${fmt(T.bonos)}</span></div>
+          <div><span class="label">Bonos dados</span><span class="v num ${T.bonos>0.004?"neg":""}">${fmt(-T.bonos)}</span></div>
           <div><span class="label">Ganancia neta (después de bonos)</span><span class="v num ${T.banca>=0?"pos":"neg"}">${fmt(T.banca)}</span></div>
-          <div><span class="label">A favor de clientes</span><span class="v num">${fmt(T.favor)}</span></div>
-          <div><span class="label">Clientes deben</span><span class="v num">${fmt(T.deben)}</span></div>
+          <div><span class="label">Les debes a clientes</span><span class="v num ${T.favor>0.004?"neg":""}">${fmt(T.favor)}</span></div>
+          <div><span class="label">Clientes te deben</span><span class="v num ${T.deben>0.004?"pos":""}">${fmt(T.deben)}</span></div>
         </div>
-        <p class="note" style="margin:0">Saldo positivo = tú le debes al cliente. Negativo = el cliente te debe. "Lo que debes" es el neto de ambos.</p>
+        <p class="note" style="margin:0">Visto desde ti: verde suma y rojo resta. El resultado de las apuestas suma si los jugadores pierden más de lo que ganan; los bonos restan. Suma de los saldos de los clientes al cierre, visto desde ti: <b class="num ${cls(-T.fin)}">${fmt(-T.fin)}</b> (positivo = los clientes te deben). En la ficha de cada cliente el saldo se sigue viendo desde el cliente (verde = se le debe).</p>
       </section>
 
       <section class="pane">
@@ -1306,19 +1306,19 @@ function prCuadre(d,h){
   if (esp!=null){ ver.push([ "Efectivo esperado al cierre (inicio + depósitos − retiros)", fmtC(esp) ]); if(ef!=null) ver.push([ "Efectivo real al cierre", fmtC(ef) ],[ "Diferencia de efectivo", fmtC(ef-esp) ]); }
   return {html:`<section class="pr-sec">${prHead("Cuadre del período", "Del "+fd(d)+" al "+fd(h))}
     <div class="pr-eq">
-      <span>Lo que se debía al inicio (neto)</span><span class="num ${cls(T.start)}">${fmtC(T.start)}</span>
-      <span>+ Depósitos de clientes</span><span class="num">${fmtC(T.deposito)}</span>
-      <span>− Retiros pagados</span><span class="num">${fmtC(-T.retiro)}</span>
-      <span>− Resultado del juego (pierden − ganan)</span><span class="num">${fmtC(-T.juego)}</span>
-      <span>+ Bonos por depósito</span><span class="num">${fmtC(T.bono_deposito)}</span>
-      <span>+ Bonos por pérdida</span><span class="num">${fmtC(T.bono_perdida)}</span>
-      <span class="tot">= Lo que se debe al cierre (neto)</span><span class="num tot ${cls(T.fin)}">${fmtC(T.fin)}</span>
+      <span>Balance pendiente</span><span class="num ${cls(-T.start)}">${fmtC(-T.start)}</span>
+      <span>+ Depósitos de clientes</span><span class="num ${cls(T.deposito)}">${fmtC(T.deposito)}</span>
+      <span>− Retiros o jugadas ganadoras</span><span class="num ${cls(-T.retiro)}">${fmtC(-T.retiro)}</span>
+      <span>+ Resultado de las apuestas (pierden − ganan)</span><span class="num ${cls(T.juego)}">${fmtC(T.juego)}</span>
+      <span>− Bonos por depósito</span><span class="num ${cls(-T.bono_deposito)}">${fmtC(-T.bono_deposito)}</span>
+      <span>− Bonos por pérdida</span><span class="num ${cls(-T.bono_perdida)}">${fmtC(-T.bono_perdida)}</span>
+      <span class="tot">= Balance al cierre</span><span class="num tot ${cls(-T.start+T.deposito-T.retiro+T.juego-T.bonos)}">${fmtC(-T.start+T.deposito-T.retiro+T.juego-T.bonos)}</span>
     </div>
-    <div class="pr-box">${prBox("Resultado del juego",fmtC(T.juego),T.juego>=0?"pos":"neg")}${prBox("Bonos dados",fmtC(T.bonos))}${prBox("Ganancia neta",fmtC(T.banca),T.banca>=0?"pos":"neg")}${prBox("A favor de clientes",fmtC(T.favor))}${prBox("Clientes deben",fmtC(T.deben))}</div>
+    <div class="pr-box">${prBox("Resultado del juego",fmtC(T.juego),T.juego>=0?"pos":"neg")}${prBox("Bonos dados",fmtC(-T.bonos),T.bonos>0.004?"neg":"")}${prBox("Ganancia neta",fmtC(T.banca),T.banca>=0?"pos":"neg")}${prBox("Les debes a clientes",fmtC(T.favor),T.favor>0.004?"neg":"")}${prBox("Clientes te deben",fmtC(T.deben),T.deben>0.004?"pos":"")}</div>
     ${mk.length?`<table><thead><tr><th>Mes</th><th class="r">Depósitos</th><th class="r">Retiros</th><th class="r">Ganan</th><th class="r">Pierden</th><th class="r">Bonos</th><th class="r">Ganancia neta</th><th class="r">Efectivo neto</th></tr></thead>
       <tbody>${mk.map(k=>{ const o=months[k], bo=o.bono_deposito+o.bono_perdida, b=o.debito-o.credito-bo; return `<tr><td>${esc(mesNombre(k))}</td><td class="r num">${fmtC(o.deposito)}</td><td class="r num">${fmtC(o.retiro)}</td><td class="r num">${fmtC(o.credito)}</td><td class="r num">${fmtC(o.debito)}</td><td class="r num">${fmtC(bo)}</td><td class="r num ${cls(b)}">${fmtC(b)}</td><td class="r num">${fmtC(o.deposito-o.retiro)}</td></tr>`; }).join("")}</tbody></table>`:""}
     ${ver.length?`<h2 class="pr-h2">Verificación</h2><div class="pr-eq">${ver.map(x=>`<span>${esc(x[0])}</span><span class="num">${x[1]}</span>`).join("")}</div>`:""}
-    <div class="pr-note">Montos en RD$. El efectivo neto es solo depósitos menos retiros: las ganancias y pérdidas de apuestas no mueven efectivo.</div></section>`};
+    <div class="pr-note">Montos en RD$. Visto desde el dueño: verde suma y rojo resta. El resultado de las apuestas suma si los jugadores pierden más de lo que ganan; los bonos restan. Suma de los saldos de los clientes al cierre, visto desde el dueño: ${fmtC(-T.fin)} (positivo = los clientes te deben). El efectivo neto es solo depósitos menos retiros: las ganancias y pérdidas de apuestas no mueven efectivo.</div></section>`};
 }
 function prMovs(d,h){
   const nm={}; state.clients.forEach(c=>nm[c.id]=c);
