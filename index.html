@@ -1721,7 +1721,8 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     • <b>Arriba del Inicio</b>, cuatro cifras: <b>Recogido hoy</b>, <b>Pendiente en bancas</b>, <b>Deportiva del mes</b> (real, con depósitos) y <b>Gastos del mes</b>. Toca una para ir a su pantalla.<br>
     • <b>En la computadora</b> la app se centra y el Inicio se divide en dos columnas: a la izquierda los módulos, a la derecha las cifras y tablas. El Corte Diario muestra las bancas en dos columnas. En el celular todo sigue igual.<br>
     • <b>Varios consorcios</b>: si tu usuario tiene acceso a más de uno, arriba aparece su nombre con ▾. Tócalo para cambiar; la app se recarga con los datos y permisos de ese consorcio.<br>
-    • <b>Libreta de Clientes</b>: basta con dar el permiso <b>Libreta de Clientes</b> en Ajustes → Usuarios (Ver = solo lectura, Ver y editar = editor). El administrador de PRIME SPORT entra como administrador. Ya no hace falta agregar a la persona aparte dentro de la Libreta.</div>
+    • <b>Libreta de Clientes</b>: basta con dar el permiso <b>Libreta de Clientes</b> en Ajustes → Usuarios (Ver = solo lectura, Ver y editar = editor). El administrador de PRIME SPORT entra como administrador. Ya no hace falta agregar a la persona aparte dentro de la Libreta.<br>
+     • <b>Imprimir en la Libreta</b>: el botón <b>Imprimir</b> (arriba, junto a Actualizar) ofrece 6 reportes: <b>estado de cuenta</b> de un cliente o de todos (uno por página), <b>saldos de clientes</b>, <b>resumen por cliente</b>, <b>cuadre del período</b>, <b>movimientos</b> y <b>bonos</b> (más <b>diferencia al corte</b> si hay corte). Elige el período y, con la casilla <b>Ocultar los clientes que están en 0</b>, quita los que no tienen saldo. En la lista de clientes, el filtro <b>Con saldo (no están en 0)</b> hace lo mismo en pantalla.</div>
   </div>
 
   <div class="panel" style="background:linear-gradient(135deg,#eef6fb,#e3f0f7);border-color:#cfe3ee;">
@@ -2302,7 +2303,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       <div class="si-act" style="color:var(--amber);" onclick="doLogout()">Salir</div>
     </div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v7.5.1 nube · Santo Domingo, RD</div>
+  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v7.5.2 nube · Santo Domingo, RD</div>
 </section>
 
 <!-- NAV -->
@@ -2365,8 +2366,8 @@ window.__supabase = createClient(
 window.dispatchEvent(new Event('supabase-ready'));
 </script>
 <script>
-/* ===================== AdmBca v7.5.1 ===================== */
-const APP_VERSION='7.5.1';
+/* ===================== AdmBca v7.5.2 ===================== */
+const APP_VERSION='7.5.2';
 function idConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.id)||null; }catch(e){ return null; } }
 function nomConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.nombre)||'AdmBca'; }catch(e){ return 'AdmBca'; } }
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
