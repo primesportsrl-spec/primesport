@@ -242,6 +242,7 @@ table.rpt tfoot td{font-weight:700;background:var(--soft);border-top:2px solid v
         <button type="button" data-era="nuevo" aria-pressed="true">Desde el corte</button>
         <button type="button" data-era="historico" aria-pressed="false">Histórico</button>
       </div>
+      <div class="tabs" role="group" aria-label="Mes del histórico" id="mesTabs" hidden></div>
       <button class="primary" id="btnNew" disabled>+ Nuevo cliente</button>
     </div>
   </header>
@@ -347,23 +348,38 @@ const Z=()=>({deposito:0,credito:0,debito:0,retiro:0,bono_deposito:0,bono_perdid
 
 const state = { clients:[], moves:[], selected:null, type:"debito", ready:false, canWrite:false, confirmDel:null, confirmClient:false, mode:"uno", weekStart:null,
   view:"clientes", anulados:[], bonosCfg:{}, desde:"2026-03-01", hasta:todayStr(), sortR:"fin", cuadre:{},
-  corte:null, era:"nuevo", allMoves:[], allAnul:[], unlockHist:false, eraInit:false };
+  corte:null, era:"nuevo", mes:null, allMoves:[], allAnul:[], unlockHist:false, eraInit:false };
 let db=null, downloads=null;
 
 /* ---------- corte: histórico / desde el corte ---------- */
 const fechaLarga = s => { const d=parseYmd(s); return d.getDate()+" "+MESES[d.getMonth()]+" "+d.getFullYear(); };
 const corteF = () => state.corte?.fecha || null;
-function enEra(f){ const cf=corteF(); if(!cf||!f) return true; return state.era==="historico" ? f<=cf : f>cf; }
+const MESES_HIST=["2026-03","2026-04","2026-05","2026-06","2026-07","2026-08","2026-09"];
+const finDeMes = k => { const [y,m]=k.split("-").map(Number); return k+"-"+String(new Date(y,m,0).getDate()).padStart(2,"0"); };
+// mes elegido dentro del histórico: [primer día, último día] (sin pasar del corte)
+function rangoMes(){ const cf=corteF(); if(!cf||state.era!=="historico"||!state.mes) return null; const fin=finDeMes(state.mes); return [state.mes+"-01", fin>cf?cf:fin]; }
+function enEra(f){ const cf=corteF(); if(!cf||!f) return true; if(state.era!=="historico") return f>cf; const r=rangoMes(); return r ? (f>=r[0]&&f<=r[1]) : f<=cf; }
 const fechaFuera = f => !enEra(f);
-function applyEra(){ state.moves=state.allMoves.filter(m=>enEra(m.fecha)); state.anulados=state.allAnul.filter(m=>enEra(m.fecha)); }
+function applyEra(){
+  const r=rangoMes();
+  if (!r){ state.moves=state.allMoves.filter(m=>enEra(m.fecha)); state.anulados=state.allAnul.filter(m=>enEra(m.fecha)); return; }
+  // vista de un mes: igual que octubre, el saldo con que arranca el mes es el acumulado de los meses anteriores
+  const ant={}; for (const m of state.allMoves){ if (m.fecha<r[0]) ant[m.clienteId]=(ant[m.clienteId]||0)+val(m); }
+  state.moves=state.allMoves.filter(m=>m.fecha>=r[0]&&m.fecha<=r[1]);
+  for (const cid in ant){ if (Math.abs(ant[cid])>0.004) state.moves.push({id:"ini_syn_"+cid, clienteId:cid, tipo:"inicial", monto:Math.round(ant[cid]*100)/100, fecha:r[0], nota:"Arrastre de meses anteriores (calculado)", sintetico:true, creado:0}); }
+  state.anulados=state.allAnul.filter(m=>enEra(m.fecha));
+}
 function puedeEscribir(){ return state.canWrite && (state.era!=="historico" || !corteF() || !state.corte.hold || state.unlockHist); }
 function eraDefaults(){
   const cf=corteF(); if(!cf) return;
-  if (state.era==="historico"){ state.desde="2026-03-01"; state.hasta=cf; state.weekStart=mondayOf(cf); }
+  const rm=rangoMes();
+  if (rm){ state.desde=rm[0]; state.hasta=rm[1]; state.weekStart=mondayOf(rm[1]); }
+  else if (state.era==="historico"){ state.desde="2026-03-01"; state.hasta=cf; state.weekStart=mondayOf(cf); }
   else { state.desde=addDays(cf,1); state.hasta=todayStr()>cf?todayStr():addDays(cf,1); state.weekStart=mondayOf(todayStr()>cf?todayStr():addDays(cf,1)); }
 }
-function setEra(e){ state.era=e; state.unlockHist=false; state.confirmDel=null; applyEra(); eraDefaults(); render(); window.scrollTo({top:0}); }
-function msgFecha(){ const cf=corteF(); return state.era==="historico" ? `Fecha después del corte. En el histórico solo van fechas hasta el ${fechaLarga(cf)}; usa “Desde ${fechaLarga(addDays(cf,1))}”.` : `Fecha antes del corte. Aquí solo van fechas desde el ${fechaLarga(addDays(cf,1))}; lo anterior va en el Histórico.`; }
+function setMes(k){ state.mes=k||null; state.unlockHist=false; state.confirmDel=null; applyEra(); eraDefaults(); render(); window.scrollTo({top:0}); }
+function setEra(e){ state.era=e; state.mes=null; state.unlockHist=false; state.confirmDel=null; applyEra(); eraDefaults(); render(); window.scrollTo({top:0}); }
+function msgFecha(){ const cf=corteF(); if (rangoMes()) return `Fecha fuera de ${mesNombre(state.mes)}. En esta vista solo van fechas de ese mes; cambia de mes arriba.`; return state.era==="historico" ? `Fecha después del corte. En el histórico solo van fechas hasta el ${fechaLarga(cf)}; usa “Desde ${fechaLarga(addDays(cf,1))}”.` : `Fecha antes del corte. Aquí solo van fechas desde el ${fechaLarga(addDays(cf,1))}; lo anterior va en el Histórico.`; }
 // saldo de la libreta al corte vs. saldo confirmado (arrastre con fecha del día siguiente al corte)
 function diffCorte(){
   const cf=corteF(), d1=addDays(cf,1), r={};
@@ -379,8 +395,15 @@ function renderEra(){
   tabs.querySelector('[data-era="nuevo"]').textContent="Desde "+fechaLarga(addDays(cf,1));
   tabs.querySelector('[data-era="historico"]').textContent="Histórico hasta "+fechaLarga(cf);
   tabs.querySelectorAll("[data-era]").forEach(b=>b.setAttribute("aria-pressed", b.dataset.era===state.era));
+  const mt=$("mesTabs"); mt.hidden = state.era!=="historico";
+  if (!mt.hidden) mt.innerHTML=`<button type="button" data-mes="" aria-pressed="${!state.mes}">Todo</button>`+MESES_HIST.filter(k=>k<=cf.slice(0,7)).map(k=>`<button type="button" data-mes="${k}" aria-pressed="${state.mes===k}">${esc(mesNombre(k).split(" ")[0])}</button>`).join("");
   bn.hidden=false;
-  if (state.era==="historico"){
+  if (state.era==="historico" && state.mes){
+    let ini=0, fin=0; for (const m of state.moves){ if (m.sintetico) ini+=m.monto; fin+=val(m); }
+    bn.className="banner era";
+    bn.innerHTML=`<span><b>${esc(mesNombre(state.mes))}</b> · ${state.corte.hold&&!state.unlockHist?"cerrado (en revisión)":"abierto para correcciones"}. Arrastre de meses anteriores: <b class="num">${fmt(ini)}</b> · saldo al cierre del mes: <b class="num">${fmt(fin)}</b> (positivo = a favor de clientes). Solo se aceptan fechas de este mes.</span>`
+      + (state.canWrite&&state.corte.hold&&rol==="admin"?`<button type="button" id="unlockHist">${state.unlockHist?"Volver a cerrar":"Permitir correcciones"}</button>`:"");
+  } else if (state.era==="historico"){
     let tl=0, tc=0; for (const x of Object.values(diffCorte())){ tl+=x.libreta; tc+=x.conf; }
     bn.className="banner era";
     bn.innerHTML=`<span><b>Histórico hasta el ${esc(fechaLarga(cf))} 11:59 PM</b> · ${state.corte.hold&&!state.unlockHist?"cerrado (en revisión)":"abierto para correcciones"}. La libreta da ${fmt(tl)} neto a favor de clientes; el saldo confirmado es ${fmt(tc)}. Diferencia por encontrar: <b class="num">${fmt(tl-tc)}</b>.</span>`
@@ -473,7 +496,7 @@ function renderDetail(b,t){
         ${c.nota?`<div class="note" style="margin-top:4px">${esc(c.nota)}</div>`:""}
         ${tt.inicial?`<div class="note" style="margin-top:4px">Incluye saldo inicial de ${fmt(tt.inicial)}</div>`:""}
         <div class="note" style="margin-top:4px">${esc(cfgText(cfgFor(c)))}${cfgFor(c).propio?" (propio de este cliente)":""}</div>
-        ${corteF()&&state.era==="historico"?(()=>{ const x=diffCorte()[c.id]; return `<div class="note" style="margin-top:4px">Al corte del ${esc(fechaLarga(corteF()))}: libreta ${fmt(x.libreta)} · confirmado ${fmt(x.conf)} · <b class="num ${cls(x.dif)}">diferencia ${fmt(x.dif)}</b></div>`; })():""}
+        ${corteF()&&state.era==="historico"&&!state.mes?(()=>{ const x=diffCorte()[c.id]; return `<div class="note" style="margin-top:4px">Al corte del ${esc(fechaLarga(corteF()))}: libreta ${fmt(x.libreta)} · confirmado ${fmt(x.conf)} · <b class="num ${cls(x.dif)}">diferencia ${fmt(x.dif)}</b></div>`; })():""}
       </div>
       <div class="balance">
         <div class="label">Saldo</div>
@@ -498,7 +521,7 @@ function renderDetail(b,t){
       </div>
       <div class="mvform">
         <div class="field"><label class="label" for="mvMonto">Monto RD$</label><input id="mvMonto" class="num" type="number" min="0.01" step="0.01" inputmode="decimal" required placeholder="0.00"></div>
-        <div class="field"><label class="label" for="mvFecha">Fecha</label><input id="mvFecha" type="date" value="${fechaFuera(todayStr())?(state.era==="historico"?corteF():addDays(corteF(),1)):todayStr()}" required></div>
+        <div class="field"><label class="label" for="mvFecha">Fecha</label><input id="mvFecha" type="date" value="${fechaFuera(todayStr())?(rangoMes()?rangoMes()[1]:state.era==="historico"?corteF():addDays(corteF(),1)):todayStr()}" required></div>
         <div class="field full"><label class="label" for="mvNota">Detalle (opcional)</label><input id="mvNota" maxlength="140" placeholder="Ticket, partido, banca, forma de pago…"></div>
         <button class="primary full" type="submit" id="mvSave">Registrar</button>
       </div>
@@ -529,9 +552,9 @@ function renderDetail(b,t){
           <td>${esc(m.nota||"")}</td>
           <td class="r num ${val(m)>0?"pos":"neg"}">${val(m)>0?"+":"−"}${fmt(Math.abs(val(m)))}</td>
           <td class="r num">${fmt(runMap[m.id])}</td>
-          ${w?`<td class="r">${state.confirmDel===m.id
+          ${w?(m.sintetico?"<td></td>":`<td class="r">${state.confirmDel===m.id
             ?`<span class="confirm"><button class="danger" data-delok="${esc(m.id)}">Anular</button><button class="ghost" data-delno>No</button></span>`
-            :`<button class="ghost" data-del="${esc(m.id)}" aria-label="Anular movimiento">Anular</button>`}</td>`:""}
+            :`<button class="ghost" data-del="${esc(m.id)}" aria-label="Anular movimiento">Anular</button>`}</td>`):""}
         </tr>`).join("")}</tbody></table></div>`
       :`<div class="empty">Sin movimientos todavía. Registra el primero arriba.</div>`}
       ${(()=>{ const an=state.anulados.filter(m=>m.clienteId===c.id); return an.length?`<details class="note"><summary>Movimientos anulados (${an.length})</summary>
@@ -578,11 +601,12 @@ function renderReport(){
   const efEsperado = ei!=null ? ei + T.deposito - T.retiro : null;
   const mk=Object.keys(months).sort();
   const cfR=corteF();
-  const quick=cfR ? (state.era==="historico"
+  const rmR=rangoMes();
+  const quick=rmR ? [[rmR[0],rmR[1],"Todo "+mesNombre(state.mes).split(" ")[0]]] : cfR ? (state.era==="historico"
       ? [["2026-03-01",cfR,"Todo el histórico"],["2026-06-01","2026-09-30","Jun – Sep 2026"],[cfR.slice(0,8)+"01",cfR,"Último mes"]]
       : [[addDays(cfR,1),todayStr(),"Desde el corte"],[todayStr().slice(0,8)+"01",todayStr(),"Este mes"],[mondayOf(todayStr()),addDays(mondayOf(todayStr()),6),"Esta semana"]])
     : [["2026-03-01",todayStr(),"Desde marzo 2026"],["2026-06-01","2026-09-30","Jun – Sep 2026"],[todayStr().slice(0,8)+"01",todayStr(),"Este mes"],[mondayOf(todayStr()),addDays(mondayOf(todayStr()),6),"Esta semana"],["2000-01-01","2099-12-31","Todo"]];
-  const dc = cfR && state.era==="historico" ? Object.values(diffCorte()).filter(x=>Math.abs(x.libreta)>0.004||Math.abs(x.conf)>0.004).sort((a,z)=>Math.abs(z.dif)-Math.abs(a.dif)) : null;
+  const dc = cfR && state.era==="historico" && !state.mes ? Object.values(diffCorte()).filter(x=>Math.abs(x.libreta)>0.004||Math.abs(x.conf)>0.004).sort((a,z)=>Math.abs(z.dif)-Math.abs(a.dif)) : null;
   const dcT = dc ? dc.reduce((a,x)=>({l:a.l+x.libreta,c:a.c+x.conf,d:a.d+x.dif}),{l:0,c:0,d:0}) : null;
   el.innerHTML = `<div class="rep">
     <section class="pane">
@@ -923,6 +947,7 @@ document.addEventListener("click", async e=>{
   if (t.id==="prRepBtn"){ openPrint("resumen"); return; }
   if (t.id==="editC"){ openClientModal(state.clients.find(c=>c.id===state.selected)); return; }
   if (t.dataset.era){ if(t.dataset.era!==state.era) setEra(t.dataset.era); return; }
+  if (t.dataset.mes!==undefined && t.closest("#mesTabs")){ setMes(t.dataset.mes); return; }
   if (t.id==="unlockHist"){ state.unlockHist=!state.unlockHist; render(); toast(state.unlockHist?"Histórico abierto para correcciones (solo en esta sesión)":"Histórico cerrado"); return; }
   if (t.dataset.view){ state.view=t.dataset.view; render(); window.scrollTo({top:0}); return; }
   if (t.dataset.range){ [state.desde,state.hasta]=t.dataset.range.split("|"); renderReport(); return; }
@@ -1233,11 +1258,13 @@ const fd = s => { if(!s) return ""; const [y,m,d]=s.split("-"); return d+"/"+m+"
 const sitTxt = (c,v) => v>0.004?"Se le debe al cliente":v<-0.004?(c.limite>0&&-v>c.limite?"Debe · pasó el límite":"El cliente debe"):"Al día";
 function prEraRange(){
   const cf=corteF();
+  if (cf && rangoMes()) return rangoMes();
   if (cf) return state.era==="historico" ? ["2026-03-01",cf] : [addDays(cf,1), todayStr()>cf?todayStr():addDays(cf,1)];
   return ["2000-01-01", todayStr()];
 }
 function prEraTxt(){
   const cf=corteF(); if(!cf) return "";
+  if (rangoMes()) return mesNombre(state.mes);
   return state.era==="historico" ? "Histórico hasta "+fechaLarga(cf) : "Desde "+fechaLarga(addDays(cf,1));
 }
 function prHead(titulo, sub){
@@ -1274,7 +1301,7 @@ function prSaldos(){
   if (!L.length) return null;
   let favor=0, deben=0; for (const c of L){ const v=b[c.id]; if(v>0.004) favor+=v; else if(v<-0.004) deben+=-v; }
   const cf=corteF(), fil={all:"Todos los clientes",neg:"Clientes que deben",pos:"Clientes con saldo a favor",over:"Clientes que pasaron su límite",cero:"Clientes al día"}[pr.fil];
-  const al = state.era==="historico"&&cf ? "al corte del "+fechaLarga(cf) : "al "+fechaLarga(todayStr());
+  const al = state.era==="historico"&&cf ? (rangoMes()?"al cierre de "+mesNombre(state.mes):"al corte del "+fechaLarga(cf)) : "al "+fechaLarga(todayStr());
   return {html:`<section class="pr-sec">${prHead("Saldos de clientes", fil+" · "+al)}
     <div class="pr-box">${prBox("Clientes",L.length)}${prBox("A favor de clientes",fmtC(favor),"pos")}${prBox("Clientes deben",fmtC(deben),"neg")}${prBox("Neto",fmtC(favor-deben),cls(favor-deben))}</div>
     <table><thead><tr><th>#</th><th>Código</th><th>Cliente</th><th>Teléfono</th><th class="r">Límite</th><th class="r">Saldo</th><th>Situación</th></tr></thead>
