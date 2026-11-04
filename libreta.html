@@ -558,8 +558,8 @@ function renderDetail(b,t){
         </tr>`).join("")}</tbody></table></div>`
       :`<div class="empty">Sin movimientos todavía. Registra el primero arriba.</div>`}
       ${(()=>{ const an=state.anulados.filter(m=>m.clienteId===c.id); return an.length?`<details class="note"><summary>Movimientos anulados (${an.length})</summary>
-        <div class="tablewrap" style="margin-top:8px"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Detalle</th><th class="r">Monto</th><th>Anulado el</th></tr></thead>
-        <tbody>${an.map(m=>`<tr style="text-decoration:line-through;opacity:.75"><td class="num">${esc(m.fecha)}</td><td>${TYPES[m.tipo].label}</td><td>${esc(m.nota||"")}</td><td class="r num">${fmt(val(m))}</td><td class="num" style="text-decoration:none">${esc((m.anulado_en||"").slice(0,16).replace("T"," "))}</td></tr>`).join("")}</tbody></table></div></details>`:""; })()}
+        <div class="tablewrap" style="margin-top:8px"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Detalle</th><th class="r">Monto</th><th>Anulado el</th><th></th></tr></thead>
+        <tbody>${an.map(m=>`<tr><td class="num" style="text-decoration:line-through;opacity:.75">${esc(m.fecha)}</td><td style="text-decoration:line-through;opacity:.75">${TYPES[m.tipo].label}</td><td style="text-decoration:line-through;opacity:.75">${esc(m.nota||"")}</td><td class="r num" style="text-decoration:line-through;opacity:.75">${fmt(val(m))}</td><td class="num">${esc((m.anulado_en||"").slice(0,16).replace("T"," "))}</td><td>${w&&m.tipo!=="inicial"?`<button type="button" data-restore="${esc(m.id)}">Restaurar</button>`:""}</td></tr>`).join("")}</tbody></table></div></details>`:""; })()}
     </div>
   </div>`;
   for (const id in keep){ const i=$(id); if(i) i.value=keep[id]; }
@@ -964,6 +964,7 @@ document.addEventListener("click", async e=>{
   if (t.id==="btnBonos"){ openBonos(); return; }
   if (t.dataset.del){ state.confirmDel=t.dataset.del; render(); return; }
   if (t.hasAttribute("data-delno")){ state.confirmDel=null; render(); return; }
+  if (t.dataset.restore){ t.disabled=true; try{ await db.collection("movimientos").doc(t.dataset.restore).restore(); toast("Movimiento restaurado"); }catch(err){ fail(err); } return; }
   if (t.dataset.delok){ t.disabled=true; try{ await db.collection("movimientos").doc(t.dataset.delok).delete(); state.confirmDel=null; toast("Movimiento anulado"); }catch(err){ fail(err); } return; }
   if (t.id==="csv"){ exportCsv(); return; }
 });
@@ -1074,6 +1075,12 @@ function docRef(name,id){
       const cid=body.clienteId, ex=realIni(cid);
       if (ex) await q(sb.from(T.movimientos).update({monto:body.monto, fecha:body.fecha}).eq("id",ex._id));
       else await q(sb.from(T.movimientos).insert({cliente_id:cid, tipo:"inicial", monto:body.monto, fecha:body.fecha, nota:"Saldo inicial"}));
+      scheduleReload();
+    },
+    async restore(){
+      const cur=state.allAnul.find(m=>m.id===id);
+      const nota=(cur?.nota||"").replace(/\s*\|\s*ANULADO[^|]*$/,"");
+      await q(sb.from(T.movimientos).update({anulado:false, anulado_en:null, anulado_por:null, nota}).eq("id",id));
       scheduleReload();
     },
     async delete(){
@@ -1253,7 +1260,7 @@ const PR_TIPOS=[
   {id:"bonos", t:"Bonos del período", d:"Bonos por depósito y por pérdida que recibió cada cliente."},
   {id:"corte", t:"Diferencia al corte", d:"Lo que da la libreta al corte contra el saldo confirmado, por cliente."},
 ];
-const pr={tipo:"estado", cli:"", d:"", h:"", fil:"all", ord:"nombre", tp:"", sin:true, no0:false};
+const pr={tipo:"estado", cli:"", d:"", h:"", fil:"all", ord:"nombre", tp:"", sin:true, no0:false, arr:true};
 const fd = s => { if(!s) return ""; const [y,m,d]=s.split("-"); return d+"/"+m+"/"+y; };
 const sitTxt = (c,v) => v>0.004?"Se le debe al cliente":v<-0.004?(c.limite>0&&-v>c.limite?"Debe · pasó el límite":"El cliente debe"):"Al día";
 function prEraRange(){
@@ -1402,7 +1409,9 @@ function prBuild(){
   return null;
 }
 function doPrint(){
-  const r=prBuild();
+  let r; const sv=state.moves;
+  if (!pr.arr && pr.tipo!=="corte") state.moves=sv.filter(m=>m.tipo!=="inicial");
+  try{ r=prBuild(); } finally { state.moves=sv; }
   if (!r){ toast("No hay datos para imprimir con esa selección"); return; }
   const wide=(PR_TIPOS.find(x=>x.id===pr.tipo)||{}).wide;
   $("printArea").innerHTML=`<div class="pr">${r.html}</div>`;
@@ -1425,6 +1434,7 @@ function prOptsHtml(){
   if (t==="movs") opts.push(`<div class="field"><label class="label" for="prTp">Tipo de movimiento</label><select id="prTp"><option value="">Todos</option>${["deposito","retiro","credito","debito","bono_deposito","bono_perdida","inicial"].map(k=>`<option value="${k}" ${sel(pr.tp,k)}>${esc(TYPES[k].label)}</option>`).join("")}</select></div>`);
   if (t==="corte") opts.push(`<p class="note" style="margin:0">${corteF()?"Compara lo anotado hasta el corte del "+esc(fechaLarga(corteF()))+" con el saldo confirmado.":"Esta libreta no tiene un corte configurado."}</p>`);
   if (["estado","saldos","resumen"].includes(t) && !(t==="estado"&&pr.cli)) opts.push(`<label class="row note"><input id="prNo0" type="checkbox" style="width:auto" ${pr.no0?"checked":""}> Ocultar los clientes que están en 0</label>`);
+  if (t!=="corte") opts.push(`<label class="row note"><input id="prArr" type="checkbox" style="width:auto" ${pr.arr?"checked":""}> Incluir arrastre de balance (saldo inicial). Desmarcado: solo los movimientos del período</label>`);
   const era=prEraTxt(); if (era) opts.push(`<p class="note" style="margin:0">Se imprime lo que estás viendo: <b>${esc(era)}</b>. Cambia de pestaña arriba para imprimir el otro período.</p>`);
   return opts.join("");
 }
@@ -1464,6 +1474,7 @@ function openPrint(tipo, cli){
     else if (id==="prTp") pr.tp=el.value;
     else if (id==="prSin") pr.sin=el.checked;
     else if (id==="prNo0") pr.no0=el.checked;
+    else if (id==="prArr") pr.arr=el.checked;
     if ((id==="prD"||id==="prH")&&pr.d>pr.h){ const x=pr.d; pr.d=pr.h; pr.h=x; draw(); }
   };
   root.onsubmit=e=>{ e.preventDefault(); doPrint(); };
