@@ -1260,7 +1260,7 @@ const PR_TIPOS=[
   {id:"bonos", t:"Bonos del período", d:"Bonos por depósito y por pérdida que recibió cada cliente."},
   {id:"corte", t:"Diferencia al corte", d:"Lo que da la libreta al corte contra el saldo confirmado, por cliente."},
 ];
-const pr={tipo:"estado", cli:"", d:"", h:"", fil:"all", ord:"nombre", tp:"", sin:true, no0:false, arr:true};
+const pr={tipo:"estado", cli:"", d:"", h:"", fil:"all", ord:"nombre", tp:"", sin:true, no0:false, arr:true, ver:false};
 const fd = s => { if(!s) return ""; const [y,m,d]=s.split("-"); return d+"/"+m+"/"+y; };
 const sitTxt = (c,v) => v>0.004?"Se le debe al cliente":v<-0.004?(c.limite>0&&-v>c.limite?"Debe · pasó el límite":"El cliente debe"):"Al día";
 function prEraRange(){
@@ -1276,11 +1276,11 @@ function prEraTxt(){
 }
 function prHead(titulo, sub){
   const era=prEraTxt(), quien=($("who").textContent||"").split(" · ")[0];
-  return `<div class="pr-head"><div><div class="pr-brand">Libreta de Clientes</div><h1>${esc(titulo)}</h1>${sub?`<div class="pr-sub">${esc(sub)}</div>`:""}</div>
+  return `<div class="pr-head"><div><h1>${esc(titulo)}</h1>${sub?`<div class="pr-sub">${esc(sub)}</div>`:""}</div>
     <div class="pr-meta">${era?`<div>${esc(era)}</div>`:""}<div>Impreso: ${esc(new Date().toLocaleString("es-DO"))}</div>${quien?`<div>${esc(quien)}</div>`:""}</div></div>`;
 }
 const prBox = (l,v,c) => `<div><span>${esc(l)}</span><b class="num ${c||""}">${v}</b></div>`;
-const NOTA_SALDO = `Montos en RD$. Saldo positivo = se le debe al cliente. Saldo negativo = el cliente debe.`;
+const NOTA_SALDO = `Saldo positivo = se le debe al cliente. Saldo negativo = el cliente debe.`;
 
 function prEstado(c,d,h,force){
   const quitar0=!force&&pr.no0;
@@ -1328,7 +1328,7 @@ function prResumen(d,h){
     <table><thead><tr><th>Cliente</th><th class="r">Saldo al inicio</th><th class="r">+ Depósitos</th><th class="r">− Retiros</th><th class="r">+ Ganan</th><th class="r">− Pierden</th><th class="r">+ Bonos</th><th class="r">Saldo al cierre</th><th class="r">Balance neto</th></tr></thead>
     <tbody>${L.map(row).join("")}</tbody>
     <tfoot><tr><td>Total (${L.length})</td><td class="r num">${fmtC(T.start)}</td><td class="r num">${fmtC(T.deposito)}</td><td class="r num">${fmtC(T.retiro)}</td><td class="r num">${fmtC(T.credito)}</td><td class="r num">${fmtC(T.debito)}</td><td class="r num">${fmtC(T.bonos)}</td><td class="r num">${fmtC(T.fin)}</td><td class="r num">${fmtC(T.banca)}</td></tr></tfoot></table>
-    <div class="pr-note">Montos en RD$. Saldo positivo = se le debe al cliente. Balance neto = lo que perdieron los clientes menos lo que ganaron, menos los bonos.${pr.sin?" No se listan los clientes sin saldo ni movimiento.":""}</div></section>`};
+    <div class="pr-note">Saldo positivo = se le debe al cliente. Balance neto = lo que perdieron los clientes menos lo que ganaron, menos los bonos.${pr.sin?" No se listan los clientes sin saldo ni movimiento.":""}</div></section>`};
 }
 function prCuadre(d,h){
   const {T,months}=periodData(d,h); const mk=Object.keys(months).sort();
@@ -1351,8 +1351,8 @@ function prCuadre(d,h){
     <div class="pr-box">${prBox("Resultado del juego",fmtC(T.juego),T.juego>=0?"pos":"neg")}${prBox("Bonos dados",fmtC(-T.bonos),T.bonos>0.004?"neg":"")}${prBox("Balance neto",fmtC(T.banca),T.banca>=0?"pos":"neg")}${prBox("Les debes a clientes",fmtC(T.favor),T.favor>0.004?"neg":"")}${prBox("Clientes te deben",fmtC(T.deben),T.deben>0.004?"pos":"")}</div>
     ${mk.length?`<table><thead><tr><th>Mes</th><th class="r">Depósitos</th><th class="r">Retiros</th><th class="r">Ganan</th><th class="r">Pierden</th><th class="r">Bonos</th><th class="r">Balance neto</th><th class="r">Efectivo neto</th></tr></thead>
       <tbody>${mk.map(k=>{ const o=months[k], bo=o.bono_deposito+o.bono_perdida, b=o.debito-o.credito-bo; return `<tr><td>${esc(mesNombre(k))}</td><td class="r num">${fmtC(o.deposito)}</td><td class="r num">${fmtC(o.retiro)}</td><td class="r num">${fmtC(o.credito)}</td><td class="r num">${fmtC(o.debito)}</td><td class="r num">${fmtC(bo)}</td><td class="r num ${cls(b)}">${fmtC(b)}</td><td class="r num">${fmtC(o.deposito-o.retiro)}</td></tr>`; }).join("")}</tbody></table>`:""}
-    ${ver.length?`<h2 class="pr-h2">Verificación</h2><div class="pr-eq">${ver.map(x=>`<span>${esc(x[0])}</span><span class="num">${x[1]}</span>`).join("")}</div>`:""}
-    <div class="pr-note">Montos en RD$. Visto desde el dueño: verde suma y rojo resta. El Balance al cierre es la suma de los saldos de los clientes: positivo = los clientes te deben; negativo = tú les debes. El resultado de las apuestas suma si los jugadores pierden más de lo que ganan; los bonos restan. El efectivo neto es solo depósitos menos retiros: las ganancias y pérdidas de apuestas no mueven efectivo.</div></section>`};
+    ${pr.ver&&ver.length?`<h2 class="pr-h2">Verificación</h2><div class="pr-eq">${ver.map(x=>`<span>${esc(x[0])}</span><span class="num">${x[1]}</span>`).join("")}</div>`:""}
+    <div class="pr-note">Visto desde el dueño: verde suma y rojo resta. El Balance al cierre es la suma de los saldos de los clientes: positivo = los clientes te deben; negativo = tú les debes. El resultado de las apuestas suma si los jugadores pierden más de lo que ganan; los bonos restan. El efectivo neto es solo depósitos menos retiros: las ganancias y pérdidas de apuestas no mueven efectivo.</div></section>`};
 }
 function prMovs(d,h){
   const nm={}; state.clients.forEach(c=>nm[c.id]=c);
@@ -1367,7 +1367,7 @@ function prMovs(d,h){
     <h2 class="pr-h2">Por tipo</h2>
     <table style="max-width:420px"><thead><tr><th>Tipo</th><th class="r">Cantidad</th><th class="r">Monto</th></tr></thead>
     <tbody>${Object.keys(por).map(k=>`<tr><td>${esc(TYPES[k].label)}</td><td class="r num">${por[k].n}</td><td class="r num">${fmtC(por[k].t)}</td></tr>`).join("")}</tbody></table>
-    <div class="pr-note">Montos en RD$. Positivo = aumenta lo que se le debe al cliente; negativo = lo reduce.</div></section>`};
+    <div class="pr-note">Positivo = aumenta lo que se le debe al cliente; negativo = lo reduce.</div></section>`};
 }
 function prBonos(d,h){
   const nm={}; state.clients.forEach(c=>nm[c.id]=c); const por={};
@@ -1380,7 +1380,7 @@ function prBonos(d,h){
     <table><thead><tr><th>Cliente</th><th class="r">Cantidad</th><th class="r">Bono depósito</th><th class="r">Bono pérdida</th><th class="r">Total</th></tr></thead>
     <tbody>${L.map(x=>`<tr><td>${esc(x.c.nombre)}${x.c.codigo?` <span class="pr-note">${esc(x.c.codigo)}</span>`:""}</td><td class="r num">${x.n}</td><td class="r num">${fmtC(x.dep)}</td><td class="r num">${fmtC(x.per)}</td><td class="r num"><b>${fmtC(x.dep+x.per)}</b></td></tr>`).join("")}</tbody>
     <tfoot><tr><td>Total</td><td class="r num">${T.n}</td><td class="r num">${fmtC(T.dep)}</td><td class="r num">${fmtC(T.per)}</td><td class="r num">${fmtC(T.dep+T.per)}</td></tr></tfoot></table>
-    <div class="pr-note">Montos en RD$.</div></section>`};
+    </section>`};
 }
 function prCorte(){
   const cf=corteF(); if(!cf) return null;
@@ -1391,7 +1391,7 @@ function prCorte(){
     <table><thead><tr><th>Cliente</th><th class="r">Libreta al corte</th><th class="r">Confirmado</th><th class="r">Diferencia</th></tr></thead>
     <tbody>${dc.map(x=>`<tr><td>${esc([x.c.codigo,x.c.nombre].filter(Boolean).join(" · "))}</td><td class="r num ${cls(x.libreta)}">${fmtC(x.libreta)}</td><td class="r num ${cls(x.conf)}">${fmtC(x.conf)}</td><td class="r num ${cls(x.dif)}"><b>${fmtC(x.dif)}</b></td></tr>`).join("")}</tbody>
     <tfoot><tr><td>Total</td><td class="r num">${fmtC(T.l)}</td><td class="r num">${fmtC(T.c)}</td><td class="r num">${fmtC(T.d)}</td></tr></tfoot></table>
-    <div class="pr-note">Montos en RD$. Positivo = a favor del cliente. La diferencia es lo que la libreta da con todo lo anotado hasta el corte, menos el saldo confirmado con que arranca el período nuevo.</div></section>`};
+    <div class="pr-note">Positivo = a favor del cliente. La diferencia es lo que la libreta da con todo lo anotado hasta el corte, menos el saldo confirmado con que arranca el período nuevo.</div></section>`};
 }
 function prBuild(){
   const d=pr.d, h=pr.h;
@@ -1434,6 +1434,7 @@ function prOptsHtml(){
   if (t==="movs") opts.push(`<div class="field"><label class="label" for="prTp">Tipo de movimiento</label><select id="prTp"><option value="">Todos</option>${["deposito","retiro","credito","debito","bono_deposito","bono_perdida","inicial"].map(k=>`<option value="${k}" ${sel(pr.tp,k)}>${esc(TYPES[k].label)}</option>`).join("")}</select></div>`);
   if (t==="corte") opts.push(`<p class="note" style="margin:0">${corteF()?"Compara lo anotado hasta el corte del "+esc(fechaLarga(corteF()))+" con el saldo confirmado.":"Esta libreta no tiene un corte configurado."}</p>`);
   if (["estado","saldos","resumen"].includes(t) && !(t==="estado"&&pr.cli)) opts.push(`<label class="row note"><input id="prNo0" type="checkbox" style="width:auto" ${pr.no0?"checked":""}> Ocultar los clientes que están en 0</label>`);
+  if (t==="cuadre") opts.push(`<label class="row note"><input id="prVer" type="checkbox" style="width:auto" ${pr.ver?"checked":""}> Incluir la verificación (reporte del sistema y efectivo)</label>`);
   if (t!=="corte") opts.push(`<label class="row note"><input id="prArr" type="checkbox" style="width:auto" ${pr.arr?"checked":""}> Incluir arrastre de balance (saldo inicial). Desmarcado: solo los movimientos del período</label>`);
   const era=prEraTxt(); if (era) opts.push(`<p class="note" style="margin:0">Se imprime lo que estás viendo: <b>${esc(era)}</b>. Cambia de pestaña arriba para imprimir el otro período.</p>`);
   return opts.join("");
@@ -1475,6 +1476,7 @@ function openPrint(tipo, cli){
     else if (id==="prSin") pr.sin=el.checked;
     else if (id==="prNo0") pr.no0=el.checked;
     else if (id==="prArr") pr.arr=el.checked;
+    else if (id==="prVer") pr.ver=el.checked;
     if ((id==="prD"||id==="prH")&&pr.d>pr.h){ const x=pr.d; pr.d=pr.h; pr.h=x; draw(); }
   };
   root.onsubmit=e=>{ e.preventDefault(); doPrint(); };
