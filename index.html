@@ -1698,6 +1698,15 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     • Los símbolos <b>&lt;</b> y <b>&gt;</b> escritos en notas o nombres se muestran como ‹ ›: es una protección para que nadie pueda meter código en la pantalla de otro usuario.</div>
   </div>
 
+  <div class="panel" style="background:linear-gradient(135deg,#eef7f1,#dff0e5);border-color:#bfe0c9;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><div style="width:30px;height:30px;border-radius:9px;background:#163a24;color:#8fdcaa;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">✓</div><h3 style="font-size:15px;font-weight:700;">Guardado más rápido y seguro <span style="font-size:11px;color:#2c7a4a;font-weight:800;">NUEVO v7.5.3</span></h3></div>
+    <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">
+    • <b>Un solo clic en Guardar.</b> Mientras guarda, el botón se pone gris y dice <b>"Guardando…"</b>; un segundo clic no hace nada. Espera el aviso verde. Antes, un doble clic lanzaba dos guardados y salía el error "duplicate key" aunque los datos sí quedaban.<br>
+    • <b>Cuadre Mensual</b> (ingresos, gastos de banca, gastos de oficina, prorrateo e importar gastos), <b>Virtuales</b> e <b>Incentivos</b> guardan todo de una vez en vez de renglón por renglón: tarda una fracción de segundo.<br>
+    • Si otro equipo ya había guardado ese mismo renglón, la app lo <b>actualiza</b> en vez de dar error. Si de verdad no se pudo guardar, sale <b>"NO se guardó"</b> y la pantalla vuelve a mostrar lo que hay en la nube.<br>
+    • Al volver a la app o pulsar <b>Actualizar</b>, solo se bajan los movimientos nuevos, editados o borrados desde la última vez (antes se bajaban todos, unos 6,000). Si algo no cuadra, se baja todo como antes.</div>
+  </div>
+
   <div class="panel" style="background:linear-gradient(135deg,#f1f0fa,#e6e3f5);border-color:#d3cdee;">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><div style="width:30px;height:30px;border-radius:9px;background:#2a2440;color:#b9a5e8;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">★</div><h3 style="font-size:15px;font-weight:700;">Varios consorcios <span style="font-size:11px;color:#5a4a8a;font-weight:800;">NUEVO v7.5</span></h3></div>
     <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">
@@ -2303,7 +2312,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       <div class="si-act" style="color:var(--amber);" onclick="doLogout()">Salir</div>
     </div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v7.5.2 nube · Santo Domingo, RD</div>
+  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v7.5.3 nube · Santo Domingo, RD</div>
 </section>
 
 <!-- NAV -->
@@ -2366,8 +2375,8 @@ window.__supabase = createClient(
 window.dispatchEvent(new Event('supabase-ready'));
 </script>
 <script>
-/* ===================== AdmBca v7.5.2 ===================== */
-const APP_VERSION='7.5.2';
+/* ===================== AdmBca v7.5.3 ===================== */
+const APP_VERSION='7.5.3';
 function idConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.id)||null; }catch(e){ return null; } }
 function nomConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.nombre)||'AdmBca'; }catch(e){ return 'AdmBca'; } }
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -2548,7 +2557,8 @@ async function loadState(){
     fetchAllSafe('categorias_ingreso'),
     fetchAllSafe('categorias_gasto'),
     fetchAllSafe('tipos_aporte'),
-    fetchAllRows('movimientos')   // paginado: trae TODOS los movimientos
+    fetchAllRows('movimientos'),   // paginado: trae TODOS los movimientos
+    marcarCursorMov()              // v7.5.3: punto de partida para las recargas incrementales
   ]);
   if(suc.error||ci.error||cg.error||ta.error){
     throw (suc.error||ci.error||cg.error||ta.error);
@@ -2870,6 +2880,74 @@ async function conBloqueo(btnId,fn){
     if(b){ b.disabled=false; b.style.opacity=''; b.textContent=txt; }
   }
 }
+/* v7.5.3 — Candado para los botones que guardan.
+   Un doble clic (o un segundo clic porque tardaba) lanzaba dos guardados a la
+   vez y el segundo daba "duplicate key". Mientras una de estas funciones
+   trabaja, el botón queda bloqueado con "Guardando…" y cualquier llamada
+   repetida se ignora. Se suelta solo al terminar (o a los 60 s, por si acaso). */
+const __candados={};
+function ponerCandado(nombre,texto){
+  const orig=window[nombre];
+  if(typeof orig!=='function'||orig.__candado) return;
+  const envuelta=async function(...args){
+    if(__candados[nombre]) return;
+    __candados[nombre]=true;
+    const ev=window.event;
+    const b=(ev&&ev.target&&ev.target.closest)?ev.target.closest('button'):null;
+    const html=b?b.innerHTML:'';
+    const soltar=()=>{ __candados[nombre]=false; if(b&&b.isConnected&&b.dataset.candado==='1'){ b.disabled=false; b.style.opacity=''; b.innerHTML=html; delete b.dataset.candado; } };
+    if(b){ b.dataset.candado='1'; b.disabled=true; b.style.opacity='.6'; b.textContent=texto||'Guardando…'; }
+    const reloj=setTimeout(soltar,60000);
+    try{ return await orig.apply(this,args); }
+    finally{ clearTimeout(reloj); soltar(); }
+  };
+  envuelta.__candado=true;
+  window[nombre]=envuelta;
+}
+
+/* v7.5.3 — Guarda varios renglones de una vez: un envío para borrar, uno para
+   actualizar y uno para insertar, los tres a la vez (antes era un envío por
+   renglón, uno detrás de otro: 1 a 2 segundos). Si la nube dice que un renglón
+   ya existe (lo guardó otro equipo), lo busca y lo actualiza en vez de dar error.
+   cambios: [{clave, existing:{_id}|null, borrar, fila:{columnas}, soloAlCrear:{...}}]
+   Al terminar, cada cambio que no se borró trae c.id con su id en la nube. */
+async function guardarLote(tabla, cambios, buscarEnNube, claveDe){
+  const ok=r=>{ if(r.error) throw r.error; return r.data; };
+  const intento=async()=>{
+    const borrar=cambios.filter(c=>c.borrar&&c.existing);
+    const actualizar=cambios.filter(c=>!c.borrar&&c.existing);
+    const insertar=cambios.filter(c=>!c.borrar&&!c.existing);
+    const t=[];
+    if(borrar.length) t.push(sb.from(tabla).delete().in('id',borrar.map(c=>c.existing._id)).then(ok));
+    if(actualizar.length) t.push(sb.from(tabla).upsert(actualizar.map(c=>Object.assign({id:c.existing._id},c.fila)),{onConflict:'id'}).then(ok));
+    if(insertar.length) t.push(sb.from(tabla).insert(insertar.map(c=>Object.assign({},c.fila,c.soloAlCrear||{}))).select().then(r=>{
+      const filas=ok(r)||[];
+      const porClave=new Map(filas.map(f=>[claveDe(f),f]));
+      insertar.forEach(c=>{ const f=porClave.get(c.clave); if(f) c.existing={_id:f.id}; });
+    }));
+    await Promise.all(t);
+  };
+  try{ await intento(); }
+  catch(e){
+    if(!e||e.code!=='23505') throw e;
+    // ya existían en la nube: emparejar por clave y repetir (borrar y actualizar por id no hacen daño si se repiten)
+    const enNube=await buscarEnNube();
+    const porClave=new Map((enNube||[]).map(f=>[claveDe(f),f]));
+    cambios.forEach(c=>{ if(c.borrar) return; const f=porClave.get(c.clave); c.existing=f?{_id:f.id}:null; });
+    await intento();
+  }
+  cambios.forEach(c=>{ c.id=c.existing?c.existing._id:null; });
+  return cambios;
+}
+/* Saca de la lista en memoria los renglones tocados y pone los guardados. */
+function aplicarLote(lista, cambios, enAlcance, claveLocal, aFila){
+  const tocadas=new Set(cambios.map(c=>c.clave));
+  const queda=lista.filter(r=>!(enAlcance(r)&&tocadas.has(claveLocal(r))));
+  cambios.forEach(c=>{ if(!c.borrar&&c.id) queda.push(aFila(c)); });
+  return queda;
+}
+function msgError(e){ return (e&&(e.message||e.details))||'sin conexión'; }
+
 async function cloudDeleteTxn(id){
   setSyncState('saving');
   try{ const {error}=await sb.from('movimientos').delete().eq('id',id); if(error)throw error; setSyncState('ok'); return true; }
@@ -3956,9 +4034,10 @@ async function guardarIncentivos(){
           if(k>=0) state.incentivos[k]=o; else state.incentivos.push(o);
         });
       }
-      for(const id of borrar){
-        await sb.from('incentivos').delete().eq('id',id);
-        state.incentivos=state.incentivos.filter(x=>x._id!==id);
+      if(borrar.length){
+        const {error}=await sb.from('incentivos').delete().in('id',borrar);
+        if(error) throw error;
+        state.incentivos=state.incentivos.filter(x=>!borrar.includes(x._id));
       }
       setSyncState('ok'); toast(`Incentivos guardados · ${filas.length} empleado(s)`,true); renderIncentivos();
     }catch(e){ console.error(e); setSyncState('error'); toast('NO se guardaron. Revisa tu conexión.',false); }
@@ -7672,19 +7751,44 @@ function renderCbIngresoEditor(){
 }
 
 async function guardarCbIngresos(branch){
-  let saved=0;
-  setSyncState('saving');
-  for(const cat of CB_INGRESO_CATS){
-    const el=document.getElementById(`cbI_${cat.replace(/\s+/g,'_')}`);
-    if(!el) continue;
-    await saveCbIngreso(branch, cat, el.value);
-    saved++;
-  }
-  setSyncState('ok');
-  toast(`Ingresos de ${branch.replace('PRIME SPORT','PS')} guardados`,true);
+  const ok=await guardarCbIngresosDe(branch, CB_INGRESO_CATS, 'cbI_');
+  if(ok) toast(`Ingresos de ${branch.replace('PRIME SPORT','PS')} guardados`,true);
   renderCbMatriz();
   renderCbConsolidado();
   renderCbHero();
+}
+/* v7.5.3: ingresos de una banca (o globales, branch='__GLOBAL__') en un solo envío */
+async function guardarCbIngresosDe(branch, cats, prefijo){
+  const a=cbAnioCur, m=cbMesCur, cambios=[];
+  for(const cat of cats){
+    const el=document.getElementById(prefijo+cat.replace(/\s+/g,'_'));
+    if(!el) continue;
+    const monto=parseFloat(el.value), vacio=isNaN(monto)||monto===0;
+    const existing=state.cbIngresos.find(r=>r.anio===a&&r.mes===m&&r.sucursal===branch&&r.categoria===cat)||null;
+    if(vacio&&!existing) continue;
+    if(!vacio&&existing&&existing.monto===monto) continue;
+    cambios.push({clave:cat,existing,borrar:vacio,fila:{anio:a,mes:m,sucursal:branch,categoria:cat,monto:vacio?0:monto},soloAlCrear:{creado_por:currentUser||null}});
+  }
+  if(!cambios.length) return true;
+  setSyncState('saving');
+  try{
+    await guardarLote('cuadre_banca_ingreso', cambios,
+      async()=>{ const {data,error}=await sb.from('cuadre_banca_ingreso').select('*').eq('anio',a).eq('mes',m).eq('sucursal',branch); if(error) throw error; return data; },
+      f=>f.categoria);
+    state.cbIngresos=aplicarLote(state.cbIngresos, cambios, r=>r.anio===a&&r.mes===m&&r.sucursal===branch, r=>r.categoria,
+      c=>({_id:c.id,anio:a,mes:m,sucursal:branch,categoria:c.clave,monto:c.fila.monto}));
+    setSyncState('ok'); return true;
+  }catch(e){ console.error(e); setSyncState('error'); toast('NO se guardó: '+msgError(e),false); await recargarCuadreBancas(); return false; }
+}
+/* v7.5.3: si un guardado falla, vuelve a traer el Cuadre Mensual de la nube
+   para que la pantalla muestre lo que de verdad quedó guardado. */
+async function recargarCuadreBancas(){
+  try{
+    const [cbg,cbi,cbo]=await Promise.all([fetchAllSafe('cuadre_banca_gasto'),fetchAllSafe('cuadre_banca_ingreso'),fetchAllSafe('cuadre_oficina_gasto')]);
+    if(!cbg.error) state.cbGastos=cbg.data.map(g=>({_id:g.id,anio:g.anio,mes:g.mes,sucursal:g.sucursal,categoria:g.categoria,monto:Number(g.monto)||0,origen:g.origen||'manual',refTxnId:g.ref_txn_id||null}));
+    if(!cbi.error) state.cbIngresos=cbi.data.map(i=>({_id:i.id,anio:i.anio,mes:i.mes,sucursal:i.sucursal,categoria:i.categoria,monto:Number(i.monto)||0}));
+    if(!cbo.error) state.cbOficinaGastos=cbo.data.map(o=>({_id:o.id,anio:o.anio,mes:o.mes,categoria:o.categoria,monto:Number(o.monto)||0,origen:o.origen||'manual',refTxnId:o.ref_txn_id||null,sucursal:o.sucursal||null}));
+  }catch(e){ console.warn('recargar cuadre',e); }
 }
 
 async function saveCbIngreso(branch, cat, valStr){
@@ -7731,14 +7835,8 @@ function renderCbGlobalesEditor(){
 }
 
 async function guardarCbGlobales(){
-  setSyncState('saving');
-  for(const cat of CB_GLOBAL_INGRESO_CATS){
-    const el=document.getElementById(`cbG_${cat.replace(/\s+/g,'_')}`);
-    if(!el) continue;
-    await saveCbIngreso('__GLOBAL__', cat, el.value);
-  }
-  setSyncState('ok');
-  toast('Ingresos globales guardados',true);
+  const ok=await guardarCbIngresosDe('__GLOBAL__', CB_GLOBAL_INGRESO_CATS, 'cbG_');
+  if(ok) toast('Ingresos globales guardados',true);
   renderCbMatriz();
   renderCbConsolidado();
   renderCbHero();
@@ -7771,14 +7869,29 @@ function renderCbGastoEditor(){
 
 async function guardarCbGastos(branch){
   __sinGuardar=false;
-  setSyncState('saving');
+  const a=cbAnioCur, m=cbMesCur, cambios=[];
   for(const cat of CB_GASTO_CATS){
     const el=document.getElementById(`cbGC_${cat.replace(/[\s\/]+/g,'_')}`);
     if(!el) continue;
-    await saveCbGastoCat(branch, cat, el.value);
+    const monto=parseFloat(el.value), vacio=isNaN(monto)||monto===0;
+    const existing=state.cbGastos.find(g=>g.anio===a&&g.mes===m&&g.sucursal===branch&&g.categoria===cat&&!g.refTxnId)||null;
+    if(vacio&&!existing) continue;
+    if(!vacio&&existing&&existing.monto===monto) continue;
+    cambios.push({clave:cat,existing,borrar:vacio,fila:{anio:a,mes:m,sucursal:branch,categoria:cat,monto:vacio?0:monto,origen:'manual'},soloAlCrear:{creado_por:currentUser||null}});
   }
-  setSyncState('ok');
-  toast(`Gastos de ${branch.replace('PRIME SPORT','PS')} guardados`,true);
+  let bien=true;
+  if(cambios.length){
+    setSyncState('saving');
+    try{
+      await guardarLote('cuadre_banca_gasto', cambios,
+        async()=>{ const {data,error}=await sb.from('cuadre_banca_gasto').select('*').eq('anio',a).eq('mes',m).eq('sucursal',branch).is('ref_txn_id',null); if(error) throw error; return data; },
+        f=>f.categoria);
+      state.cbGastos=aplicarLote(state.cbGastos, cambios, g=>g.anio===a&&g.mes===m&&g.sucursal===branch&&!g.refTxnId, g=>g.categoria,
+        c=>({_id:c.id,anio:a,mes:m,sucursal:branch,categoria:c.clave,monto:c.fila.monto,origen:'manual',refTxnId:null}));
+      setSyncState('ok');
+    }catch(e){ bien=false; console.error(e); setSyncState('error'); toast('NO se guardó: '+msgError(e),false); await recargarCuadreBancas(); }
+  }
+  if(bien) toast(`Gastos de ${branch.replace('PRIME SPORT','PS')} guardados`,true);
   renderCbMatriz();
   renderCbConsolidado();
   renderCbHero();
@@ -7832,14 +7945,29 @@ function renderCbOficinaEditor(){
 }
 
 async function guardarCbOficina(){
-  setSyncState('saving');
+  const a=cbAnioCur, m=cbMesCur, cambios=[];
   for(const cat of CB_OFICINA_CATS){
     const el=document.getElementById(`cbO_${cat.replace(/[\s\/]+/g,'_')}`);
     if(!el) continue;
-    await saveCbOficina(cat, el.value);
+    const monto=parseFloat(el.value), vacio=isNaN(monto)||monto===0;
+    const existing=state.cbOficinaGastos.find(o=>o.anio===a&&o.mes===m&&o.categoria===cat&&!o.refTxnId)||null;
+    if(vacio&&!existing) continue;
+    if(!vacio&&existing&&existing.monto===monto) continue;
+    cambios.push({clave:cat,existing,borrar:vacio,fila:{anio:a,mes:m,categoria:cat,monto:vacio?0:monto,origen:'manual'},soloAlCrear:{creado_por:currentUser||null}});
   }
-  setSyncState('ok');
-  toast('Gastos de Oficina guardados',true);
+  let bien=true;
+  if(cambios.length){
+    setSyncState('saving');
+    try{
+      await guardarLote('cuadre_oficina_gasto', cambios,
+        async()=>{ const {data,error}=await sb.from('cuadre_oficina_gasto').select('*').eq('anio',a).eq('mes',m).is('ref_txn_id',null); if(error) throw error; return data; },
+        f=>f.categoria);
+      state.cbOficinaGastos=aplicarLote(state.cbOficinaGastos, cambios, o=>o.anio===a&&o.mes===m&&!o.refTxnId, o=>o.categoria,
+        c=>({_id:c.id,anio:a,mes:m,categoria:c.clave,monto:c.fila.monto,origen:'manual',refTxnId:null,sucursal:null}));
+      setSyncState('ok');
+    }catch(e){ bien=false; console.error(e); setSyncState('error'); toast('NO se guardó: '+msgError(e),false); await recargarCuadreBancas(); }
+  }
+  if(bien) toast('Gastos de Oficina guardados',true);
   renderCbConsolidado();
   renderCbHero();
 }
@@ -8008,7 +8136,31 @@ async function cbImportSelected(){
   if(!ids.length){ toast('No seleccionaste ningún gasto',false); return; }
   setSyncState('saving');
   let okCount=0, failCount=0, lastErr='';
+  // v7.5.3: primero todo junto (un envío por tabla); si la nube rechaza el lote, uno por uno como antes
+  const lote={of:[],bc:[]};
   for(const id of ids){
+    const t=state.txns.find(x=>x.id===id); if(!t) continue;
+    const dest=_cbImportDest[id]||t.branch, cat=_cbImportCat[id]||cbImportGuessCat(dest,t.category);
+    if(dest===CB_DEST_OFICINA) lote.of.push({anio:cbAnioCur,mes:cbMesCur,categoria:cat,monto:t.amount,origen:'cuadre_diario',ref_txn_id:id,sucursal:t.branch,creado_por:currentUser||null});
+    else lote.bc.push({anio:cbAnioCur,mes:cbMesCur,sucursal:dest,categoria:cat,monto:t.amount,origen:'cuadre_diario',ref_txn_id:id,creado_por:currentUser||null});
+  }
+  try{
+    const [ro,rb]=await Promise.all([
+      lote.of.length?sb.from('cuadre_oficina_gasto').insert(lote.of).select():{data:[],error:null},
+      lote.bc.length?sb.from('cuadre_banca_gasto').insert(lote.bc).select():{data:[],error:null}]);
+    if(ro.error||rb.error){
+      // lo que sí entró se queda; lo demás va uno por uno abajo
+      if(!ro.error) (ro.data||[]).forEach(x=>{ state.cbOficinaGastos.push({_id:x.id,anio:x.anio,mes:x.mes,categoria:x.categoria,monto:Number(x.monto)||0,origen:'cuadre_diario',refTxnId:x.ref_txn_id,sucursal:x.sucursal}); _cbImportSel[x.ref_txn_id]=false; okCount++; });
+      if(!rb.error) (rb.data||[]).forEach(x=>{ state.cbGastos.push({_id:x.id,anio:x.anio,mes:x.mes,sucursal:x.sucursal,categoria:x.categoria,monto:Number(x.monto)||0,origen:'cuadre_diario',refTxnId:x.ref_txn_id}); _cbImportSel[x.ref_txn_id]=false; okCount++; });
+      throw (ro.error||rb.error);
+    }
+    (ro.data||[]).forEach(x=>state.cbOficinaGastos.push({_id:x.id,anio:x.anio,mes:x.mes,categoria:x.categoria,monto:Number(x.monto)||0,origen:'cuadre_diario',refTxnId:x.ref_txn_id,sucursal:x.sucursal}));
+    (rb.data||[]).forEach(x=>state.cbGastos.push({_id:x.id,anio:x.anio,mes:x.mes,sucursal:x.sucursal,categoria:x.categoria,monto:Number(x.monto)||0,origen:'cuadre_diario',refTxnId:x.ref_txn_id}));
+    ids.forEach(id=>{ if(state.txns.some(x=>x.id===id)){ _cbImportSel[id]=false; okCount++; } else { failCount++; lastErr='Movimiento no encontrado'; } });
+    ids.length=0;
+  }catch(e){ console.warn('importar en lote, sigo uno por uno',e); }
+  for(const id of ids){
+    if(!_cbImportSel[id]) continue;
     const t=state.txns.find(x=>x.id===id);
     if(!t){ failCount++; lastErr='Movimiento no encontrado'; continue; }
     const dest=_cbImportDest[id]||t.branch;
@@ -8053,19 +8205,16 @@ async function cbProrratearOficina(){
   try{
     // Idempotente: borra el prorrateo anterior de este mes antes de recalcular
     const prev=state.cbGastos.filter(g=>g.anio===cbAnioCur&&g.mes===cbMesCur&&g.origen==='prorrateo');
-    for(const p of prev){ await sb.from('cuadre_banca_gasto').delete().eq('id',p._id); }
+    // v7.5.3: un envío para borrar el prorrateo anterior y uno para insertar el nuevo
+    if(prev.length){ const {error}=await sb.from('cuadre_banca_gasto').delete().in('id',prev.map(p=>p._id)); if(error) throw error; }
     state.cbGastos=state.cbGastos.filter(g=>!(g.anio===cbAnioCur&&g.mes===cbMesCur&&g.origen==='prorrateo'));
-    for(let i=0;i<bancas.length;i++){
-      const b=bancas[i];
-      const monto=Math.round((parte+(i===bancas.length-1?resto:0))*100)/100;  // la última lleva los centavos
-      const ref=(crypto&&crypto.randomUUID)?crypto.randomUUID():uid();
-      const {data,error}=await sb.from('cuadre_banca_gasto').insert({
-        anio:cbAnioCur, mes:cbMesCur, sucursal:b, categoria:'Administración', monto,
-        origen:'prorrateo', ref_txn_id:ref, creado_por:currentUser||null
-      }).select();
-      if(error) throw error;
-      state.cbGastos.push({_id:data[0].id,anio:cbAnioCur,mes:cbMesCur,sucursal:b,categoria:'Administración',monto,origen:'prorrateo',refTxnId:ref});
-    }
+    const filas=bancas.map((b,i)=>({
+      anio:cbAnioCur, mes:cbMesCur, sucursal:b, categoria:'Administración',
+      monto:Math.round((parte+(i===bancas.length-1?resto:0))*100)/100,   // la última lleva los centavos
+      origen:'prorrateo', ref_txn_id:(crypto&&crypto.randomUUID)?crypto.randomUUID():uid(), creado_por:currentUser||null }));
+    const {data,error}=await sb.from('cuadre_banca_gasto').insert(filas).select();
+    if(error) throw error;
+    (data||[]).forEach(x=>state.cbGastos.push({_id:x.id,anio:cbAnioCur,mes:cbMesCur,sucursal:x.sucursal,categoria:'Administración',monto:Number(x.monto)||0,origen:'prorrateo',refTxnId:x.ref_txn_id}));
     setSyncState('ok');
     toast(`Prorrateado: RD$${fmt(parte)} a cada una de las ${bancas.length} bancas`,true);
     renderCbGastoEditor(); renderCbMatriz(); renderCbConsolidado(); renderCbHero();
@@ -10014,6 +10163,7 @@ async function saveVirtRegistro(){
   if(!provId){ toast('Selecciona un proveedor primero',false); return; }
   setSyncState('saving');
   let saved=0;
+  const a=virtCurAnio, m=virtCurMes, cambios=[];
   try{
     const activeSucs=activeVirtSucursales();
     for(const sucRaw of activeSucs){
@@ -10023,27 +10173,32 @@ async function saveVirtRegistro(){
       const tk=g('tk'),venta=g('venta'),balance=g('balance'),bonos=g('bonos'),comision=g('comision'),faltantes=g('faltantes');
       const hasData=(tk||venta||balance||bonos||comision||faltantes);
       const total=balance+bonos+comision+faltantes;
-      const existing=state.virtRegs.find(r=>r.mes===virtCurMes&&r.anio===virtCurAnio&&r.empresa===emp&&r.proveedorId===provId&&normBranchName(r.sucursal)===suc);
-      if(!hasData){
-        if(existing){ await sb.from('virtuales_registros').delete().eq('id',existing._id); state.virtRegs=state.virtRegs.filter(r=>r._id!==existing._id); }
-        continue;
-      }
-      const row={anio:virtCurAnio,mes:virtCurMes,empresa:emp,proveedor_id:provId,sucursal:suc,tk,venta,balance,bonos,comision,faltantes,total,creado_por:currentUser||null};
-      if(existing){
-        await sb.from('virtuales_registros').update(row).eq('id',existing._id);
-        Object.assign(existing,{tk,venta,balance,bonos,comision,faltantes,total});
-      } else {
-        const {data,error}=await sb.from('virtuales_registros').insert(row).select();
-        if(error)throw error;
-        state.virtRegs.push({_id:data[0].id,anio:virtCurAnio,mes:virtCurMes,empresa:emp,proveedorId:provId,sucursal:suc,tk,venta,balance,bonos,comision,faltantes,total});
-      }
+      const existing=state.virtRegs.find(r=>r.mes===m&&r.anio===a&&r.empresa===emp&&r.proveedorId===provId&&normBranchName(r.sucursal)===suc)||null;
+      if(!hasData){ if(existing) cambios.push({clave:suc,existing,borrar:true}); continue; }
       saved++;
+      if(existing&&['tk','venta','balance','bonos','comision','faltantes'].every(k=>existing[k]===({tk,venta,balance,bonos,comision,faltantes})[k])) continue;
+      cambios.push({clave:suc,existing,borrar:false,
+        fila:{anio:a,mes:m,empresa:emp,proveedor_id:provId,sucursal:suc,tk,venta,balance,bonos,comision,faltantes,total},
+        soloAlCrear:{creado_por:currentUser||null}});
+    }
+    // v7.5.3: un envío para borrar, uno para actualizar y uno para insertar (antes uno por sucursal)
+    if(cambios.length){
+      await guardarLote('virtuales_registros', cambios,
+        async()=>{ const {data,error}=await sb.from('virtuales_registros').select('*').eq('anio',a).eq('mes',m).eq('empresa',emp); if(error) throw error; return data; },
+        f=>normBranchName(f.sucursal));
+      state.virtRegs=aplicarLote(state.virtRegs, cambios, r=>r.anio===a&&r.mes===m&&r.empresa===emp, r=>normBranchName(r.sucursal),
+        c=>Object.assign({_id:c.id,anio:a,mes:m,empresa:emp,proveedorId:provId,sucursal:c.clave},
+          (({tk,venta,balance,bonos,comision,faltantes,total})=>({tk,venta,balance,bonos,comision,faltantes,total}))(c.fila)));
     }
     setSyncState('ok');
     const provName=(state.virtProviders.find(p=>p._id===provId)||{}).nombre||'';
     toast(`${emp} (${provName}): ${saved} sucursales guardadas`,true);
     openVirtuales();
-  }catch(e){ console.error(e); setSyncState('error'); toast('Error al guardar Virtuales',false); }
+  }catch(e){
+    console.error(e); setSyncState('error'); toast('NO se guardó Virtuales: '+msgError(e),false);
+    // volver a traer de la nube lo que de verdad quedó
+    try{ const vr=await fetchAllSafe('virtuales_registros'); if(!vr.error) state.virtRegs=vr.data.map(r=>({_id:r.id,anio:r.anio,mes:r.mes,empresa:r.empresa,proveedorId:r.proveedor_id||null,sucursal:r.sucursal,tk:num0(r.tk),venta:num0(r.venta),balance:num0(r.balance),bonos:num0(r.bonos),comision:num0(r.comision),faltantes:num0(r.faltantes),total:num0(r.total)})); }catch(_){}
+  }
 }
 
 /* ================= CÓMO USAR ================= */
@@ -10941,12 +11096,38 @@ async function doLogout(){
 let __ultimaCarga=0;
 function marcarCargado(){ __ultimaCarga=Date.now(); }
 
+/* v7.5.3 — Recarga incremental: en vez de bajar los ~6,000 movimientos cada vez,
+   pide a la nube solo los nuevos o editados desde la última carga y los borrados
+   (función movimientos_cambios). Si el total no cuadra con la nube, o la función
+   no existe, baja todo como antes. */
+let __cursorMov=null;   // hora del servidor de la última carga buena
+async function marcarCursorMov(){
+  try{ const {data,error}=await sb.rpc('movimientos_cambios',{p_desde:'infinity'}); __cursorMov=(!error&&data&&data.ahora)?data.ahora:null; }
+  catch(e){ __cursorMov=null; }
+}
+async function traerCambiosMov(){
+  if(!__cursorMov) return false;
+  try{
+    const desde=new Date(new Date(__cursorMov).getTime()-120000).toISOString();   // 2 min de solape por si acaso
+    const {data,error}=await sb.rpc('movimientos_cambios',{p_desde:desde});
+    if(error||!data) throw (error||new Error('sin datos'));
+    const mapa=new Map(state.txns.map(t=>[t.id,t]));
+    (data.borrados||[]).forEach(id=>mapa.delete(id));
+    (data.filas||[]).forEach(f=>{ const t=dbToTxn(limpiarFila(f)); mapa.set(t.id,t); });
+    if(mapa.size!==Number(data.total)) return false;   // algo no cuadra: carga completa
+    state.txns=[...mapa.values()];
+    __cursorMov=data.ahora;
+    return true;
+  }catch(e){ console.warn('recarga incremental',e); return false; }
+}
 async function refrescarMovimientos(silencioso){
   if(!sb || document.getElementById('appRoot').style.display==='none') return;
   try{
     const antes=state.txns.length;
-    const filas=await fetchAllRows('movimientos');
-    state.txns=filas.map(dbToTxn);
+    if(!(await traerCambiosMov())){
+      const [filas]=await Promise.all([fetchAllRows('movimientos'), marcarCursorMov()]);
+      state.txns=filas.map(dbToTxn);
+    }
     marcarCargado();
     const dif=state.txns.length-antes;
     // refresca lo que esté en pantalla
@@ -11032,6 +11213,15 @@ function bootstrap(){
 if(document.readyState==='loading'){
   document.addEventListener('DOMContentLoaded',bootstrap);
 } else { bootstrap(); }
+
+/* v7.5.3 — candados (ver ponerCandado) */
+['guardarCbGastos','guardarCbIngresos','guardarCbGlobales','guardarCbOficina','saveVirtRegistro','saveVirtProv',
+ 'guardarDesglose','guardarArqueo','guardarUsuario','editarMonto','editMaqDigPct','nuevoCargoEmp','alternarActivo',
+ 'agregarUsuario','addOutCat','addMaquina','addMaqGasto','addDenom','markMaster'].forEach(n=>ponerCandado(n,'Guardando…'));
+['cbProrratearOficina','cbImportSelected','ejecutarCierreMes','closeCorte','reopenCorte','reabrirCierreMes','unlockMaster',
+ 'quitarUsuario','superRestablecer','wipeData'].forEach(n=>ponerCandado(n,'Procesando…'));
+['deleteVirtProv','delTxn','delOutCat','delMaquina','delMaqGasto','delLectura','borrarMantenimiento','borrarEmpleado',
+ 'borrarCargoEmp'].forEach(n=>ponerCandado(n,'Borrando…'));
 </script>
 </body>
 </html>
