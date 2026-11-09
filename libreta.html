@@ -192,6 +192,7 @@ table.rpt tfoot td{font-weight:700;background:var(--soft);border-top:2px solid v
 .pr-box span{display:block;font-size:8pt;color:#555;text-transform:uppercase}
 .pr-box b{font-size:11pt}
 .pr-note{font-size:8.5pt;color:#555;margin-top:6px}
+.pr-grp td{font-weight:700;background:#eee}
 .pr-sec{break-after:page}.pr-sec:last-child{break-after:auto}
 .pr-eq{display:grid;grid-template-columns:1fr auto;gap:4px 18px;max-width:560px;margin:8px 0}
 .pr-eq .num{text-align:right}
@@ -231,7 +232,7 @@ table.rpt tfoot td{font-weight:700;background:var(--soft);border-top:2px solid v
   <header class="top">
     <div>
       <h1>Libreta de Clientes</h1>
-      <p class="sub">Créditos, débitos, depósitos y retiros por cliente · montos en RD$</p>
+      <p class="sub">Créditos, débitos, depósitos y retiros por cliente · montos en <span class="mon">RD$</span></p>
     </div>
     <div class="row">
       <div class="tabs" role="group" aria-label="Vista">
@@ -243,6 +244,7 @@ table.rpt tfoot td{font-weight:700;background:var(--soft);border-top:2px solid v
         <button type="button" data-era="historico" aria-pressed="false">Histórico</button>
       </div>
       <div class="tabs" role="group" aria-label="Mes del histórico" id="mesTabs" hidden></div>
+      <div class="tabs" role="group" aria-label="Moneda" id="monTabs" hidden></div>
       <button class="primary" id="btnNew" disabled>+ Nuevo cliente</button>
     </div>
   </header>
@@ -308,7 +310,8 @@ const TYPES = {
   inicial:{label:"Saldo inicial", hint:"Arrastre anterior", sign:1},
 };
 const val = m => m.tipo==="inicial" ? m.monto : TYPES[m.tipo].sign*m.monto;
-const fmt = n => (n<0?"−":"") + "RD$" + Math.abs(n).toLocaleString("es-DO",{minimumFractionDigits:2,maximumFractionDigits:2});
+const SYM = {DOP:"RD$", USD:"US$"};
+const fmt = n => (n<0?"−":"") + SYM[state.moneda||"DOP"] + Math.abs(n).toLocaleString("es-DO",{minimumFractionDigits:2,maximumFractionDigits:2});
 const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const todayStr = () => { const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
 const $ = id => document.getElementById(id);
@@ -346,7 +349,7 @@ function weekLoss(cid, ws){
 }
 const Z=()=>({deposito:0,credito:0,debito:0,retiro:0,bono_deposito:0,bono_perdida:0});
 
-const state = { clients:[], moves:[], selected:null, type:"debito", ready:false, canWrite:false, confirmDel:null, confirmClient:false, mode:"uno", weekStart:null,
+const state = { moneda:"DOP", clientsAll:[], clients:[], moves:[], selected:null, type:"debito", ready:false, canWrite:false, confirmDel:null, confirmClient:false, mode:"uno", weekStart:null,
   view:"clientes", anulados:[], bonosCfg:{}, desde:"2026-03-01", hasta:todayStr(), sortR:"fin", cuadre:{},
   corte:null, era:"nuevo", mes:null, allMoves:[], allAnul:[], unlockHist:false, eraInit:false };
 let db=null, downloads=null;
@@ -361,6 +364,13 @@ function rangoMes(){ const cf=corteF(); if(!cf||state.era!=="historico"||!state.
 function enEra(f){ const cf=corteF(); if(!cf||!f) return true; if(state.era!=="historico") return f>cf; const r=rangoMes(); return r ? (f>=r[0]&&f<=r[1]) : f<=cf; }
 const fechaFuera = f => !enEra(f);
 function applyEra(){
+  if (!state.clientsAll.some(c=>(c.moneda||"DOP")===state.moneda)) state.moneda="DOP";
+  state.clients=state.clientsAll.filter(c=>(c.moneda||"DOP")===state.moneda);
+  aplicarEra();
+  const ids=new Set(state.clients.map(c=>c.id));
+  state.moves=state.moves.filter(m=>ids.has(m.clienteId)); state.anulados=state.anulados.filter(m=>ids.has(m.clienteId));
+}
+function aplicarEra(){
   const r=rangoMes();
   if (!r){ state.moves=state.allMoves.filter(m=>enEra(m.fecha)); state.anulados=state.allAnul.filter(m=>enEra(m.fecha)); return; }
   // vista de un mes: igual que octubre, el saldo con que arranca el mes es el acumulado de los meses anteriores
@@ -389,7 +399,15 @@ function diffCorte(){
   for (const k in r) r[k].dif=r[k].libreta-r[k].conf;
   return r;
 }
+function renderMon(){
+  const mt=$("monTabs"), hay=state.clientsAll.some(c=>c.moneda==="USD");
+  mt.hidden=!hay;
+  if (hay) mt.innerHTML=["DOP","USD"].map(k=>`<button type="button" data-mon="${k}" aria-pressed="${state.moneda===k}">${k==="DOP"?"Pesos (RD$)":"Dólares (US$)"}</button>`).join("");
+  document.querySelectorAll(".mon").forEach(x=>x.textContent=SYM[state.moneda]);
+}
+function setMoneda(k){ state.moneda=k; state.selected=null; state.confirmDel=null; applyEra(); eraDefaults(); render(); window.scrollTo({top:0}); }
 function renderEra(){
+  renderMon();
   const cf=corteF(), tabs=$("eraTabs"), bn=$("eraBanner");
   tabs.hidden=!cf; if(!cf){ bn.hidden=true; return; }
   tabs.querySelector('[data-era="nuevo"]').textContent="Desde "+fechaLarga(addDays(cf,1));
@@ -520,7 +538,7 @@ function renderDetail(b,t){
         ${WT.map(k=>`<button type="button" data-t="${k}" aria-pressed="${state.type===k}"><strong>${TYPES[k].sign>0?"+":"−"} ${TYPES[k].label}</strong><small>${TYPES[k].hint}</small></button>`).join("")}
       </div>
       <div class="mvform">
-        <div class="field"><label class="label" for="mvMonto">Monto RD$</label><input id="mvMonto" class="num" type="number" min="0.01" step="0.01" inputmode="decimal" required placeholder="0.00"></div>
+        <div class="field"><label class="label" for="mvMonto">Monto ${SYM[state.moneda]}</label><input id="mvMonto" class="num" type="number" min="0.01" step="0.01" inputmode="decimal" required placeholder="0.00"></div>
         <div class="field"><label class="label" for="mvFecha">Fecha</label><input id="mvFecha" type="date" value="${fechaFuera(todayStr())?(rangoMes()?rangoMes()[1]:state.era==="historico"?corteF():addDays(corteF(),1)):todayStr()}" required></div>
         <div class="field full"><label class="label" for="mvNota">Detalle (opcional)</label><input id="mvNota" maxlength="140" placeholder="Ticket, partido, banca, forma de pago…"></div>
         <button class="primary full" type="submit" id="mvSave">Registrar</button>
@@ -667,7 +685,7 @@ function renderReport(){
     </div>
 
     ${mk.length?`<section class="pane">
-      <h2>Por mes <span class="note" style="font-weight:400">· RD$</span></h2>
+      <h2>Por mes <span class="note" style="font-weight:400">· <span class="mon">RD$</span></span></h2>
       <div class="tablewrap"><table class="fit">
         <thead><tr><th>Mes</th><th class="r">Depósitos</th><th class="r">Retiros</th><th class="r">Ganan (créditos)</th><th class="r">Pierden (débitos)</th><th class="r">Bonos</th><th class="r">Balance neto</th><th class="r">Efectivo neto</th></tr></thead>
         <tbody>${mk.map(k=>{const o=months[k];const bo=o.bono_deposito+o.bono_perdida;const b=o.debito-o.credito-bo;return `<tr><td>${mesNombre(k)}</td><td class="r num" data-l="Depósitos">${fmtC(o.deposito)}</td><td class="r num" data-l="Retiros">${fmtC(o.retiro)}</td><td class="r num" data-l="Ganan">${fmtC(o.credito)}</td><td class="r num" data-l="Pierden">${fmtC(o.debito)}</td><td class="r num" data-l="Bonos">${fmtC(bo)}</td><td class="r num ${cls(b)}" data-l="Balance neto">${fmtC(b)}</td><td class="r num" data-l="Efectivo neto">${fmtC(o.deposito-o.retiro)}</td></tr>`}).join("")}</tbody>
@@ -676,7 +694,7 @@ function renderReport(){
 
     ${state.clients.length?`<section class="pane">
       <div class="row" style="justify-content:space-between">
-        <h2>Por cliente <span class="note" style="font-weight:400">· RD$</span></h2>
+        <h2>Por cliente <span class="note" style="font-weight:400">· <span class="mon">RD$</span></span></h2>
         <div class="row">
           <select id="rSort" aria-label="Ordenar">
             <option value="fin" ${state.sortR==="fin"?"selected":""}>Mayor saldo al cierre</option>
@@ -826,9 +844,9 @@ function openBonos(){
       </select></div>
     <div class="grid2">
       <div class="field"><label class="label" for="bPD">% bono por depósito</label><input id="bPD" class="num" type="number" min="0" max="100" step="0.01" value="${g.pctDep??""}" placeholder="Ej. 10"></div>
-      <div class="field"><label class="label" for="bTD">Tope por bono RD$ (0 = sin tope)</label><input id="bTD" class="num" type="number" min="0" step="0.01" value="${g.topeDep??""}" placeholder="0"></div>
+      <div class="field"><label class="label" for="bTD">Tope por bono ${SYM[state.moneda]} (0 = sin tope)</label><input id="bTD" class="num" type="number" min="0" step="0.01" value="${g.topeDep??""}" placeholder="0"></div>
       <div class="field"><label class="label" for="bPP">% bono por pérdida semanal</label><input id="bPP" class="num" type="number" min="0" max="100" step="0.01" value="${g.pctPer??""}" placeholder="Ej. 5"></div>
-      <div class="field"><label class="label" for="bTP">Tope semanal RD$ (0 = sin tope)</label><input id="bTP" class="num" type="number" min="0" step="0.01" value="${g.topePer??""}" placeholder="0"></div>
+      <div class="field"><label class="label" for="bTP">Tope semanal ${SYM[state.moneda]} (0 = sin tope)</label><input id="bTP" class="num" type="number" min="0" step="0.01" value="${g.topePer??""}" placeholder="0"></div>
     </div>
     <p class="note" style="margin:0">El bono por pérdida se calcula sobre la pérdida neta de la semana (lunes a domingo): débitos menos créditos. Solo aplica si el cliente perdió. Cada cliente puede tener su propio modo o porcentaje desde "Editar cliente".</p>
     <div class="row" style="justify-content:flex-end"><button type="button" id="bCancel">Cancelar</button><button class="primary" type="submit" id="bSave">Guardar</button></div>
@@ -856,11 +874,12 @@ function openClientModal(c){
       <div class="field"><label class="label" for="cTel">Teléfono</label><input id="cTel" inputmode="tel" maxlength="30" value="${esc(c?.telefono||"")}"></div>
       <div class="field"><label class="label" for="cCod">Código / usuario</label><input id="cCod" maxlength="30" value="${esc(c?.codigo||"")}"></div>
     </div>
-    <div class="field"><label class="label" for="cLim">Límite de crédito RD$ (0 = sin límite)</label><input id="cLim" class="num" type="number" min="0" step="0.01" value="${c?.limite||0}"></div>
+    <div class="field"><label class="label" for="cMon">Moneda del cliente</label><select id="cMon"><option value="DOP" ${(c?.moneda||state.moneda)==="DOP"?"selected":""}>Pesos (RD$)</option><option value="USD" ${(c?.moneda||state.moneda)==="USD"?"selected":""}>Dólares (US$)</option></select></div>
+    <div class="field"><label class="label" for="cLim">Límite de crédito ${SYM[state.moneda]} (0 = sin límite)</label><input id="cLim" class="num" type="number" min="0" step="0.01" value="${c?.limite||0}"></div>
     <fieldset class="field" style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;gap:8px;margin:0">
       <legend class="label" style="padding:0 4px">${corteF()&&state.era==="nuevo"?"Saldo inicial · arrastre al corte del "+esc(fechaLarga(corteF())):"Saldo inicial (lo que arrastraba antes)"}</legend>
       <div class="grid2">
-        <div class="field"><label class="label" for="cIniM">Monto RD$</label><input id="cIniM" class="num" type="number" min="0" step="0.01" value="${ini?Math.abs(ini.monto):""}" placeholder="0.00"></div>
+        <div class="field"><label class="label" for="cIniM">Monto ${SYM[state.moneda]}</label><input id="cIniM" class="num" type="number" min="0" step="0.01" value="${ini?Math.abs(ini.monto):""}" placeholder="0.00"></div>
         <div class="field"><label class="label" for="cIniF">Al día</label><input id="cIniF" type="date" value="${esc(ini?.fecha||(corteF()&&state.era==="nuevo"?addDays(corteF(),1):"2026-02-28"))}"></div>
       </div>
       <select id="cIniT" aria-label="Sentido del saldo inicial">
@@ -906,13 +925,13 @@ function openClientModal(c){
     }
   };
   let saved={};
-  const MF=["cNombre","cTel","cCod","cLim","cNota","cIniM","cIniF","cIniT","cBMode","cBDep","cBPer"];
+  const MF=["cNombre","cTel","cCod","cMon","cLim","cNota","cIniM","cIniF","cIniT","cBMode","cBDep","cBPer"];
   function keepVals(){ saved={}; MF.forEach(id=>saved[id]=$(id).value); }
   function restoreVals(){ MF.forEach(id=>$(id).value=saved[id]); }
   root.onsubmit = async e=>{
     e.preventDefault();
     const body={ nombre:$("cNombre").value.trim(), telefono:$("cTel").value.trim(), codigo:$("cCod").value.trim(),
-      limite:Math.max(0,Number($("cLim").value)||0), nota:$("cNota").value.trim() };
+      limite:Math.max(0,Number($("cLim").value)||0), nota:$("cNota").value.trim(), moneda:$("cMon").value==="USD"?"USD":"DOP" };
     { const m=$("cBMode").value, d=$("cBDep").value, pr=$("cBPer").value;
       body.bonos = (m==="general" && d==="" && pr==="") ? null : { modo:m, pctDep: d===""?null:Number(d), pctPer: pr===""?null:Number(pr) }; }
     if(!body.nombre) return;
@@ -947,6 +966,7 @@ document.addEventListener("click", async e=>{
   if (t.id==="prRepBtn"){ openPrint("resumen"); return; }
   if (t.id==="editC"){ openClientModal(state.clients.find(c=>c.id===state.selected)); return; }
   if (t.dataset.era){ if(t.dataset.era!==state.era) setEra(t.dataset.era); return; }
+  if (t.dataset.mon && t.closest("#monTabs")){ setMoneda(t.dataset.mon); return; }
   if (t.dataset.mes!==undefined && t.closest("#mesTabs")){ setMes(t.dataset.mes); return; }
   if (t.id==="unlockHist"){ state.unlockHist=!state.unlockHist; render(); toast(state.unlockHist?"Histórico abierto para correcciones (solo en esta sesión)":"Histórico cerrado"); return; }
   if (t.dataset.view){ state.view=t.dataset.view; render(); window.scrollTo({top:0}); return; }
@@ -1107,11 +1127,11 @@ async function loadAll(){
   loading=true;
   try{
     const [cl, mv, aj] = await Promise.all([
-      fetchAll(T.clientes,"id,nombre,telefono,codigo,limite,nota,bonos,creado","nombre"),
+      fetchAll(T.clientes,"id,nombre,telefono,codigo,limite,nota,bonos,moneda,creado","nombre"),
       fetchAll(T.movimientos,"id,cliente_id,tipo,monto,fecha,nota,anulado,anulado_en,creado","fecha"),
-      q(sb.from("libreta_ajustes").select("clave,valor").in("clave",["cuadre","bonos","corte"]))
+      q(sb.from("libreta_ajustes").select("clave,valor").in("clave",["cuadre","bonos","corte","reparto"]))
     ]);
-    state.clients = cl.map(c=>({...c, telefono:c.telefono||"", codigo:c.codigo||"", nota:c.nota||"", limite:Number(c.limite)||0}));
+    state.clientsAll = cl.map(c=>({...c, moneda:c.moneda||"DOP", telefono:c.telefono||"", codigo:c.codigo||"", nota:c.nota||"", limite:Number(c.limite)||0}));
     const all = mv.map(m=>({ id:m.tipo==="inicial"&&!m.anulado ? "ini_"+m.cliente_id : m.id, _id:m.id, clienteId:m.cliente_id, tipo:m.tipo, monto:Number(m.monto), fecha:m.fecha, nota:m.nota||"", anulado:m.anulado, anulado_en:m.anulado_en, creado:Date.parse(m.creado)||0 }));
     state.allMoves = all.filter(m=>!m.anulado);
     state.allAnul = all.filter(m=>m.anulado);
@@ -1121,6 +1141,7 @@ async function loadAll(){
     applyEra();
     if (ajC && !document.activeElement?.id?.startsWith("cu")) state.cuadre = ajC.valor||{};
     state.bonosCfg = ajB?.valor || {};
+    state.reparto = aj.find(a=>a.clave==="reparto")?.valor || {};
     if (state.selected && !state.clients.some(c=>c.id===state.selected)) state.selected=null;
     state.ready=true; render();
   }catch(e){ toast("No se pudieron cargar los datos. Pulsa Actualizar."); }
@@ -1256,11 +1277,12 @@ const PR_TIPOS=[
   {id:"saldos", t:"Saldos de clientes", d:"Lista de clientes con su saldo: quién debe y a quién se le debe."},
   {id:"resumen", t:"Resumen por cliente del período", d:"Saldo inicial, depósitos, retiros, juego, bonos y saldo al cierre de cada cliente.", wide:true},
   {id:"cuadre", t:"Cuadre del período", d:"La ecuación del período y el detalle mes por mes."},
-  {id:"movs", t:"Movimientos del período", d:"Todos los movimientos de todos los clientes, por fecha."},
+  {id:"movs", t:"Movimientos del período", d:"Los movimientos de todos los clientes o de uno, en una lista por fecha, agrupados por día o agrupados por cliente."},
   {id:"bonos", t:"Bonos del período", d:"Bonos por depósito y por pérdida que recibió cada cliente."},
+  {id:"cierre", t:"Cierre mensual y reparto", d:"Balance neto del mes, 10% para el proveedor del sistema y el reparto del resto entre los socios con el porcentaje que anotes."},
   {id:"corte", t:"Diferencia al corte", d:"Lo que da la libreta al corte contra el saldo confirmado, por cliente."},
 ];
-const pr={tipo:"estado", cli:"", d:"", h:"", fil:"all", ord:"nombre", tp:"", sin:true, no0:false, arr:true, ver:false};
+const pr={tipo:"estado", cli:"", d:"", h:"", fil:"all", ord:"nombre", tp:"", sin:true, no0:false, arr:true, ver:false, grp:"lista", mes:"", prov:null, socios:null};
 const fd = s => { if(!s) return ""; const [y,m,d]=s.split("-"); return d+"/"+m+"/"+y; };
 const sitTxt = (c,v) => v>0.004?"Se le debe al cliente":v<-0.004?(c.limite>0&&-v>c.limite?"Debe · pasó el límite":"El cliente debe"):"Al día";
 function prEraRange(){
@@ -1275,7 +1297,7 @@ function prEraTxt(){
   return state.era==="historico" ? "Histórico hasta "+fechaLarga(cf) : "Desde "+fechaLarga(addDays(cf,1));
 }
 function prHead(titulo, sub){
-  return `<div class="pr-head"><div><h1>${esc(titulo)}</h1>${sub?`<div class="pr-sub">${esc(sub)}</div>`:""}</div></div>`;
+  return `<div class="pr-head"><div><h1>${esc(titulo)}</h1>${(sub||state.moneda==="USD")?`<div class="pr-sub">${esc((sub||"")+(state.moneda==="USD"?(sub?" · ":"")+"Montos en dólares (US$)":""))}</div>`:""}</div></div>`;
 }
 const prBox = (l,v,c) => `<div><span>${esc(l)}</span><b class="num ${c||""}">${v}</b></div>`;
 const NOTA_SALDO = `Saldo positivo = se le debe al cliente. Saldo negativo = el cliente debe.`;
@@ -1350,14 +1372,30 @@ function prCuadre(d,h){
 }
 function prMovs(d,h){
   const nm={}; state.clients.forEach(c=>nm[c.id]=c);
-  const L=state.moves.filter(m=>m.fecha>=d&&m.fecha<=h&&nm[m.clienteId]&&(!pr.tp||m.tipo===pr.tp))
+  const L=state.moves.filter(m=>m.fecha>=d&&m.fecha<=h&&nm[m.clienteId]&&(!pr.cli||m.clienteId===pr.cli)&&(!pr.tp||m.tipo===pr.tp))
     .sort((a,z)=>(a.fecha||"").localeCompare(z.fecha||"")||(a.creado||0)-(z.creado||0));
   if (!L.length) return null;
   const por={}; let neto=0; for (const m of L){ const o=por[m.tipo]||(por[m.tipo]={n:0,t:0}); o.n++; o.t+=m.monto; neto+=val(m); }
-  return {html:`<section class="pr-sec">${prHead("Movimientos del período", "Del "+fd(d)+" al "+fd(h)+(pr.tp?" · solo "+TYPES[pr.tp].label.toLowerCase()+"s":""))}
-    <table><thead><tr><th>Fecha</th><th>Cliente</th><th>Tipo</th><th>Detalle</th><th class="r">Monto</th></tr></thead>
-    <tbody>${L.map(m=>`<tr><td class="num">${fd(m.fecha)}</td><td>${esc(nm[m.clienteId].nombre)}</td><td>${esc(TYPES[m.tipo].label)}</td><td>${esc(m.nota||"")}</td><td class="r num ${cls(val(m))}">${fmtC(val(m))}</td></tr>`).join("")}</tbody>
-    <tfoot><tr><td colspan="4">Total · ${L.length} movimiento${L.length===1?"":"s"} · efecto neto sobre los saldos</td><td class="r num ${cls(neto)}">${fmtC(neto)}</td></tr></tfoot></table>
+  const sub="Del "+fd(d)+" al "+fd(h)+(pr.cli&&nm[pr.cli]?" · "+nm[pr.cli].nombre:"")+(pr.tp?" · solo "+TYPES[pr.tp].label.toLowerCase()+"s":"");
+  const diaN = f => DIAS[(parseYmd(f).getDay()+6)%7]+" "+fd(f);
+  const tr = (m,cols) => `<tr>${cols.map(c=>c==="f"?`<td class="num">${fd(m.fecha)}</td>`:c==="c"?`<td>${esc(nm[m.clienteId].nombre)}</td>`:c==="t"?`<td>${esc(TYPES[m.tipo].label)}</td>`:c==="n"?`<td>${esc(m.nota||"")}</td>`:`<td class="r num ${cls(val(m))}">${fmtC(val(m))}</td>`).join("")}</tr>`;
+  let tabla;
+  if (pr.grp==="dia"||pr.grp==="cliente"){
+    const dia=pr.grp==="dia";
+    const cols=dia?["c","t","n","m"]:["f","t","n","m"];
+    const G={}; for (const m of L){ const k=dia?m.fecha:m.clienteId; (G[k]||(G[k]=[])).push(m); }
+    const ks=Object.keys(G).sort(dia?(a,z)=>a.localeCompare(z):(a,z)=>nm[a].nombre.localeCompare(nm[z].nombre,"es"));
+    const th=dia?"<th>Cliente</th><th>Tipo</th><th>Detalle</th><th class=\"r\">Monto</th>":"<th>Fecha</th><th>Tipo</th><th>Detalle</th><th class=\"r\">Monto</th>";
+    tabla=`<table><thead><tr>${th}</tr></thead><tbody>${ks.map(k=>{ const g=G[k]; const nt=g.reduce((a,m)=>a+val(m),0);
+      return `<tr class="pr-grp"><td colspan="3">${esc(dia?diaN(k):nm[k].nombre+(nm[k].codigo?" · "+nm[k].codigo:""))} · ${g.length} movimiento${g.length===1?"":"s"}</td><td class="r num ${cls(nt)}">${fmtC(nt)}</td></tr>`+g.map(m=>tr(m,cols)).join(""); }).join("")}</tbody>
+      <tfoot><tr><td colspan="3">Total · ${L.length} movimiento${L.length===1?"":"s"} · efecto neto sobre los saldos</td><td class="r num ${cls(neto)}">${fmtC(neto)}</td></tr></tfoot></table>`;
+  } else {
+    tabla=`<table><thead><tr><th>Fecha</th><th>Cliente</th><th>Tipo</th><th>Detalle</th><th class="r">Monto</th></tr></thead>
+    <tbody>${L.map(m=>tr(m,["f","c","t","n","m"])).join("")}</tbody>
+    <tfoot><tr><td colspan="4">Total · ${L.length} movimiento${L.length===1?"":"s"} · efecto neto sobre los saldos</td><td class="r num ${cls(neto)}">${fmtC(neto)}</td></tr></tfoot></table>`;
+  }
+  return {html:`<section class="pr-sec">${prHead(pr.grp==="dia"?"Movimientos por día":pr.grp==="cliente"?"Movimientos por cliente":"Movimientos del período", sub)}
+    ${tabla}
     <h2 class="pr-h2">Por tipo</h2>
     <table style="max-width:420px"><thead><tr><th>Tipo</th><th class="r">Cantidad</th><th class="r">Monto</th></tr></thead>
     <tbody>${Object.keys(por).map(k=>`<tr><td>${esc(TYPES[k].label)}</td><td class="r num">${por[k].n}</td><td class="r num">${fmtC(por[k].t)}</td></tr>`).join("")}</tbody></table></section>`};
@@ -1373,6 +1411,52 @@ function prBonos(d,h){
     <table><thead><tr><th>Cliente</th><th class="r">Cantidad</th><th class="r">Bono depósito</th><th class="r">Bono pérdida</th><th class="r">Total</th></tr></thead>
     <tbody>${L.map(x=>`<tr><td>${esc(x.c.nombre)}${x.c.codigo?` <span class="pr-note">${esc(x.c.codigo)}</span>`:""}</td><td class="r num">${x.n}</td><td class="r num">${fmtC(x.dep)}</td><td class="r num">${fmtC(x.per)}</td><td class="r num"><b>${fmtC(x.dep+x.per)}</b></td></tr>`).join("")}</tbody>
     <tfoot><tr><td>Total</td><td class="r num">${T.n}</td><td class="r num">${fmtC(T.dep)}</td><td class="r num">${fmtC(T.per)}</td><td class="r num">${fmtC(T.dep+T.per)}</td></tr></tfoot></table>
+    </section>`};
+}
+function repSocios(mes){
+  const R=state.reparto||{}, M=R.meses||{};
+  let L=M[mes];
+  if(!L){ const ks=Object.keys(M).filter(k=>k<mes).sort(); L=ks.length?M[ks[ks.length-1]]:[]; }
+  L=(L||[]).map(x=>({n:x.n||"",p:x.p===""||x.p==null?"":Number(x.p)}));
+  while(L.length<6) L.push({n:"",p:""});
+  return L.slice(0,6);
+}
+function repProv(){ const R=state.reparto||{}; return R.prov!=null&&R.prov!==""?Number(R.prov):10; }
+function mesBalance(mes){
+  const ids=new Set(state.clientsAll.filter(c=>(c.moneda||"DOP")===state.moneda).map(c=>c.id));
+  let juego=0,bonos=0,n=0;
+  for(const m of (state.allMoves||[])){
+    if(!ids.has(m.clienteId)||!m.fecha||m.fecha.slice(0,7)!==mes) continue;
+    if(m.tipo==="debito"){juego+=m.monto;n++;} else if(m.tipo==="credito"){juego-=m.monto;n++;}
+    else if(m.tipo==="bono_deposito"||m.tipo==="bono_perdida"){bonos+=m.monto;n++;}
+  }
+  return {juego,bonos,neto:juego-bonos,n};
+}
+function prCierre(){
+  const mes=pr.mes||todayStr().slice(0,7);
+  const B=mesBalance(mes);
+  const provPct=pr.prov!=null&&pr.prov!==""?Number(pr.prov):repProv();
+  const prov=B.neto>0.004?Math.round(B.neto*provPct)/100:0;
+  const resto=B.neto-prov;
+  const soc=(pr.socios||repSocios(mes)).filter(x=>(x.n||"").trim()&&Number(x.p)>0);
+  const tp=soc.reduce((a,x)=>a+Number(x.p),0);
+  const reparte=resto>0.004?resto:0;
+  const filas=soc.map(x=>({n:x.n.trim(),p:Number(x.p),v:Math.round(reparte*Number(x.p))/100}));
+  const asignado=filas.reduce((a,x)=>a+x.v,0);
+  const sin=Math.max(0,100-tp);
+  const sub=mesNombre(mes);
+  return {html:`<section class="pr-sec">${prHead("Cierre mensual y reparto", sub)}
+    <div class="pr-box">${prBox("Juego del mes",fmtC(B.juego),cls(B.juego))}${prBox("Bonos del mes",fmtC(B.bonos))}${prBox("Balance neto",fmtC(B.neto),cls(B.neto))}</div>
+    <table style="max-width:520px"><tbody>
+      <tr><td>Balance neto del mes</td><td class="r num">${fmtC(B.neto)}</td></tr>
+      <tr><td>Proveedor del sistema (${provPct}%)</td><td class="r num">${fmtC(prov)}</td></tr>
+      <tr><td><b>Queda para repartir</b></td><td class="r num"><b>${fmtC(resto)}</b></td></tr>
+    </tbody></table>
+    ${filas.length?`<h2 class="pr-h2">Reparto entre socios</h2>
+    <table style="max-width:520px"><thead><tr><th>Socio</th><th class="r">%</th><th class="r">Monto</th></tr></thead>
+    <tbody>${filas.map(x=>`<tr><td>${esc(x.n)}</td><td class="r num">${x.p}%</td><td class="r num">${fmtC(x.v)}</td></tr>`).join("")}
+    ${sin>0.004?`<tr><td>Sin asignar (queda en fondo)</td><td class="r num">${Math.round(sin*100)/100}%</td><td class="r num">${fmtC(reparte-asignado)}</td></tr>`:""}</tbody>
+    <tfoot><tr><td>Total</td><td class="r num">${Math.round((tp+sin)*100)/100}%</td><td class="r num">${fmtC(reparte)}</td></tr></tfoot></table>`:""}
     </section>`};
 }
 function prCorte(){
@@ -1397,6 +1481,7 @@ function prBuild(){
   if (pr.tipo==="cuadre") return prCuadre(d,h);
   if (pr.tipo==="movs") return prMovs(d,h);
   if (pr.tipo==="bonos") return prBonos(d,h);
+  if (pr.tipo==="cierre") return prCierre();
   if (pr.tipo==="corte") return prCorte();
   return null;
 }
@@ -1424,13 +1509,33 @@ function prOptsHtml(){
     <div class="field"><label class="label" for="prOrd">Ordenar</label><select id="prOrd"><option value="nombre" ${sel(pr.ord,"nombre")}>Por nombre</option><option value="deben" ${sel(pr.ord,"deben")}>Quien más debe primero</option><option value="favor" ${sel(pr.ord,"favor")}>A quien más se le debe primero</option></select></div></div>`);
   if (t==="resumen") opts.push(`<div class="field"><label class="label" for="prOrd">Ordenar</label><select id="prOrd"><option value="nombre" ${sel(pr.ord,"nombre")}>Por nombre</option><option value="fin" ${sel(pr.ord,"fin")}>Mayor saldo al cierre</option><option value="banca" ${sel(pr.ord,"banca")}>Mayor balance neto</option></select></div>
     <label class="row note"><input id="prSin" type="checkbox" style="width:auto" ${pr.sin?"checked":""}> No listar clientes sin saldo ni movimiento</label>`);
+  if (t==="movs") opts.push(`<div class="grid2"><div class="field"><label class="label" for="prGrp">Agrupar</label><select id="prGrp"><option value="lista" ${sel(pr.grp,"lista")}>Una sola lista por fecha</option><option value="dia" ${sel(pr.grp,"dia")}>Por día</option><option value="cliente" ${sel(pr.grp,"cliente")}>Por cliente</option></select></div>
+    <div class="field"><label class="label" for="prCli">Cliente</label><select id="prCli"><option value="">Todos</option>${[...state.clients].sort((a,z)=>a.nombre.localeCompare(z.nombre,"es")).map(c=>`<option value="${esc(c.id)}" ${pr.cli===c.id?"selected":""}>${esc(c.nombre)}${c.codigo?" · "+esc(c.codigo):""}</option>`).join("")}</select></div></div>`);
   if (t==="movs") opts.push(`<div class="field"><label class="label" for="prTp">Tipo de movimiento</label><select id="prTp"><option value="">Todos</option>${["deposito","retiro","credito","debito","bono_deposito","bono_perdida","inicial"].map(k=>`<option value="${k}" ${sel(pr.tp,k)}>${esc(TYPES[k].label)}</option>`).join("")}</select></div>`);
+  if (t==="cierre"){
+    const mes=pr.mes||todayStr().slice(0,7); if(!pr.socios) pr.socios=repSocios(mes);
+    const prv=pr.prov!=null&&pr.prov!==""?pr.prov:repProv();
+    opts.push(`<div class="grid2"><div class="field"><label class="label" for="prM">Mes</label><input id="prM" type="month" value="${esc(mes)}"></div>
+      <div class="field"><label class="label" for="prProv">% proveedor del sistema</label><input id="prProv" class="num" type="number" min="0" max="100" step="0.01" value="${esc(String(prv))}"></div></div>
+      <p class="note" style="margin:0">Porcentaje de cada socio sobre lo que queda después del proveedor. Lo que no asignes queda en el fondo.</p>
+      ${pr.socios.map((x,i)=>`<div class="grid2"><div class="field"><input id="prSn${i}" type="text" placeholder="Socio ${i+1}" value="${esc(x.n)}" aria-label="Nombre del socio ${i+1}"></div><div class="field"><input id="prSp${i}" class="num" type="number" min="0" max="100" step="0.01" placeholder="%" value="${x.p===""?"":esc(String(x.p))}" aria-label="Porcentaje del socio ${i+1}"></div></div>`).join("")}
+      ${state.canWrite?`<div class="row"><button type="button" id="prSaveRep">Guardar reparto de este mes</button></div>`:""}`);
+  }
   if (t==="corte") opts.push(`<p class="note" style="margin:0">${corteF()?"Compara lo anotado hasta el corte del "+esc(fechaLarga(corteF()))+" con el saldo confirmado.":"Esta libreta no tiene un corte configurado."}</p>`);
   if (["estado","saldos","resumen"].includes(t) && !(t==="estado"&&pr.cli)) opts.push(`<label class="row note"><input id="prNo0" type="checkbox" style="width:auto" ${pr.no0?"checked":""}> Ocultar los clientes que están en 0</label>`);
   if (t==="cuadre") opts.push(`<label class="row note"><input id="prVer" type="checkbox" style="width:auto" ${pr.ver?"checked":""}> Incluir la verificación (reporte del sistema y efectivo)</label>`);
-  if (t!=="corte") opts.push(`<label class="row note"><input id="prArr" type="checkbox" style="width:auto" ${pr.arr?"checked":""}> Incluir arrastre de balance (saldo inicial). Desmarcado: solo los movimientos del período</label>`);
+  if (t!=="corte"&&t!=="cierre") opts.push(`<label class="row note"><input id="prArr" type="checkbox" style="width:auto" ${pr.arr?"checked":""}> Incluir arrastre de balance (saldo inicial). Desmarcado: solo los movimientos del período</label>`);
   const era=prEraTxt(); if (era) opts.push(`<p class="note" style="margin:0">Se imprime lo que estás viendo: <b>${esc(era)}</b>. Cambia de pestaña arriba para imprimir el otro período.</p>`);
   return opts.join("");
+}
+async function guardarReparto(){
+  const mes=pr.mes||todayStr().slice(0,7);
+  const R=Object.assign({prov:repProv(),meses:{}}, state.reparto||{});
+  R.meses=Object.assign({}, R.meses);
+  R.prov=pr.prov!=null&&pr.prov!==""?Math.max(0,Number(pr.prov)||0):repProv();
+  R.meses[mes]=(pr.socios||[]).filter(x=>(x.n||"").trim()||Number(x.p)>0).map(x=>({n:(x.n||"").trim(),p:Number(x.p)||0}));
+  try{ await db.doc("ajustes/reparto").set(R); state.reparto=R; toast("Reparto de "+mesNombre(mes)+" guardado"); }
+  catch(x){ fail(x); }
 }
 function openPrint(tipo, cli){
   const [d0,h0]=prEraRange();
@@ -1450,6 +1555,7 @@ function openPrint(tipo, cli){
   const close=()=>{ root.innerHTML=""; root.onclick=null; root.onsubmit=null; root.onchange=null; };
   root.onclick=e=>{
     if (e.target.id==="prbg"||e.target.id==="prCancel"){ close(); return; }
+    if (e.target.id==="prSaveRep"){ guardarReparto(); return; }
     const b=e.target.closest("[data-prr]"); if(!b) return;
     const [ea,eb]=prEraRange(), td=todayStr();
     if (b.dataset.prr==="sem"){ pr.d=mondayOf(td); pr.h=addDays(pr.d,6); }
@@ -1459,7 +1565,7 @@ function openPrint(tipo, cli){
   };
   root.onchange=e=>{
     const el=e.target, id=el.id;
-    if (el.name==="prT"){ pr.tipo=el.value; pr.ord="nombre"; draw(); return; }
+    if (el.name==="prT"){ pr.tipo=el.value; pr.ord="nombre"; pr.socios=null; draw(); return; }
     if (id==="prCli") pr.cli=el.value;
     else if (id==="prD") pr.d=el.value||pr.d;
     else if (id==="prH") pr.h=el.value||pr.h;
@@ -1469,7 +1575,11 @@ function openPrint(tipo, cli){
     else if (id==="prSin") pr.sin=el.checked;
     else if (id==="prNo0") pr.no0=el.checked;
     else if (id==="prArr") pr.arr=el.checked;
+    else if (id==="prGrp") pr.grp=el.value;
     else if (id==="prVer") pr.ver=el.checked;
+    else if (id==="prM"){ pr.mes=el.value||pr.mes; pr.socios=repSocios(pr.mes); draw(); return; }
+    else if (id==="prProv") pr.prov=el.value;
+    else if (/^prS[np]\d$/.test(id)){ const o=pr.socios[Number(id.slice(4))]; if(id[3]==="n") o.n=el.value; else o.p=el.value===""?"":Math.max(0,Number(el.value)||0); }
     if ((id==="prD"||id==="prH")&&pr.d>pr.h){ const x=pr.d; pr.d=pr.h; pr.h=x; draw(); }
   };
   root.onsubmit=e=>{ e.preventDefault(); doPrint(); };
