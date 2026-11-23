@@ -107,6 +107,7 @@ tr:last-child td{border-bottom:0}
 .modal{position:fixed;inset:0;background:rgba(10,18,24,.5);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
 .modal .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;width:min(460px,100%);display:flex;flex-direction:column;gap:12px}
 .modal h3{margin:0;font-family:var(--display)}
+#pbg .card>*{flex-shrink:0}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media (max-width:440px){.grid2{grid-template-columns:1fr}}
 .toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:.88rem;z-index:20;max-width:calc(100% - 32px)}
@@ -253,6 +254,7 @@ table.rpt tfoot td{font-weight:700;background:var(--soft);border-top:2px solid v
     <button class="ghost" id="btnReload" title="Volver a cargar los datos">Actualizar</button>
     <button class="ghost" id="btnPrint" title="Imprimir reportes">Imprimir</button>
     <button class="ghost" id="btnBonos" hidden>Bonos</button>
+    <button class="ghost" id="btnPases" hidden>Pases</button>
     <button class="ghost" id="btnUsers" hidden>Usuarios</button>
     <button class="ghost" id="btnLogout">Salir</button>
   </div>
@@ -830,6 +832,96 @@ function clearWeek(){ document.querySelectorAll("#wkForm input[id^='w_']").forEa
 document.addEventListener("input", e=>{ if(e.target.closest("#wkForm") && e.target.id!=="wkJump"){ if((e.target.dataset.w||"").startsWith("bono")) e.target.dataset.touched="1"; updateWeek(); } });
 document.addEventListener("change", e=>{ if(e.target.id==="wkJump" && e.target.value){ const ws=mondayOf(e.target.value); if(ws!==state.weekStart){ clearWeek(); state.weekStart=ws; render(); } } });
 
+/* ---------- pases a otro corredor ---------- */
+const PASES0=()=>({corr:[{id:"c1",nombre:"Corredor",pct:0}],items:[],pagos:[]});
+function pasesNorm(v){ const b=PASES0(); if(!v||typeof v!=="object") return b; return {corr:(Array.isArray(v.corr)&&v.corr.length?v.corr:b.corr), items:Array.isArray(v.items)?v.items:[], pagos:Array.isArray(v.pagos)?v.pagos:[]}; }
+state.pases=PASES0();
+const pcorr=()=>state.pases.corr[0];
+const pasesIds=()=>new Set(state.clientsAll.filter(c=>(c.moneda||"DOP")===state.moneda).map(c=>c.id));
+function pasesSemanas(){
+  const ids=pasesIds(), pct=Number(pcorr().pct)||0, W={};
+  for(const it of state.pases.items){ if(it.anul||!ids.has(it.cli)||!it.fecha) continue;
+    const w=mondayOf(it.fecha), o=W[w]||(W[w]={w,gan:0,per:0,n:0}); if(it.res==="gano") o.gan+=it.monto; else o.per+=it.monto; o.n++; }
+  return Object.values(W).sort((a,z)=>z.w.localeCompare(a.w)).map(o=>{ const bal=o.per-o.gan; return {...o, bal, fin:addDays(o.w,6), com:bal<-0.004?Math.round(-bal*pct)/100:0}; });
+}
+function pasesCuenta(){
+  let debo=0; for(const s of pasesSemanas()) debo+=s.gan-s.per-s.com;
+  for(const x of state.pases.pagos){ if(x.anul||x.mon!==state.moneda) continue; debo += x.dir==="cobre"?x.monto:-x.monto; }
+  return debo;
+}
+function pasesMes(mes){
+  const ids=pasesIds(); let res=0,n=0;
+  for(const it of state.pases.items){ if(it.anul||!ids.has(it.cli)||!it.fecha||it.fecha.slice(0,7)!==mes) continue; res += it.res==="gano"?-it.monto:it.monto; n++; }
+  let com=0; for(const s of pasesSemanas()) if(s.fin.slice(0,7)===mes) com+=s.com;
+  return {res,com,n};
+}
+async function guardarPases(){ await db.doc("ajustes/pases").set(state.pases); }
+function openPases(){
+  const root=$("modalRoot"), M=SYM[state.moneda];
+  const cn=id=>{ const c=state.clientsAll.find(x=>x.id===id); return c?[c.codigo,c.nombre].filter(Boolean).join(" · "):"(cliente borrado)"; };
+  const close=()=>{ root.innerHTML=""; root.onclick=null; root.onsubmit=null; };
+  const draw=(msg)=>{
+    const co=pcorr(), S=pasesSemanas(), debo=pasesCuenta(), ids=pasesIds();
+    const items=state.pases.items.filter(i=>ids.has(i.cli)).sort((a,z)=>(z.fecha||"").localeCompare(a.fecha||"")||0).slice(0,40);
+    const pagos=state.pases.pagos.filter(x=>x.mon===state.moneda).sort((a,z)=>(z.fecha||"").localeCompare(a.fecha||"")).slice(0,10);
+    const cli=[...state.clients].sort((a,z)=>a.nombre.localeCompare(z.nombre,"es"));
+    root.innerHTML=`<div class="modal" id="pbg"><div class="card" style="width:min(620px,100%);max-height:92vh;overflow:auto">
+      <h3>Pases a otro corredor${state.moneda==="USD"?" · dólares":""}</h3>
+      <p class="note" style="margin:0">Una jugada que pasas al corredor sigue como débito del cliente. Si el corredor la ganó, la pagas completa; si la perdió, te la paga. Cada semana (lunes a domingo): si el corredor sale ganando en el balance de los pases, te toca comisión sobre esa ganancia; si sales ganando tú, no hay comisión.</p>
+      <div class="grid2"><div class="field"><label class="label" for="pcN">Corredor</label><input id="pcN" value="${esc(co.nombre)}"></div>
+        <div class="field"><label class="label" for="pcP">% comisión que te toca</label><input id="pcP" class="num" type="number" min="0" max="100" step="0.01" value="${Number(co.pct)||0}"></div></div>
+      <div class="row"><button type="button" id="pcSave">Guardar corredor</button></div>
+      <div class="pr-box" style="display:flex;gap:10px;flex-wrap:wrap"><div class="card" style="padding:10px;flex:1;min-width:200px"><span class="note">${debo>0.004?"Le debes al corredor":debo<-0.004?"El corredor te debe":"Cuenta al día"}</span><b class="num ${debo>0.004?"neg":debo<-0.004?"pos":""}" style="font-size:20px">${fmt(Math.abs(debo))}</b></div></div>
+      <h3 style="font-size:15px">Anotar pase</h3>
+      <form id="paForm" class="grid2" novalidate>
+        <div class="field"><label class="label" for="paC">Cliente</label><select id="paC"><option value="">Elige…</option>${cli.map(c=>`<option value="${esc(c.id)}">${esc([c.codigo,c.nombre].filter(Boolean).join(" · "))}</option>`).join("")}</select></div>
+        <div class="field"><label class="label" for="paF">Fecha</label><input id="paF" type="date" value="${todayStr()}"></div>
+        <div class="field"><label class="label" for="paM">Monto ${M}</label><input id="paM" class="num" type="number" min="0" step="0.01" placeholder="0"></div>
+        <div class="field"><label class="label" for="paR">Resultado para el corredor</label><select id="paR"><option value="gano">Ganó (yo pago)</option><option value="perdio">Perdió (me paga)</option></select></div>
+        <div class="field" style="grid-column:1/-1"><label class="label" for="paN">Nota (opcional)</label><input id="paN" maxlength="120"></div>
+        <div class="row" style="grid-column:1/-1;justify-content:flex-end"><button class="primary" type="submit" id="paGo">Agregar pase</button></div>
+      </form>
+      <p class="note" id="pMsg" role="status" style="margin:0">${esc(msg||"")}</p>
+      <h3 style="font-size:15px">Por semana</h3>
+      ${S.length?`<div style="overflow-x:auto"><table><thead><tr><th>Semana</th><th class="r">Ganó el corredor</th><th class="r">Perdió el corredor</th><th class="r">Balance tuyo</th><th class="r">Comisión</th></tr></thead><tbody>${S.map(x=>`<tr><td>${fd(x.w)} al ${fd(x.fin)}</td><td class="r num">${fmtC(x.gan)}</td><td class="r num">${fmtC(x.per)}</td><td class="r num ${cls(x.bal)}">${fmtC(x.bal)}</td><td class="r num">${fmtC(x.com)}</td></tr>`).join("")}</tbody></table></div>`:`<p class="note">Todavía no hay pases en esta moneda.</p>`}
+      <h3 style="font-size:15px">Pases anotados</h3>
+      ${items.length?`<div style="overflow-x:auto"><table><tbody>${items.map(i=>`<tr ${i.anul?'style="opacity:.55"':""}><td>${fd(i.fecha)}</td><td>${esc(cn(i.cli))}${i.nota?` <span class="note">${esc(i.nota)}</span>`:""}</td><td>${i.res==="gano"?"Ganó":"Perdió"}</td><td class="r num">${fmtC(i.monto)}</td><td><button type="button" data-pan="${esc(i.id)}">${i.anul?"Restaurar":"Anular"}</button></td></tr>`).join("")}</tbody></table></div>`:`<p class="note">Sin pases.</p>`}
+      <h3 style="font-size:15px">Liquidaciones con el corredor</h3>
+      <form id="pgForm" class="grid2" novalidate>
+        <div class="field"><label class="label" for="pgD">Qué pasó</label><select id="pgD"><option value="pague">Le pagué al corredor</option><option value="cobre">El corredor me pagó</option></select></div>
+        <div class="field"><label class="label" for="pgF">Fecha</label><input id="pgF" type="date" value="${todayStr()}"></div>
+        <div class="field"><label class="label" for="pgM">Monto ${M}</label><input id="pgM" class="num" type="number" min="0" step="0.01" placeholder="0"></div>
+        <div class="row" style="align-items:flex-end;justify-content:flex-end"><button type="submit" id="pgGo">Registrar</button></div>
+      </form>
+      ${pagos.length?`<div style="overflow-x:auto"><table><tbody>${pagos.map(x=>`<tr ${x.anul?'style="opacity:.55"':""}><td>${fd(x.fecha)}</td><td>${x.dir==="pague"?"Le pagué":"Me pagó"}</td><td class="r num">${fmtC(x.monto)}</td><td><button type="button" data-pgn="${esc(x.id)}">${x.anul?"Restaurar":"Anular"}</button></td></tr>`).join("")}</tbody></table></div>`:""}
+      <div class="row" style="justify-content:flex-end"><button type="button" id="pClose">Cerrar</button></div>
+    </div></div>`;
+  };
+  const run=async(fn,okMsg)=>{ const bak=JSON.stringify(state.pases); try{ fn(); await guardarPases(); draw(okMsg); }catch(x){ state.pases=JSON.parse(bak); fail(x); draw(); } };
+  draw();
+  root.onclick=e=>{
+    const t=e.target;
+    if (t.id==="pbg"||t.id==="pClose"){ close(); render(); return; }
+    if (t.id==="pcSave") run(()=>{ const c=pcorr(); c.nombre=($("pcN").value.trim()||"Corredor"); c.pct=Math.min(100,Math.max(0,Number($("pcP").value)||0)); },"Corredor guardado");
+    else if (t.dataset.pan) run(()=>{ const i=state.pases.items.find(x=>x.id===t.dataset.pan); if(i) i.anul=!i.anul; },"Listo");
+    else if (t.dataset.pgn) run(()=>{ const i=state.pases.pagos.find(x=>x.id===t.dataset.pgn); if(i) i.anul=!i.anul; },"Listo");
+  };
+  root.onsubmit=e=>{
+    e.preventDefault();
+    if (e.target.id==="paForm"){
+      const cli=$("paC").value, fecha=$("paF").value, monto=Number($("paM").value), res=$("paR").value, nota=$("paN").value.trim();
+      if(!cli) return draw("Elige el cliente.");
+      if(!fecha) return draw("Falta la fecha.");
+      if(!(monto>0)) return draw("Escribe el monto.");
+      run(()=>{ state.pases.items.push({id:"p"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),corr:pcorr().id,cli,fecha,monto,res,nota,anul:false}); },"Pase anotado");
+    } else if (e.target.id==="pgForm"){
+      const monto=Number($("pgM").value), fecha=$("pgF").value, dir=$("pgD").value;
+      if(!(monto>0)||!fecha) return draw("Escribe fecha y monto de la liquidación.");
+      run(()=>{ state.pases.pagos.push({id:"g"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),corr:pcorr().id,fecha,monto,dir,mon:state.moneda,anul:false}); },"Liquidación anotada");
+    }
+  };
+}
+
 /* ---------- configuración general de bonos ---------- */
 function openBonos(){
   const g=Object.assign({modo:"manual",pctDep:"",topeDep:"",pctPer:"",topePer:""}, state.bonosCfg||{});
@@ -982,6 +1074,7 @@ document.addEventListener("click", async e=>{
   if (t.dataset.t){ state.type=t.dataset.t; render(); return; }
   if (t.id==="useSug"){ $("mvMonto").value=t.dataset.v; return; }
   if (t.id==="btnBonos"){ openBonos(); return; }
+  if (t.id==="btnPases"){ openPases(); return; }
   if (t.dataset.del){ state.confirmDel=t.dataset.del; render(); return; }
   if (t.hasAttribute("data-delno")){ state.confirmDel=null; render(); return; }
   if (t.dataset.restore){ t.disabled=true; try{ await db.collection("movimientos").doc(t.dataset.restore).restore(); toast("Movimiento restaurado"); }catch(err){ fail(err); } return; }
@@ -1129,7 +1222,7 @@ async function loadAll(){
     const [cl, mv, aj] = await Promise.all([
       fetchAll(T.clientes,"id,nombre,telefono,codigo,limite,nota,bonos,moneda,creado","nombre"),
       fetchAll(T.movimientos,"id,cliente_id,tipo,monto,fecha,nota,anulado,anulado_en,creado","fecha"),
-      q(sb.from("libreta_ajustes").select("clave,valor").in("clave",["cuadre","bonos","corte","reparto"]))
+      q(sb.from("libreta_ajustes").select("clave,valor").in("clave",["cuadre","bonos","corte","reparto","pases"]))
     ]);
     state.clientsAll = cl.map(c=>({...c, moneda:c.moneda||"DOP", telefono:c.telefono||"", codigo:c.codigo||"", nota:c.nota||"", limite:Number(c.limite)||0}));
     const all = mv.map(m=>({ id:m.tipo==="inicial"&&!m.anulado ? "ini_"+m.cliente_id : m.id, _id:m.id, clienteId:m.cliente_id, tipo:m.tipo, monto:Number(m.monto), fecha:m.fecha, nota:m.nota||"", anulado:m.anulado, anulado_en:m.anulado_en, creado:Date.parse(m.creado)||0 }));
@@ -1142,6 +1235,7 @@ async function loadAll(){
     if (ajC && !document.activeElement?.id?.startsWith("cu")) state.cuadre = ajC.valor||{};
     state.bonosCfg = ajB?.valor || {};
     state.reparto = aj.find(a=>a.clave==="reparto")?.valor || {};
+    state.pases = pasesNorm(aj.find(a=>a.clave==="pases")?.valor);
     if (state.selected && !state.clients.some(c=>c.id===state.selected)) state.selected=null;
     state.ready=true; render();
   }catch(e){ toast("No se pudieron cargar los datos. Pulsa Actualizar."); }
@@ -1176,6 +1270,7 @@ async function enter(){
   $("btnNew").disabled = !state.canWrite;
   $("btnUsers").hidden = rol!=="admin";
   $("btnBonos").hidden = !state.canWrite;
+  $("btnPases").hidden = !state.canWrite;
   $("who").textContent = session.user.email + " · " + ({admin:"Administrador",editor:"Editor",lectura:"Solo lectura"}[rol]);
   const bn=$("banner"); bn.hidden = state.canWrite; bn.textContent = "Modo solo lectura: puedes consultar saldos pero no registrar movimientos.";
   render(); loadAll();
@@ -1280,6 +1375,7 @@ const PR_TIPOS=[
   {id:"movs", t:"Movimientos del período", d:"Los movimientos de todos los clientes o de uno, en una lista por fecha, agrupados por día o agrupados por cliente."},
   {id:"bonos", t:"Bonos del período", d:"Bonos por depósito y por pérdida que recibió cada cliente."},
   {id:"cierre", t:"Cierre mensual y reparto", d:"Balance neto del mes, 10% para el proveedor del sistema y el reparto del resto entre los socios con el porcentaje que anotes."},
+  {id:"pases", t:"Pases a otro corredor", d:"Pases por semana con el balance, la comisión que te toca y lo que debes al corredor."},
   {id:"corte", t:"Diferencia al corte", d:"Lo que da la libreta al corte contra el saldo confirmado, por cliente."},
 ];
 const pr={tipo:"estado", cli:"", d:"", h:"", fil:"all", ord:"nombre", tp:"", sin:true, no0:false, arr:true, ver:false, grp:"lista", mes:"", prov:null, socios:null};
@@ -1435,9 +1531,10 @@ function mesBalance(mes){
 function prCierre(){
   const mes=pr.mes||todayStr().slice(0,7);
   const B=mesBalance(mes);
+  const PS=pasesMes(mes), hayPS=PS.n>0||PS.com>0.004, netoAj=B.neto+PS.res+PS.com;
   const provPct=pr.prov!=null&&pr.prov!==""?Number(pr.prov):repProv();
-  const prov=B.neto>0.004?Math.round(B.neto*provPct)/100:0;
-  const resto=B.neto-prov;
+  const prov=netoAj>0.004?Math.round(netoAj*provPct)/100:0;
+  const resto=netoAj-prov;
   const soc=(pr.socios||repSocios(mes)).filter(x=>(x.n||"").trim()&&Number(x.p)>0);
   const tp=soc.reduce((a,x)=>a+Number(x.p),0);
   const reparte=resto>0.004?resto:0;
@@ -1449,6 +1546,9 @@ function prCierre(){
     <div class="pr-box">${prBox("Juego del mes",fmtC(B.juego),cls(B.juego))}${prBox("Bonos del mes",fmtC(B.bonos))}${prBox("Balance neto",fmtC(B.neto),cls(B.neto))}</div>
     <table style="max-width:520px"><tbody>
       <tr><td>Balance neto del mes</td><td class="r num">${fmtC(B.neto)}</td></tr>
+      ${hayPS?`<tr><td>Pases a otro corredor (resultado)</td><td class="r num ${cls(PS.res)}">${fmtC(PS.res)}</td></tr>
+      <tr><td>Comisión por pases</td><td class="r num">${fmtC(PS.com)}</td></tr>
+      <tr><td>Balance neto después de pases</td><td class="r num"><b>${fmtC(netoAj)}</b></td></tr>`:""}
       <tr><td>Proveedor del sistema (${provPct}%)</td><td class="r num">${fmtC(prov)}</td></tr>
       <tr><td><b>Queda para repartir</b></td><td class="r num"><b>${fmtC(resto)}</b></td></tr>
     </tbody></table>
@@ -1458,6 +1558,22 @@ function prCierre(){
     ${sin>0.004?`<tr><td>Sin asignar (queda en fondo)</td><td class="r num">${Math.round(sin*100)/100}%</td><td class="r num">${fmtC(reparte-asignado)}</td></tr>`:""}</tbody>
     <tfoot><tr><td>Total</td><td class="r num">${Math.round((tp+sin)*100)/100}%</td><td class="r num">${fmtC(reparte)}</td></tr></tfoot></table>`:""}
     </section>`};
+}
+function prPases(d,h){
+  const ids=pasesIds(), L=state.pases.items.filter(i=>!i.anul&&ids.has(i.cli)&&i.fecha>=d&&i.fecha<=h).sort((a,z)=>a.fecha.localeCompare(z.fecha));
+  if(!L.length) return null;
+  const S=pasesSemanas().filter(x=>x.fin>=d&&x.w<=h).reverse();
+  const T=S.reduce((a,x)=>({gan:a.gan+x.gan,per:a.per+x.per,bal:a.bal+x.bal,com:a.com+x.com}),{gan:0,per:0,bal:0,com:0});
+  const nm=id=>{const c=state.clientsAll.find(x=>x.id===id);return c?[c.codigo,c.nombre].filter(Boolean).join(" · "):""};
+  return {html:`<section class="pr-sec">${prHead("Pases a otro corredor","Del "+fd(d)+" al "+fd(h))}
+    <div class="pr-box">${prBox("Ganó el corredor",fmtC(T.gan))}${prBox("Perdió el corredor",fmtC(T.per))}${prBox("Balance tuyo",fmtC(T.bal),cls(T.bal))}${prBox("Comisión",fmtC(T.com))}${prBox("Saldo con el corredor",fmtC(pasesCuenta()))}</div>
+    <h2 class="pr-h2">Por semana</h2>
+    <table><thead><tr><th>Semana</th><th class="r">Ganó el corredor</th><th class="r">Perdió el corredor</th><th class="r">Balance tuyo</th><th class="r">Comisión</th></tr></thead>
+    <tbody>${S.map(x=>`<tr><td>${fd(x.w)} al ${fd(x.fin)}</td><td class="r num">${fmtC(x.gan)}</td><td class="r num">${fmtC(x.per)}</td><td class="r num ${cls(x.bal)}">${fmtC(x.bal)}</td><td class="r num">${fmtC(x.com)}</td></tr>`).join("")}</tbody>
+    <tfoot><tr><td>Total</td><td class="r num">${fmtC(T.gan)}</td><td class="r num">${fmtC(T.per)}</td><td class="r num">${fmtC(T.bal)}</td><td class="r num">${fmtC(T.com)}</td></tr></tfoot></table>
+    <h2 class="pr-h2">Pases</h2>
+    <table><thead><tr><th>Fecha</th><th>Cliente</th><th>Resultado del corredor</th><th class="r">Monto</th></tr></thead>
+    <tbody>${L.map(i=>`<tr><td>${fd(i.fecha)}</td><td>${esc(nm(i.cli))}</td><td>${i.res==="gano"?"Ganó":"Perdió"}</td><td class="r num">${fmtC(i.monto)}</td></tr>`).join("")}</tbody></table></section>`};
 }
 function prCorte(){
   const cf=corteF(); if(!cf) return null;
@@ -1482,6 +1598,7 @@ function prBuild(){
   if (pr.tipo==="movs") return prMovs(d,h);
   if (pr.tipo==="bonos") return prBonos(d,h);
   if (pr.tipo==="cierre") return prCierre();
+  if (pr.tipo==="pases") return prPases(d,h);
   if (pr.tipo==="corte") return prCorte();
   return null;
 }
@@ -1500,7 +1617,7 @@ window.addEventListener("afterprint", ()=>{ const a=$("printArea"); if(a) a.inne
 
 function prOptsHtml(){
   const t=pr.tipo, sel=(v,x)=>v===x?"selected":"";
-  const per = ["estado","resumen","cuadre","movs","bonos"].includes(t);
+  const per = ["estado","resumen","cuadre","movs","bonos","pases"].includes(t);
   const opts=[];
   if (t==="estado") opts.push(`<div class="field"><label class="label" for="prCli">Cliente</label><select id="prCli"><option value="">Todos los clientes (uno por página)</option>${[...state.clients].sort((a,z)=>a.nombre.localeCompare(z.nombre,"es")).map(c=>`<option value="${esc(c.id)}" ${sel(pr.cli,c.id)}>${esc(c.nombre+(c.codigo?" · "+c.codigo:""))}</option>`).join("")}</select></div>`);
   if (per) opts.push(`<div class="grid2"><div class="field"><label class="label" for="prD">Desde</label><input id="prD" type="date" value="${esc(pr.d)}"></div><div class="field"><label class="label" for="prH">Hasta</label><input id="prH" type="date" value="${esc(pr.h)}"></div></div>
@@ -1524,7 +1641,7 @@ function prOptsHtml(){
   if (t==="corte") opts.push(`<p class="note" style="margin:0">${corteF()?"Compara lo anotado hasta el corte del "+esc(fechaLarga(corteF()))+" con el saldo confirmado.":"Esta libreta no tiene un corte configurado."}</p>`);
   if (["estado","saldos","resumen"].includes(t) && !(t==="estado"&&pr.cli)) opts.push(`<label class="row note"><input id="prNo0" type="checkbox" style="width:auto" ${pr.no0?"checked":""}> Ocultar los clientes que están en 0</label>`);
   if (t==="cuadre") opts.push(`<label class="row note"><input id="prVer" type="checkbox" style="width:auto" ${pr.ver?"checked":""}> Incluir la verificación (reporte del sistema y efectivo)</label>`);
-  if (t!=="corte"&&t!=="cierre") opts.push(`<label class="row note"><input id="prArr" type="checkbox" style="width:auto" ${pr.arr?"checked":""}> Incluir arrastre de balance (saldo inicial). Desmarcado: solo los movimientos del período</label>`);
+  if (t!=="corte"&&t!=="cierre"&&t!=="pases") opts.push(`<label class="row note"><input id="prArr" type="checkbox" style="width:auto" ${pr.arr?"checked":""}> Incluir arrastre de balance (saldo inicial). Desmarcado: solo los movimientos del período</label>`);
   const era=prEraTxt(); if (era) opts.push(`<p class="note" style="margin:0">Se imprime lo que estás viendo: <b>${esc(era)}</b>. Cambia de pestaña arriba para imprimir el otro período.</p>`);
   return opts.join("");
 }
