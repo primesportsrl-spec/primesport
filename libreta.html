@@ -56,6 +56,12 @@ button.danger{color:var(--neg);border-color:var(--neg)}
 button.ghost{border-color:transparent;background:transparent;padding:6px 10px}
 button:disabled{opacity:.5;cursor:not-allowed}
 input,select,textarea{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%;min-width:0}
+.cg{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:5px;font-size:.92rem}
+.cg .rw{display:flex;justify-content:space-between;gap:12px}
+.cg .tt{border-top:1px solid var(--line);padding-top:6px;font-weight:700}
+.cg .hd{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.cg h2{margin:0;font-size:1rem;font-family:var(--display)}
+.cg small{color:var(--muted)}
 .summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .summary>div{background:var(--panel);padding:12px 14px;display:flex;flex-direction:column;gap:4px;min-width:0}
 .summary .v{font-size:1.15rem;font-weight:600}
@@ -270,6 +276,8 @@ table.rpt tfoot td{font-weight:700;background:var(--soft);border-top:2px solid v
     <div><span class="label">Neto hoy (ganan − pierden)</span><span class="v num" id="sToday">RD$0.00</span></div>
   </section>
 
+  <section id="cuadreGen" class="cg" aria-label="Cuadre general" hidden></section>
+
   <div class="panes" id="panes">
     <section class="pane list-pane" aria-label="Clientes">
       <div class="list-head">
@@ -471,6 +479,7 @@ function render(){
   const st=$("sToday"); st.textContent = fmt(today); st.className = "v num " + (today>0?"neg":today<0?"pos":"");
   st.title = "Positivo = los clientes ganaron más de lo que perdieron hoy";
 
+  renderCG();
   // list
   const q = $("q").value.trim().toLowerCase(), f=$("filter").value;
   const list = state.clients
@@ -832,10 +841,71 @@ function clearWeek(){ document.querySelectorAll("#wkForm input[id^='w_']").forEa
 document.addEventListener("input", e=>{ if(e.target.closest("#wkForm") && e.target.id!=="wkJump"){ if((e.target.dataset.w||"").startsWith("bono")) e.target.dataset.touched="1"; updateWeek(); } });
 document.addEventListener("change", e=>{ if(e.target.id==="wkJump" && e.target.value){ const ws=mondayOf(e.target.value); if(ws!==state.weekStart){ clearWeek(); state.weekStart=ws; render(); } } });
 
+/* ---------- cuadre general (sin segmentar por períodos) ---------- */
+function cgCalc(){
+  const cfg=(state.apertura||{})[state.moneda]; if(!cfg||!cfg.desde) return null;
+  const ids=new Set(state.clientsAll.filter(c=>(c.moneda||"DOP")===state.moneda).map(c=>c.id));
+  const carry=state.corte&&state.corte.fecha?addDays(state.corte.fecha,1):null;
+  let neto=0; const b={};
+  for(const m of (state.allMoves||[])){
+    if(!ids.has(m.clienteId)) continue;
+    if(m.tipo==="inicial"&&carry&&m.fecha===carry) continue;
+    if(cfg.hasta&&m.fecha>cfg.hasta) continue;
+    b[m.clienteId]=(b[m.clienteId]||0)+val(m);
+    if(m.fecha>=cfg.desde){ if(m.tipo==="debito") neto+=m.monto; else if(m.tipo==="credito"||m.tipo==="bono_deposito"||m.tipo==="bono_perdida") neto-=m.monto; }
+  }
+  let deben=0, debemos=0; for(const k in b){ if(b[k]<-0.004) deben+=-b[k]; else if(b[k]>0.004) debemos+=b[k]; }
+  const otros=(cfg.otros||[]).filter(x=>Number(x.m)), ef=Number(cfg.efectivo)||0;
+  const total=ef+otros.reduce((a,x)=>a+Number(x.m),0)+deben-debemos;
+  return {cfg,neto,deben,debemos,ef,otros,total,dif:Math.round((neto-total)*100)/100};
+}
+function renderCG(){
+  const el=$("cuadreGen"); if(!el) return;
+  const r=cgCalc();
+  if(!r){ el.hidden=!state.canWrite; el.innerHTML=state.canWrite?`<div class="hd"><small>Cuadre general sin configurar en esta moneda.</small><button type="button" class="ghost" id="cgNew">Configurar</button></div>`:""; return; }
+  el.hidden=false;
+  const row=(l,v,c)=>`<div class="rw"><span>${l}</span><span class="num ${c||""}">${fmt(v)}</span></div>`;
+  el.innerHTML=`<div class="hd"><h2>Cuadre general desde ${fd(r.cfg.desde)} hasta ${r.cfg.hasta?fd(r.cfg.hasta):"hoy"}</h2>${state.canWrite?`<button type="button" class="ghost" id="cgEdit">Editar</button>`:""}</div>
+    ${row("Balance neto acumulado (juego − bonos)",r.neto)}
+    <div class="rw" style="margin-top:4px"><small>Lo que debería estar en tu mano o por cobrar:</small></div>
+    ${row("Efectivo en caja"+(r.cfg.efectivoNota?` <small>${esc(r.cfg.efectivoNota)}</small>`:""),r.ef)}
+    ${r.otros.map(x=>row(esc(x.n||"Otro")+(x.nota?` <small>${esc(x.nota)}</small>`:""),Number(x.m))).join("")}
+    ${row("Clientes nos deben",r.deben)}
+    ${row("Les debemos a clientes",-r.debemos)}
+    <div class="rw tt"><span>Total en mano y por cobrar</span><span class="num">${fmt(r.total)}</span></div>
+    <div class="rw tt"><span>${Math.abs(r.dif)<0.5?"Cuadrado":r.dif>0?"Falta por explicar":"Sobra"}</span><span class="num ${Math.abs(r.dif)<0.5?"pos":"neg"}">${fmt(Math.abs(r.dif))}</span></div>`;
+}
+function openCuadreGen(){
+  const root=$("modalRoot"), M=SYM[state.moneda], cfg=Object.assign({desde:"2026-07-01",efectivo:"",efectivoNota:"",otros:[]}, (state.apertura||{})[state.moneda]||{});
+  const rows=[...cfg.otros]; while(rows.length<5) rows.push({n:"",m:"",nota:""});
+  root.innerHTML=`<div class="modal" id="cbg"><form class="card" id="cgForm" style="width:min(520px,100%);max-height:92vh;overflow:auto" novalidate>
+    <h3>Cuadre general${state.moneda==="USD"?" · dólares":""}</h3>
+    <p class="note" style="margin:0">Un solo cuadre corrido desde la fecha de inicio. El balance neto y lo que deben o se les debe a los clientes se calculan solos; tú anotas el efectivo y el dinero que está en otras manos.</p>
+    <div class="grid2"><div class="field"><label class="label" for="cgD">Desde</label><input id="cgD" type="date" value="${esc(cfg.desde)}"></div>
+      <div class="field"><label class="label" for="cgH">Hasta (vacío = hoy)</label><input id="cgH" type="date" value="${esc(cfg.hasta||"")}"></div></div>
+    <div class="grid2"><div class="field"><label class="label" for="cgE">Efectivo en caja ${M}</label><input id="cgE" class="num" type="number" step="0.01" value="${cfg.efectivo===""?"":Number(cfg.efectivo)}"></div></div>
+    <div class="field"><label class="label" for="cgEN">Nota del efectivo (fecha del conteo)</label><input id="cgEN" maxlength="80" value="${esc(cfg.efectivoNota||"")}"></div>
+    <p class="note" style="margin:0">Otros valores (pagos ya cobrados, dinero con un socio…)</p>
+    ${rows.map((x,i)=>`<div class="grid2"><div class="field"><input id="cgN${i}" placeholder="Nombre" maxlength="60" value="${esc(x.n||"")}" aria-label="Nombre ${i+1}"></div><div class="field"><input id="cgM${i}" class="num" type="number" step="0.01" placeholder="${M}" value="${x.m===""||x.m==null?"":Number(x.m)}" aria-label="Monto ${i+1}"></div><div class="field" style="grid-column:1/-1"><input id="cgT${i}" placeholder="Nota (opcional)" maxlength="80" value="${esc(x.nota||"")}" aria-label="Nota ${i+1}"></div></div>`).join("")}
+    <div class="row" style="justify-content:flex-end"><button type="button" id="cgCancel">Cancelar</button><button class="primary" type="submit" id="cgSave">Guardar</button></div>
+  </form></div>`;
+  const close=()=>{ root.innerHTML=""; root.onclick=null; root.onsubmit=null; };
+  root.onclick=e=>{ if(e.target.id==="cbg"||e.target.id==="cgCancel") close(); };
+  root.onsubmit=async e=>{
+    e.preventDefault();
+    const otros=[]; for(let i=0;i<5;i++){ const n=$("cgN"+i).value.trim(), m=$("cgM"+i).value; if(n||m!=="") otros.push({n,m:Number(m)||0,nota:$("cgT"+i).value.trim()}); }
+    const v={desde:$("cgD").value||"2026-07-01", hasta:$("cgH").value||"", efectivo:$("cgE").value===""?0:Number($("cgE").value), efectivoNota:$("cgEN").value.trim(), otros};
+    const nuevo=Object.assign({}, state.apertura||{}, {[state.moneda]:v});
+    $("cgSave").disabled=true;
+    try{ await db.doc("ajustes/apertura").set(nuevo); state.apertura=nuevo; close(); toast("Cuadre general guardado"); render(); }
+    catch(x){ fail(x); $("cgSave").disabled=false; }
+  };
+}
+
 /* ---------- pases a otro corredor ---------- */
 const PASES0=()=>({corr:[{id:"c1",nombre:"Corredor",pct:0}],items:[],pagos:[]});
 function pasesNorm(v){ const b=PASES0(); if(!v||typeof v!=="object") return b; return {corr:(Array.isArray(v.corr)&&v.corr.length?v.corr:b.corr), items:Array.isArray(v.items)?v.items:[], pagos:Array.isArray(v.pagos)?v.pagos:[]}; }
-state.pases=PASES0();
+state.pases=PASES0(); state.apertura={};
 const pcorr=()=>state.pases.corr[0];
 const pasesIds=()=>new Set(state.clientsAll.filter(c=>(c.moneda||"DOP")===state.moneda).map(c=>c.id));
 function pasesSemanas(){
@@ -1075,6 +1145,7 @@ document.addEventListener("click", async e=>{
   if (t.id==="useSug"){ $("mvMonto").value=t.dataset.v; return; }
   if (t.id==="btnBonos"){ openBonos(); return; }
   if (t.id==="btnPases"){ openPases(); return; }
+  if (t.id==="cgEdit"||t.id==="cgNew"){ openCuadreGen(); return; }
   if (t.dataset.del){ state.confirmDel=t.dataset.del; render(); return; }
   if (t.hasAttribute("data-delno")){ state.confirmDel=null; render(); return; }
   if (t.dataset.restore){ t.disabled=true; try{ await db.collection("movimientos").doc(t.dataset.restore).restore(); toast("Movimiento restaurado"); }catch(err){ fail(err); } return; }
@@ -1222,7 +1293,7 @@ async function loadAll(){
     const [cl, mv, aj] = await Promise.all([
       fetchAll(T.clientes,"id,nombre,telefono,codigo,limite,nota,bonos,moneda,creado","nombre"),
       fetchAll(T.movimientos,"id,cliente_id,tipo,monto,fecha,nota,anulado,anulado_en,creado","fecha"),
-      q(sb.from("libreta_ajustes").select("clave,valor").in("clave",["cuadre","bonos","corte","reparto","pases"]))
+      q(sb.from("libreta_ajustes").select("clave,valor").in("clave",["cuadre","bonos","corte","reparto","pases","apertura"]))
     ]);
     state.clientsAll = cl.map(c=>({...c, moneda:c.moneda||"DOP", telefono:c.telefono||"", codigo:c.codigo||"", nota:c.nota||"", limite:Number(c.limite)||0}));
     const all = mv.map(m=>({ id:m.tipo==="inicial"&&!m.anulado ? "ini_"+m.cliente_id : m.id, _id:m.id, clienteId:m.cliente_id, tipo:m.tipo, monto:Number(m.monto), fecha:m.fecha, nota:m.nota||"", anulado:m.anulado, anulado_en:m.anulado_en, creado:Date.parse(m.creado)||0 }));
@@ -1236,6 +1307,7 @@ async function loadAll(){
     state.bonosCfg = ajB?.valor || {};
     state.reparto = aj.find(a=>a.clave==="reparto")?.valor || {};
     state.pases = pasesNorm(aj.find(a=>a.clave==="pases")?.valor);
+    state.apertura = aj.find(a=>a.clave==="apertura")?.valor || {};
     if (state.selected && !state.clients.some(c=>c.id===state.selected)) state.selected=null;
     state.ready=true; render();
   }catch(e){ toast("No se pudieron cargar los datos. Pulsa Actualizar."); }
