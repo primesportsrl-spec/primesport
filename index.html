@@ -1698,6 +1698,21 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     • Los símbolos <b>&lt;</b> y <b>&gt;</b> escritos en notas o nombres se muestran como ‹ ›: es una protección para que nadie pueda meter código en la pantalla de otro usuario.</div>
   </div>
 
+  <div class="panel" style="background:linear-gradient(135deg,#ecf7f4,#dcefe9);border-color:#c4e5dc;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><div style="width:30px;height:30px;border-radius:9px;background:#0f3d3a;color:#8fe0cf;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">🏖</div><h3 style="font-size:15px;font-weight:700;">Vacaciones <span style="font-size:11px;color:#0b6b5f;font-weight:800;">NUEVO v7.5.4</span></h3></div>
+    <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">
+    Empleados → <b>🏖️ Vacaciones</b>. Con la <b>fecha de ingreso</b> de cada ficha, la app calcula cuándo le tocan y cuántos días, según el Código de Trabajo:<br>
+    • <b>14 días laborables</b> por cada año cumplido; <b>18 días</b> a partir de los 5 años (Art. 177). El derecho se gana en cada aniversario (Art. 178).<br>
+    • <b>El monto a pagar lo escribes tú.</b> Si quieres una referencia, el botón <b>Calcular</b> pone días × salario diario (quincena × 2 ÷ 23.83; en Configuración puedes incluir el bono de limpieza).<br>
+    • <b>Registrar vacaciones</b>: elige el año de servicio y cómo se dan: <b>las disfruta</b> (fecha de inicio; el último día se calcula sin contar domingos), <b>se le pagan</b> sin disfrutarlas, o <b>parte y parte</b>. Se pueden dar por partes en varios registros hasta completar los días.<br>
+    • Elige la <b>quincena</b> en que se paga: al abrir esa quincena en Nómina, el renglón Vacaciones sale lleno (o aparece el aviso para ponerlo, si ya estaba guardada). La ley pide pagarlas el día antes de salir (Art. 181).<br>
+    • Avisos: en <b>Inicio</b> salen las pendientes, las que tocan en los próximos 30 días y las <b>vencidas</b> (más de 6 meses sin darlas, Art. 188).<br>
+    • Pagar las vacaciones en vez de darlas <b>no lo permite la ley</b> mientras el empleado trabaja (Art. 182): la app deja registrarlo, con aviso, como "pagadas sin disfrutar".<br>
+    • <b>Ya las tomó</b>: marca como saldado lo que se dio antes de llevarlo en la app. Los aniversarios antes de <b>Contar desde</b> (1 de enero de 2026 si no se cambia) se dan por saldados.<br>
+    • 🖨 <b>Constancia</b>: hoja para que el empleado firme al salir de vacaciones (Art. 189).<br>
+    • En la ficha del empleado hay un resumen de sus vacaciones; si lleva menos de un año, se muestran los días proporcionales que le tocarían si sale (Art. 180).</div>
+  </div>
+
   <div class="panel" style="background:linear-gradient(135deg,#eef7f1,#dff0e5);border-color:#bfe0c9;">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><div style="width:30px;height:30px;border-radius:9px;background:#163a24;color:#8fdcaa;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">✓</div><h3 style="font-size:15px;font-weight:700;">Guardado más rápido y seguro <span style="font-size:11px;color:#2c7a4a;font-weight:800;">NUEVO v7.5.3</span></h3></div>
     <div style="font-size:13.5px;line-height:1.6;color:var(--ink);">
@@ -1891,6 +1906,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
     <button onclick="openIncentivos()" style="flex:1;border:1px solid #0086AD;background:#eef6fb;color:#0086AD;border-radius:11px;padding:11px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">⭐ Incentivos del mes</button>
     <button onclick="openRegalia()" style="flex:1;border:1px solid #a37416;background:#fdf6e8;color:#a37416;border-radius:11px;padding:11px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">🎁 Doble sueldo</button>
   </div>
+  <button onclick="openVacaciones()" style="width:100%;border:1px solid #1f8a7a;background:#ecf7f4;color:#0b6b5f;border-radius:11px;padding:11px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:12px;">🏖️ Vacaciones</button>
   <div id="empResumen"></div>
   <input type="search" id="empQ" placeholder="Buscar por nombre, cédula o banca…" oninput="renderEmpleados()"
     style="width:100%;box-sizing:border-box;padding:11px 13px;border:1px solid var(--line);border-radius:11px;font-size:13px;font-family:inherit;margin-bottom:12px;background:#fff;color:var(--ink);">
@@ -1938,6 +1954,27 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
   <div style="display:flex;gap:8px;margin:4px 0 26px;">
     <button onclick="exportRegaliaCSV()" style="flex:1;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">Archivo del banco</button>
     <button onclick="enviarRegaliaWhatsApp()" style="flex:1;border:1px solid #1f9d6b;background:#eaf7f1;color:#1f9d6b;border-radius:11px;padding:12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">WhatsApp</button>
+  </div>
+</section>
+
+<section class="view" id="view-vacaciones">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button onclick="openEmpleados()" style="border:none;background:#eef2f4;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--navy);flex-shrink:0;">‹</button>
+    <div style="flex:1;"><div style="font-size:17px;font-weight:800;">Vacaciones</div><div style="font-size:12px;color:var(--muted);">Según la fecha de ingreso y el Código de Trabajo</div></div>
+  </div>
+  <div id="vacHero"></div>
+  <div id="vacFiltros" style="display:flex;gap:6px;margin-bottom:12px;">
+    <button data-f="pend" onclick="vacFiltrar('pend')" style="flex:1;border:1px solid var(--line);border-radius:10px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Pendientes</button>
+    <button data-f="prox" onclick="vacFiltrar('prox')" style="flex:1;border:1px solid var(--line);border-radius:10px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Próximas 60 días</button>
+    <button data-f="todos" onclick="vacFiltrar('todos')" style="flex:1;border:1px solid var(--line);border-radius:10px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Todos</button>
+  </div>
+  <div id="vacLista"></div>
+  <div id="vacCfg" class="panel" style="padding:13px;margin:10px 0 26px;display:none;">
+    <div style="font-size:12.5px;font-weight:800;margin-bottom:8px;">Configuración</div>
+    <div class="fld"><label>Contar vacaciones desde</label><input type="date" id="vacDesdeCfg"></div>
+    <div style="font-size:11px;color:var(--muted);margin:-4px 0 10px;">Los aniversarios antes de esta fecha se dan por saldados (lo de antes de llevarlo en la app).</div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;margin-bottom:10px;cursor:pointer;"><input type="checkbox" id="vacLimpCfg" style="width:16px;height:16px;"> Incluir el bono de limpieza en el salario diario</label>
+    <button onclick="vacGuardarCfg()" style="width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:10px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">Guardar configuración</button>
   </div>
 </section>
 
@@ -2312,7 +2349,7 @@ window.__PSICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTE
       <div class="si-act" style="color:var(--amber);" onclick="doLogout()">Salir</div>
     </div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v7.5.3 nube · Santo Domingo, RD</div>
+  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px;"><span class="js-consorcio">—</span> · AdmBca v7.5.4 nube · Santo Domingo, RD</div>
 </section>
 
 <!-- NAV -->
@@ -2375,8 +2412,8 @@ window.__supabase = createClient(
 window.dispatchEvent(new Event('supabase-ready'));
 </script>
 <script>
-/* ===================== AdmBca v7.5.3 ===================== */
-const APP_VERSION='7.5.3';
+/* ===================== AdmBca v7.5.4 ===================== */
+const APP_VERSION='7.5.4';
 function idConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.id)||null; }catch(e){ return null; } }
 function nomConsorcio(){ try{ return (state&&state.consorcio&&state.consorcio.nombre)||'AdmBca'; }catch(e){ return 'AdmBca'; } }
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -2697,6 +2734,9 @@ async function loadResto(){
     state.incentivos=inc.error?[]:inc.data.map(x=>({_id:x.id,anio:x.anio,mes:x.mes,empId:x.empleado_id,
       monto:Number(x.monto)||0,nota:x.nota||'',pagado:x.pagado===true,fechaPago:x.fecha_pago||''}));
     state._incReady=!inc.error;
+    const vc=await fetchAllSafe('vacaciones');   // v7.5.4
+    state.vacaciones=vc.error?[]:vc.data.map(vacDesdeFila);
+    state._vacReady=!vc.error;
     const rg=await fetchAllSafe('regalia');
     state.regalias=rg.error?[]:rg.data.map(x=>({_id:x.id,anio:x.anio,empId:x.empleado_id,mensual:Number(x.salario_mensual)||0,
       meses:Number(x.meses)||0,monto:Number(x.monto)||0,pagado:x.pagado===true,fechaPago:x.fecha_pago||'',nota:x.nota||''}));
@@ -3197,6 +3237,9 @@ function renderAlertas(){
     if(!del.length) avisos.push({c:'#0086AD',bg:'#eef6fb',bd:'#cfe3ee',t:'Toca pagar los incentivos',d:`Se pagan del 25 al 28 · todavía no hay incentivos cargados para ${MONTHS[m-1]}`,go:'openIncentivos()'});
     else if(pend.length) avisos.push({c:'#0086AD',bg:'#eef6fb',bd:'#cfe3ee',t:`${pend.length} incentivo(s) sin pagar`,d:`RD$${fmt(pend.reduce((s,x)=>s+x.monto,0))} de ${MONTHS[m-1]} · genera el archivo del banco`,go:'openIncentivos()'});
   }
+
+  // v7.5.4: vacaciones pendientes, vencidas o que tocan este mes
+  { const va=vacAviso(); if(va) avisos.push(va); }
 
   // v7.2: respaldo semanal y errores de la app (solo administrador)
   if(esAdmin() && state._configReady){
@@ -3827,6 +3870,7 @@ function renderEmpFicha(){
       <button id="btnGuardarEmp" onclick="guardarEmpleado()" class="btn-primary" style="width:100%;padding:13px;">${empCur?'Guardar cambios':'Crear empleado'}</button>
       ${empCur?`<button onclick="borrarEmpleado()" style="width:100%;margin-top:8px;border:1px solid var(--red);background:#fff;color:var(--red);border-radius:11px;padding:11px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">Eliminar</button>`:''}
     </div>
+    ${empCur?vacPanelFicha(empCur):''}
     ${empCur?`
     <div class="panel" style="padding:14px;margin-bottom:12px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
@@ -4229,6 +4273,357 @@ function enviarRegaliaWhatsApp(){
   window.open('https://wa.me/'+corteWaNumber()+'?text='+encodeURIComponent(t),'_blank');
 }
 
+/* ===================== VACACIONES (v7.5.4) =====================
+   Según el Código de Trabajo (Ley 16-92):
+   - Art. 177: 14 días laborables con disfrute de salario de 1 a 5 años de
+     trabajo continuo; 18 días a partir de los 5 años. Se pueden dividir por
+     acuerdo, pero una de las partes debe ser de al menos una semana.
+   - Art. 178: el derecho se gana cada vez que cumple un año sin interrupción.
+   - Art. 180: si sale sin cumplir el año (más de 5 meses): de 6 a 12 días.
+   - Art. 181: el salario de vacaciones se paga el día antes de que empiecen.
+   - Art. 182: no se pueden cambiar por dinero mientras dure el contrato
+     (la app deja registrarlo, con aviso, porque en la práctica se hace).
+   - Art. 188: hay que tomarlas dentro de los 6 meses de ganado el derecho.
+   - Art. 189: el empleado firma el registro al empezar (constancia imprimible).
+   Salario diario = salario mensual ÷ 23.83; mensual = quincena × 2 (más el
+   bono de limpieza si se marca en la configuración de esta pantalla). */
+const VAC_DIVISOR=23.83;
+const vacFmt2=n=>new Intl.NumberFormat('es-DO',{minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(n)||0);
+let vacFiltro='pend', vacEmpFoco=null;
+function vacDiasLey(n){ return n>=5?18:14; }
+function vacSumarAnios(iso,n){ const [y,m,d]=iso.split('-').map(Number); const f=new Date(y+n,m-1,d); if(f.getMonth()!==m-1) f.setDate(0); return isoLocal(f); }
+function vacSumarMeses(iso,n){ const [y,m,d]=iso.split('-').map(Number); const f=new Date(y,m-1+n,d); if(f.getDate()!==d) f.setDate(0); return isoLocal(f); }
+function vacDiasEntre(a,b){ return Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/864e5); }
+function vacDesde(){ return (state.config&&state.config.vacaciones_desde)||'2026-01-01'; }
+function vacConLimpieza(){ return !!(state.config&&String(state.config.vacaciones_con_limpieza)==='1'); }
+function vacDiario(e){ return ((e.salario+(vacConLimpieza()?e.limpieza:0))*2)/VAC_DIVISOR; }
+function vacEsc(x){ return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function vacRegs(empId,n){ return (state.vacaciones||[]).filter(v=>v.empId===empId&&(n==null||v.periodo===n)); }
+/* Años de servicio cumplidos hasta hoy, con lo tomado y lo pagado de cada uno.
+   Los aniversarios antes de "Contar desde" se dan por saldados si no tienen registro. */
+function vacPeriodos(e, hoy){
+  hoy=hoy||todayISO();
+  if(!e.ingreso) return [];
+  const tope=(e.salida&&e.salida<hoy)?e.salida:hoy, out=[];
+  for(let n=1;n<70;n++){
+    const f=vacSumarAnios(e.ingreso,n); if(f>tope) break;
+    const regs=vacRegs(e._id,n);
+    if(f<vacDesde()&&!regs.length) continue;
+    const derecho=regs.length?(Number(regs[0].diasDerecho)||vacDiasLey(n)):vacDiasLey(n);
+    const disfrute=regs.reduce((s,v)=>s+v.diasDisfrute,0), pagados=regs.reduce((s,v)=>s+v.diasPagados,0);
+    out.push({n, fecha:f, derecho, disfrute, pagados, pendiente:Math.max(0,derecho-disfrute-pagados), vence:vacSumarMeses(f,6), regs});
+  }
+  return out;
+}
+/* Meses completos trabajados desde el último aniversario (o el ingreso). */
+function vacMesesDesde(iso, hoy){
+  const [y,m,d]=iso.split('-').map(Number), [Y,M,D]=hoy.split('-').map(Number);
+  let meses=(Y-y)*12+(M-m); if(D<d) meses--; return Math.max(0,meses);
+}
+function vacEstado(e, hoy){
+  hoy=hoy||todayISO();
+  const per=vacPeriodos(e,hoy), pend=per.filter(p=>p.pendiente>0);
+  const st={per, pend, dias:pend.reduce((s,p)=>s+p.pendiente,0), vencidas:pend.filter(p=>p.vence<hoy), prox:null, faltan:null, proporcional:0};
+  if(e.ingreso&&!(e.salida&&e.salida<hoy)){
+    for(let n=1;n<70;n++){ const f=vacSumarAnios(e.ingreso,n); if(f>hoy){ st.prox={n,fecha:f,dias:vacDiasLey(n)}; st.faltan=vacDiasEntre(hoy,f); break; } }
+    if(st.prox&&st.prox.n===1){ const mm=vacMesesDesde(e.ingreso,hoy); st.proporcional=mm>=5?Math.min(12,mm+1):0; }   // Art. 180: más de 5 meses = 6 días … más de 11 = 12
+  }
+  return st;
+}
+/* Fin de las vacaciones contando días laborables (no cuenta domingos). */
+function vacFin(desde, dias){
+  if(!desde||!(dias>0)) return {hasta:'', vuelve:''};
+  const d=new Date(desde+'T00:00:00'); let n=0, ult=null;
+  while(n<dias){ if(d.getDay()!==0){ n++; ult=new Date(d); } d.setDate(d.getDate()+1); }
+  while(d.getDay()===0) d.setDate(d.getDate()+1);
+  return {hasta:isoLocal(ult), vuelve:isoLocal(d)};
+}
+function vacQuincenaDe(iso){ const [y,m,d]=iso.split('-').map(Number); return {a:y,m,q:d<=15?1:2}; }
+function vacQuincenaTxt(a,m,q){ return `${q===1?'1ra':'2da'} quincena de ${MONTHS[m-1].toLowerCase()} ${a}`; }
+function vacQuincenasDesde(iso){
+  let {a,m,q}=vacQuincenaDe(iso); const out=[];
+  // una antes y cinco después
+  if(q===2) q=1; else { q=2; m--; if(m<1){ m=12; a--; } }
+  for(let i=0;i<7;i++){ out.push({a,m,q}); if(q===1) q=2; else { q=1; m++; if(m>12){ m=1; a++; } } }
+  return out;
+}
+/* Lo que se registró para pagar en una quincena (lo usa la nómina). */
+function vacMontoQuincena(empId,a,m,q){
+  return (state.vacaciones||[]).filter(v=>v.empId===empId&&v.nomAnio===a&&v.nomMes===m&&v.nomQ===q).reduce((s,v)=>s+v.monto,0);
+}
+function vacAntiguedad(e, hoy){
+  if(!e.ingreso) return 'sin fecha de ingreso';
+  const mm=vacMesesDesde(e.ingreso, hoy||todayISO()), a=Math.floor(mm/12), r=mm%12;
+  return (a?`${a} año${a===1?'':'s'}`:'')+(a&&r?' y ':'')+(r||!a?`${r} mes${r===1?'':'es'}`:'');
+}
+
+function openVacaciones(empId){
+  if(!puedeVer('empleados')){ toast('No tienes acceso a esta sección.',false); return; }
+  if(!state._vacReady) toast('Las vacaciones aún no están activas en la base de datos.',false);
+  vacEmpFoco=empId||null;
+  showOnlyView('view-vacaciones');
+  const d=document.getElementById('vacDesdeCfg'); if(d) d.value=vacDesde();
+  const l=document.getElementById('vacLimpCfg'); if(l) l.checked=vacConLimpieza();
+  const cfg=document.getElementById('vacCfg'); if(cfg) cfg.style.display=puedeEditar('ajustes')?'block':'none';
+  renderVacaciones();
+}
+function vacFiltrar(f){ vacFiltro=f; vacEmpFoco=null; renderVacaciones(); }
+async function vacGuardarCfg(){
+  const d=document.getElementById('vacDesdeCfg').value, l=document.getElementById('vacLimpCfg').checked?'1':'0';
+  if(d) await saveConfig('vacaciones_desde',d);
+  await saveConfig('vacaciones_con_limpieza',l);
+  toast('Configuración de vacaciones guardada',true); renderVacaciones();
+}
+function renderVacaciones(){
+  const hoy=todayISO();
+  const emps=state.empleados.filter(e=>e.activo).sort((a,b)=>{
+    const na=parseInt((a.sucursal.match(/\d+$/)||['999'])[0]), nb=parseInt((b.sucursal.match(/\d+$/)||['999'])[0]);
+    return na-nb || a.nombre.localeCompare(b.nombre); });
+  const filas=emps.map(e=>({e, st:vacEstado(e,hoy)}));
+  const conPend=filas.filter(f=>f.st.dias>0), venc=filas.filter(f=>f.st.vencidas.length), prox=filas.filter(f=>f.st.faltan!=null&&f.st.faltan<=60);
+  const sinFecha=emps.filter(e=>!e.ingreso).length;
+  document.getElementById('vacHero').innerHTML=`
+    <div style="background:linear-gradient(135deg,#0f3d3a,#1f8a7a);border-radius:15px;padding:16px;margin-bottom:12px;color:#fff;">
+      <div style="font-size:11px;color:rgba(255,255,255,.7);font-weight:700;text-transform:uppercase;letter-spacing:1px;">Vacaciones pendientes</div>
+      <div style="font-size:27px;font-weight:800;margin:2px 0 10px;">${fmt(conPend.reduce((s,f)=>s+f.st.dias,0))} días</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:11px;">
+        <div style="background:rgba(255,255,255,.14);border-radius:8px;padding:9px 10px;"><div style="color:rgba(255,255,255,.78);font-weight:600;">Con pendientes</div><div style="font-size:14px;font-weight:800;">${conPend.length}</div></div>
+        <div style="background:rgba(255,255,255,.14);border-radius:8px;padding:9px 10px;"><div style="color:rgba(255,255,255,.78);font-weight:600;">Vencidas (+6 meses)</div><div style="font-size:14px;font-weight:800;${venc.length?'color:#ffd3cc;':''}">${venc.length}</div></div>
+        <div style="background:rgba(255,255,255,.14);border-radius:8px;padding:9px 10px;"><div style="color:rgba(255,255,255,.78);font-weight:600;">Les tocan en 60 días</div><div style="font-size:14px;font-weight:800;">${prox.length}</div></div>
+      </div>
+      <div style="font-size:10.5px;color:rgba(255,255,255,.62);margin-top:9px;">14 días laborables de 1 a 5 años · 18 desde los 5 años (Art. 177) · salario diario = mensual ÷ 23.83</div>
+    </div>
+    ${sinFecha?`<div style="background:#fdf6e8;border:1px solid #ecd9ac;border-radius:11px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:#a37416;">${sinFecha} empleado(s) sin fecha de ingreso: ponla en su ficha para calcular sus vacaciones.</div>`:''}`;
+  document.querySelectorAll('#vacFiltros button').forEach(b=>{ const on=b.dataset.f===vacFiltro&&!vacEmpFoco; b.style.background=on?'var(--navy)':'#fff'; b.style.color=on?'#fff':'var(--ink)'; });
+  let lista=filas;
+  if(vacEmpFoco) lista=filas.filter(f=>f.e._id===vacEmpFoco);
+  else if(vacFiltro==='pend') lista=filas.filter(f=>f.st.dias>0);
+  else if(vacFiltro==='prox') lista=filas.filter(f=>f.st.faltan!=null&&f.st.faltan<=60).sort((a,b)=>a.st.faltan-b.st.faltan);
+  const editar=puedeEditar('empleados');
+  document.getElementById('vacLista').innerHTML = lista.length ? lista.map(({e,st})=>{
+    const lineas=[];
+    st.pend.forEach(p=>{
+      const vencida=p.vence<hoy;
+      lineas.push(`<div style="font-size:12px;margin-top:6px;padding:8px 10px;border-radius:9px;background:${vencida?'#fdecea':'#fdf6e8'};color:${vencida?'var(--red)':'#8a6212'};">
+        <b>${fmt(p.pendiente)} día(s) pendientes</b> del año ${p.n} (ganado el ${fmtDate(p.fecha)}${p.disfrute||p.pagados?`, ya usó ${fmt(p.disfrute+p.pagados)} de ${fmt(p.derecho)}`:''})
+        <div style="font-size:11px;margin-top:2px;">${vencida?`Venció el ${fmtDate(p.vence)}: la ley pide darlas dentro de 6 meses (Art. 188)`:`Debe tomarlas antes del ${fmtDate(p.vence)}`}</div></div>`);
+    });
+    if(st.prox) lineas.push(`<div style="font-size:12px;margin-top:6px;color:${st.faltan<=30?'#0b6b5f':'var(--muted)'};${st.faltan<=30?'font-weight:700;':''}">Le tocan ${st.prox.dias} días el ${fmtDate(st.prox.fecha)} (en ${st.faltan} día${st.faltan===1?'':'s'})${st.proporcional?` · si sale hoy le tocan ${st.proporcional} días proporcionales (Art. 180)`:''}</div>`);
+    const regs=vacRegs(e._id).sort((a,b)=>(b.creado||'').localeCompare(a.creado||''));
+    const hist=regs.slice(0,vacEmpFoco?50:3).map(v=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid #f2f5f6;font-size:11.5px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:700;">Año ${v.periodo}: ${v.diasDisfrute?`disfrutó ${fmt(v.diasDisfrute)} día(s)${v.desde?` del ${fmtDate(v.desde)} al ${fmtDate(v.hasta||v.desde)}`:''}`:''}${v.diasDisfrute&&v.diasPagados?' · ':''}${v.diasPagados?`<span style="color:#a37416;">pagados sin disfrutar ${fmt(v.diasPagados)}</span>`:''}</div>
+          <div style="color:var(--muted);">${v.monto?`RD$${vacFmt2(v.monto)}`:'sin pago'}${v.nomAnio?` · en la ${vacQuincenaTxt(v.nomAnio,v.nomMes,v.nomQ)}`:''}${v.nota?' · '+vacEsc(v.nota):''}</div>
+        </div>
+        ${v.diasDisfrute&&v.desde?`<button onclick="vacConstancia('${v._id}')" title="Constancia para firmar" style="border:1px solid var(--line);background:#fff;border-radius:7px;padding:4px 7px;font-size:11px;cursor:pointer;">🖨</button>`:''}
+        ${editar?`<button onclick="borrarVacacion('${v._id}')" style="border:none;background:transparent;color:var(--muted);font-size:15px;cursor:pointer;padding:0 2px;">×</button>`:''}
+      </div>`).join('');
+    return `<div class="panel" style="padding:12px 13px;margin-bottom:8px;${st.vencidas.length?'border-left:3px solid var(--red);':st.dias?'border-left:3px solid #d9a63a;':''}">
+      <div style="display:flex;align-items:flex-start;gap:10px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13.5px;font-weight:700;">${vacEsc(e.nombre)}</div>
+          <div style="font-size:10.5px;color:var(--muted);margin-top:2px;">${vacEsc(e.sucursal)} · entró el ${e.ingreso?fmtDate(e.ingreso):'—'} · ${vacAntiguedad(e,hoy)}</div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);text-align:right;white-space:nowrap;">Diario<br><b style="color:var(--ink);font-size:12px;">RD$${vacFmt2(vacDiario(e))}</b></div>
+      </div>
+      ${lineas.join('')}
+      ${hist?`<div style="margin-top:8px;">${hist}</div>`:''}
+      ${editar&&st.dias>0?`<div style="display:flex;gap:7px;margin-top:9px;">
+        <button onclick="registrarVacaciones('${e._id}')" class="btn-primary" style="flex:1.4;padding:9px;font-size:12px;">Registrar vacaciones</button>
+        <button onclick="vacMarcarTomadas('${e._id}')" style="flex:1;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:9px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;">Ya las tomó</button></div>`:''}
+    </div>`;}).join('') : `<div class="empty-hint" style="padding:30px;">${vacFiltro==='pend'?'Nadie tiene vacaciones pendientes. 🎉':'No hay empleados con ese filtro.'}</div>`;
+}
+
+/* Formulario para registrar: disfruta, se le pagan sin disfrutar, o una parte de cada. */
+function registrarVacaciones(empId){
+  const e=empPorId(empId); if(!e||!puedeEditar('empleados')) return;
+  const st=vacEstado(e); if(!st.pend.length){ toast('No tiene vacaciones pendientes',false); return; }
+  const diario=vacDiario(e);
+  const w=document.createElement('div');
+  w.style.cssText='position:fixed;inset:0;background:rgba(10,18,24,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:14px;overflow:auto;';
+  const opPer=st.pend.map(p=>`<option value="${p.n}">Año ${p.n} · ganado ${fmtDate(p.fecha)} · quedan ${fmt(p.pendiente)} días</option>`).join('');
+  const css='width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:14px;font-family:inherit;';
+  w.innerHTML=`<form id="vfForm" style="background:#fff;border-radius:16px;padding:16px;width:min(420px,100%);display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow-lg);max-height:94vh;overflow:auto;">
+    <div style="font-size:15px;font-weight:800;">Vacaciones · ${vacEsc(e.nombre)}</div>
+    <label style="font-size:11.5px;font-weight:700;color:var(--muted);">Año de servicio<select id="vfPer" style="${css}margin-top:4px;">${opPer}</select></label>
+    <div style="display:flex;gap:6px;" id="vfModo">
+      <label style="flex:1;font-size:12px;border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center;cursor:pointer;"><input type="radio" name="vfm" value="disfrute" checked> Las disfruta</label>
+      <label style="flex:1;font-size:12px;border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center;cursor:pointer;"><input type="radio" name="vfm" value="pago"> Se le pagan</label>
+      <label style="flex:1;font-size:12px;border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center;cursor:pointer;"><input type="radio" name="vfm" value="mixto"> Parte y parte</label>
+    </div>
+    <div id="vfBloqDisf" style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;gap:8px;">
+        <label style="flex:1;font-size:11.5px;font-weight:700;color:var(--muted);">Días que disfruta<input type="number" id="vfDias" inputmode="decimal" min="0" step="1" style="${css}margin-top:4px;"></label>
+        <label style="flex:1.3;font-size:11.5px;font-weight:700;color:var(--muted);">Desde<input type="date" id="vfDesde" style="${css}margin-top:4px;"></label>
+      </div>
+      <label style="font-size:11.5px;font-weight:700;color:var(--muted);">Último día de vacaciones <span style="font-weight:600;">(sin contar domingos; puedes cambiarlo)</span><input type="date" id="vfHasta" style="${css}margin-top:4px;"></label>
+      <div id="vfVuelve" style="font-size:11.5px;color:#0b6b5f;"></div>
+    </div>
+    <label id="vfBloqPago" style="display:none;font-size:11.5px;font-weight:700;color:var(--muted);">Días que se le pagan sin disfrutar<input type="number" id="vfPag" inputmode="decimal" min="0" step="1" style="${css}margin-top:4px;"></label>
+    <div id="vfAviso" style="display:none;font-size:11.5px;line-height:1.45;border-radius:10px;padding:9px 11px;background:#fdf1ef;color:#b23b31;border:1px solid #f0c9c4;"></div>
+    <label style="font-size:11.5px;font-weight:700;color:var(--muted);">Monto a pagar (RD$)
+      <div style="display:flex;gap:6px;margin-top:4px;"><input type="number" id="vfMonto" inputmode="decimal" min="0" step="0.01" placeholder="Escribe el monto" style="${css}flex:1;">
+      <button type="button" id="vfCalc" style="border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:0 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">Calcular</button></div></label>
+    <div id="vfCalcTxt" style="font-size:11px;color:var(--muted);margin-top:-4px;">Lo pones tú. Si quieres la referencia, toca Calcular: días × salario diario RD$${vacFmt2(diario)} (quincena × 2${vacConLimpieza()?' con bono de limpieza':''} ÷ 23.83).</div>
+    <label style="font-size:11.5px;font-weight:700;color:var(--muted);">Pagarlo en la nómina de<select id="vfQ" style="${css}margin-top:4px;"></select></label>
+    <div style="font-size:11px;color:var(--muted);margin-top:-4px;">La ley pide pagar las vacaciones el día antes de que empiecen (Art. 181). Al abrir esa quincena en Nómina, el renglón Vacaciones sale lleno con este monto.</div>
+    <label style="font-size:11.5px;font-weight:700;color:var(--muted);">Nota<input type="text" id="vfNota" style="${css}margin-top:4px;"></label>
+    <div style="display:flex;gap:8px;margin-top:4px;"><button type="button" data-x style="flex:1;border:1px solid var(--line);background:#fff;border-radius:11px;padding:12px;font-weight:700;font-family:inherit;cursor:pointer;">Cancelar</button>
+    <button type="submit" id="vfOk" class="btn-primary" style="flex:1.3;padding:12px;">Guardar</button></div></form>`;
+  document.body.appendChild(w);
+  const $=id=>w.querySelector('#'+id);
+  const modo=()=>w.querySelector('input[name=vfm]:checked').value;
+  const per=()=>st.pend.find(p=>p.n===parseInt($('vfPer').value));
+  const llenarQ=()=>{
+    const base=(modo()!=='pago'&&$('vfDesde').value)?isoLocal(new Date(new Date($('vfDesde').value+'T00:00:00').getTime()-864e5)):todayISO();
+    const lista=vacQuincenasDesde(base), sel=vacQuincenaDe(base), prev=$('vfQ').value;
+    $('vfQ').innerHTML='<option value="">No pasarlo a la nómina</option>'+lista.map(x=>`<option value="${x.a}-${x.m}-${x.q}">${vacQuincenaTxt(x.a,x.m,x.q)}</option>`).join('');
+    $('vfQ').value=(prev&&[...$('vfQ').options].some(o=>o.value===prev))?prev:`${sel.a}-${sel.m}-${sel.q}`;
+  };
+  const recalc=(desdeFechas)=>{
+    const m=modo(), p=per();
+    $('vfBloqDisf').style.display=m==='pago'?'none':'flex';
+    $('vfBloqPago').style.display=m==='disfrute'?'none':'block';
+    const dd=m==='pago'?0:(parseFloat($('vfDias').value)||0), dp=m==='disfrute'?0:(parseFloat($('vfPag').value)||0);
+    if(desdeFechas){ const f=vacFin($('vfDesde').value, dd); $('vfHasta').value=f.hasta; }
+    const vuelve=$('vfHasta').value?vacFin(isoLocal(new Date(new Date($('vfHasta').value+'T00:00:00').getTime()+864e5)),1).hasta:'';
+    $('vfVuelve').textContent=(dd&&$('vfDesde').value&&vuelve)?`Vuelve a trabajar el ${fmtDate(vuelve)}`:'';
+    const avisos=[];
+    if(dd+dp>p.pendiente) avisos.push(`Le quedan solo ${fmt(p.pendiente)} días de ese año.`);
+    if(dp>0) avisos.push('Art. 182: la ley no permite cambiar las vacaciones por dinero mientras trabaja. Queda registrado como <b>pagadas sin disfrutar</b>.');
+    const yaSemana=p.regs.some(v=>v.diasDisfrute>=6);
+    if(dd>0&&dd<6&&!yaSemana&&(dd+dp)<p.pendiente) avisos.push('Art. 177: si se dividen, una de las partes debe ser de al menos una semana.');
+    $('vfAviso').style.display=avisos.length?'block':'none'; $('vfAviso').innerHTML=avisos.join('<br>');
+    llenarQ();
+  };
+  const ponerDias=()=>{ const p=per(), m=modo();
+    if(m==='disfrute'){ $('vfDias').value=p.pendiente; $('vfPag').value=''; }
+    else if(m==='pago'){ $('vfPag').value=p.pendiente; $('vfDias').value=''; }
+    else { const d=Math.min(p.pendiente,7); $('vfDias').value=d; $('vfPag').value=Math.max(0,p.pendiente-d); }
+    recalc(true); };
+  $('vfPer').onchange=ponerDias;
+  w.querySelectorAll('input[name=vfm]').forEach(r=>r.onchange=ponerDias);
+  $('vfDias').oninput=()=>recalc(true); $('vfPag').oninput=()=>recalc(false);
+  $('vfDesde').oninput=()=>recalc(true); $('vfHasta').oninput=()=>recalc(false);
+  $('vfCalc').onclick=()=>{ const m=modo();
+    const dd=m==='pago'?0:(parseFloat($('vfDias').value)||0), dp=m==='disfrute'?0:(parseFloat($('vfPag').value)||0);
+    if(!(dd+dp>0)){ toast('Primero pon los días',false); return; }
+    $('vfMonto').value=Math.round(diario*(dd+dp)*100)/100; };
+  ponerDias();
+  w.querySelector('[data-x]').onclick=()=>w.remove();
+  $('vfForm').onsubmit=async ev=>{
+    ev.preventDefault();
+    const btn=$('vfOk'); if(btn.disabled) return;
+    const m=modo(), p=per();
+    const dd=m==='pago'?0:(parseFloat($('vfDias').value)||0), dp=m==='disfrute'?0:(parseFloat($('vfPag').value)||0);
+    if(dd<0||dp<0||(dd+dp)<=0){ toast('Escribe cuántos días',false); return; }
+    if(dd+dp>p.pendiente){ toast(`Le quedan solo ${fmt(p.pendiente)} días de ese año`,false); return; }
+    if(dd>0&&!$('vfDesde').value){ toast('Pon la fecha en que empieza',false); $('vfDesde').focus(); return; }
+    const q=$('vfQ').value?$('vfQ').value.split('-').map(Number):[null,null,null];
+    const fila={empleado_id:e._id, periodo:p.n, fecha_derecho:p.fecha, dias_derecho:p.derecho,
+      dias_disfrute:dd, desde:dd?$('vfDesde').value:null, hasta:dd?($('vfHasta').value||$('vfDesde').value):null,
+      dias_pagados:dp, monto:Math.max(0,parseFloat($('vfMonto').value)||0),
+      nomina_anio:q[0], nomina_mes:q[1], nomina_quincena:q[2], nota:$('vfNota').value.trim()||null, creado_por:currentUser||null};
+    btn.disabled=true; btn.textContent='Guardando…';
+    const ok=await guardarVacacion(fila);
+    if(ok) w.remove(); else { btn.disabled=false; btn.textContent='Guardar'; }
+  };
+}
+function vacDesdeFila(x){
+  return {_id:x.id, empId:x.empleado_id, periodo:Number(x.periodo), fechaDerecho:x.fecha_derecho, diasDerecho:Number(x.dias_derecho)||0,
+    diasDisfrute:Number(x.dias_disfrute)||0, desde:x.desde||'', hasta:x.hasta||'', diasPagados:Number(x.dias_pagados)||0,
+    monto:Number(x.monto)||0, nomAnio:x.nomina_anio||null, nomMes:x.nomina_mes||null, nomQ:x.nomina_quincena||null,
+    nota:x.nota||'', creado:x.creado||new Date().toISOString()};
+}
+async function guardarVacacion(fila){
+  setSyncState('saving');
+  try{
+    const {data,error}=await sb.from('vacaciones').insert(fila).select();
+    if(error) throw error;
+    state.vacaciones.push(vacDesdeFila(data[0]));
+    setSyncState('ok'); toast('Vacaciones registradas',true);
+    renderVacaciones(); return true;
+  }catch(err){ console.error(err); setSyncState('error'); toast('NO se guardó: '+msgError(err),false); return false; }
+}
+async function vacMarcarTomadas(empId){
+  const e=empPorId(empId); if(!e||!puedeEditar('empleados')) return;
+  const st=vacEstado(e); if(!st.pend.length) return;
+  if(!confirm(`${e.nombre}\n\n¿Marcar como ya tomadas las vacaciones pendientes (${st.pend.map(p=>`año ${p.n}: ${fmt(p.pendiente)} días`).join(', ')})?\n\nÚsalo para lo que se dio antes de llevarlo en la app. No pasa nada a la nómina.`)) return;
+  setSyncState('saving');
+  try{
+    const filas=st.pend.map(p=>({empleado_id:e._id, periodo:p.n, fecha_derecho:p.fecha, dias_derecho:p.derecho, dias_disfrute:p.pendiente,
+      dias_pagados:0, monto:0, nota:'Ya tomadas (antes de registrarlo en la app)', creado_por:currentUser||null}));
+    const {data,error}=await sb.from('vacaciones').insert(filas).select();
+    if(error) throw error;
+    (data||[]).forEach(x=>state.vacaciones.push(vacDesdeFila(x)));
+    setSyncState('ok'); toast('Marcadas como tomadas',true); renderVacaciones();
+  }catch(err){ console.error(err); setSyncState('error'); toast('NO se guardó: '+msgError(err),false); }
+}
+async function borrarVacacion(id){
+  if(!puedeEditar('empleados')) return;
+  if(!confirm('¿Eliminar este registro de vacaciones?\n\nSi ya se pasó a una nómina guardada, corrige también esa quincena.')) return;
+  setSyncState('saving');
+  try{
+    const {error}=await sb.from('vacaciones').delete().eq('id',id);
+    if(error) throw error;
+    state.vacaciones=state.vacaciones.filter(v=>v._id!==id);
+    setSyncState('ok'); renderVacaciones();
+  }catch(err){ console.error(err); setSyncState('error'); toast('No se pudo eliminar: '+msgError(err),false); }
+}
+/* Art. 189: el empleado firma al empezar sus vacaciones. */
+function vacConstancia(id){
+  const v=(state.vacaciones||[]).find(x=>x._id===id); if(!v) return;
+  const e=empPorId(v.empId)||{nombre:'',cedula:'',sucursal:''};
+  const vuelve=v.hasta?vacFin(isoLocal(new Date(new Date(v.hasta+'T00:00:00').getTime()+864e5)),1).hasta:'';
+  const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Constancia de vacaciones</title>
+    <style>body{font-family:Arial,sans-serif;max-width:640px;margin:40px auto;color:#111;font-size:14px;line-height:1.6}h1{font-size:18px;text-align:center;margin-bottom:24px}
+    td{padding:4px 8px;vertical-align:top}.f{margin-top:70px;display:flex;justify-content:space-between;gap:40px}.f div{flex:1;border-top:1px solid #000;text-align:center;padding-top:4px;font-size:12px}</style></head><body>
+    <h1>${vacEsc(nomConsorcio())}<br>Constancia de vacaciones</h1>
+    <table><tr><td>Empleado:</td><td><b>${vacEsc(e.nombre)}</b></td></tr>
+    ${e.cedula?`<tr><td>Cédula:</td><td>${vacEsc(fmtCedula(e.cedula))}</td></tr>`:''}
+    <tr><td>Banca:</td><td>${vacEsc(e.sucursal)}</td></tr>
+    <tr><td>Fecha de ingreso:</td><td>${e.ingreso?fmtDate(e.ingreso):'—'}</td></tr>
+    <tr><td>Año de servicio:</td><td>${v.periodo} (derecho ganado el ${fmtDate(v.fechaDerecho)}: ${fmt(v.diasDerecho)} días laborables)</td></tr>
+    <tr><td>Disfruta:</td><td>${fmt(v.diasDisfrute)} días laborables, del ${fmtDate(v.desde)} al ${fmtDate(v.hasta||v.desde)}${vuelve?`. Se reintegra el ${fmtDate(vuelve)}`:''}</td></tr>
+    ${v.diasPagados?`<tr><td>Pagados sin disfrutar:</td><td>${fmt(v.diasPagados)} días</td></tr>`:''}
+    <tr><td>Monto pagado:</td><td>RD$${vacFmt2(v.monto)}</td></tr></table>
+    <p>Recibí conforme el salario correspondiente a mis vacaciones, de acuerdo con los artículos 177 y siguientes del Código de Trabajo.</p>
+    <div class="f"><div>Firma del empleado</div><div>Por la empresa</div></div>
+    <p style="font-size:11px;color:#666;margin-top:30px;">Impreso el ${fmtDate(todayISO())}</p>
+    <script>setTimeout(()=>window.print(),300)<\/script></body></html>`;
+  const win=window.open('','_blank');
+  if(!win){ toast('Permite las ventanas emergentes para imprimir',false); return; }
+  win.document.open(); win.document.write(html); win.document.close();
+}
+/* Resumen corto para la ficha del empleado. */
+function vacPanelFicha(e){
+  if(!e||!state._vacReady) return '';
+  const st=vacEstado(e);
+  let txt;
+  if(!e.ingreso) txt='Pon la fecha de ingreso para calcular sus vacaciones.';
+  else if(st.dias>0) txt=`<b style="color:${st.vencidas.length?'var(--red)':'#a37416'};">${fmt(st.dias)} día(s) pendientes</b>${st.vencidas.length?' · vencidas (más de 6 meses)':''}`;
+  else txt='Al día.';
+  if(st.prox) txt+=`<br>Le tocan ${st.prox.dias} días el ${fmtDate(st.prox.fecha)} (en ${st.faltan} días).`;
+  return `<div class="panel" style="padding:14px;margin-bottom:12px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <span style="font-size:13px;font-weight:800;">Vacaciones</span>
+      <button onclick="openVacaciones('${e._id}')" style="border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:8px;padding:6px 11px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;">Ver / registrar</button>
+    </div>
+    <div style="font-size:12px;line-height:1.55;color:var(--ink);">${txt}</div></div>`;
+}
+/* Aviso para Inicio. */
+function vacAviso(){
+  if(!state._vacReady||!puedeVer('empleados')) return null;
+  const hoy=todayISO(); let venc=0, pend=0, prox=0, nombres=[];
+  state.empleados.filter(e=>e.activo).forEach(e=>{ const st=vacEstado(e,hoy);
+    if(st.vencidas.length) venc++; if(st.dias>0){ pend++; nombres.push(e.nombre.split(' ')[0]); }
+    if(st.faltan!=null&&st.faltan<=30){ prox++; nombres.push(e.nombre.split(' ')[0]+' ('+fmtDate(st.prox.fecha).replace(/ \d{4}$/,'')+')'); } });
+  if(!venc&&!pend&&!prox) return null;
+  const t=venc?`${venc} empleado(s) con vacaciones vencidas`:pend?`${pend} empleado(s) con vacaciones pendientes`:`A ${prox} empleado(s) les tocan vacaciones este mes`;
+  const d=[pend?`${pend} pendiente(s)`:'',prox?`${prox} en los próximos 30 días`:''].filter(Boolean).join(' · ')+(nombres.length?' · '+nombres.slice(0,4).join(', '):'');
+  return {c:venc?'#b23b31':'#0b6b5f',bg:venc?'#fdf1ef':'#ecf7f4',bd:venc?'#f0c9c4':'#c4e5dc',t,d,go:"openVacaciones()"};
+}
+
 /* ---------- Nómina quincenal ---------- */
 let nomPer=null, nomEmpCur=null;
 
@@ -4250,11 +4645,13 @@ function nomPeriodoActual(){
 }
 /* Fila de un empleado en la quincena; si no existe todavía se propone con su
    salario y su bono, y con el descuento de préstamo que tenga pendiente. */
+function nomSel(){ const g=id=>parseInt((document.getElementById(id)||{}).value); return {a:g('nomAnio'),m:g('nomMes'),q:g('nomQ')}; }
 function nomFila(emp, per){
   const d = per ? state.nomDetalle.find(x=>x.periodoId===per._id&&x.empId===emp._id) : null;
   if(d) return d;
+  const s_ = per ? {a:per.anio,m:per.mes,q:per.quincena} : nomSel();
   return {periodoId:per?per._id:null, empId:emp._id, sucursal:emp.sucursal, _nueva:true,
-    salario:emp.salario, limpieza:emp.limpieza, vacaciones:0, feriado:0, prestamoIng:0, licencia:0, otrosIng:0,
+    salario:emp.salario, limpieza:emp.limpieza, vacaciones:vacMontoQuincena(emp._id,s_.a,s_.m,s_.q), feriado:0, prestamoIng:0, licencia:0, otrosIng:0,
     segSocial:0, faltante:0, prestamoDesc:0, avSueldo:0, otrosDesc:0, nota:''};
 }
 function renderNomina(){
@@ -4309,8 +4706,11 @@ function renderNominaEmp(){
   const saldoP=empSaldo(e._id,'prestamo'), saldoF=empSaldo(e._id,'faltante');
   const inp=(k,lab)=>`<div class="fld" style="margin-bottom:9px;"><label style="font-size:11.5px;">${lab}</label>
     <div class="amount-input"><span class="cur">RD$</span><input type="number" inputmode="decimal" id="ne_${k}" value="${d[k]||''}" placeholder="0" oninput="recalcNominaEmp()"></div></div>`;
+  const s_=nomSel(), vacQ=vacMontoQuincena(e._id,s_.a,s_.m,s_.q);
   document.getElementById('nomEmpForm').innerHTML=`
     <div id="neResumen"></div>
+    ${vacQ>0?`<div style="background:#ecf7f4;border:1px solid #c4e5dc;border-radius:11px;padding:11px 13px;margin-bottom:12px;font-size:12px;color:#0b6b5f;line-height:1.5;">
+      🏖️ Vacaciones registradas para esta quincena: <b>RD$${fmt(vacQ)}</b>${Math.abs((d.vacaciones||0)-vacQ)>0.009?` · <a href="#" onclick="document.getElementById('ne_vacaciones').value=${vacQ};recalcNominaEmp();return false;" style="color:#0b6b5f;font-weight:800;">ponerlo en Vacaciones</a>`:' · ya está en el renglón'}</div>`:''}
     ${(saldoP>0||saldoF>0)?`<div style="background:#fdf6e8;border:1px solid #ecd9ac;border-radius:11px;padding:11px 13px;margin-bottom:12px;font-size:12px;color:#a37416;line-height:1.5;">
       Pendiente: ${saldoP>0?`préstamo RD$${fmt(saldoP)}`:''}${saldoP>0&&saldoF>0?' · ':''}${saldoF>0?`faltante RD$${fmt(saldoF)}`:''}.
       Lo que pongas en los renglones de descuento se abona automáticamente al saldo.</div>`:''}
@@ -4530,7 +4930,7 @@ const TABLAS_RESPALDO=['movimientos','sucursales','cierres_dia','cierres_mes','d
   'categorias_gasto','categorias_ingreso','categorias_salida','tipos_aporte','cuadre_banca_ingreso','cuadre_banca_gasto','cuadre_oficina_gasto',
   'maquinas','lecturas_maquina','maquinas_config_banca','maquinas_gastos_mes','maquinas_pog_mes',
   'virtuales_proveedores','virtuales_config','virtuales_registros','virtuales_sucursales_estado','virtuales_renglones_estado',
-  'empleados','empleado_cuenta','nomina_periodos','nomina_detalle','incentivos','regalia','equipos','mantenimientos',
+  'empleados','empleado_cuenta','nomina_periodos','nomina_detalle','incentivos','regalia','vacaciones','equipos','mantenimientos',
   'depositos_banca','bancos_deposito','app_config','libreta_clientes','libreta_movimientos','libreta_ajustes','libreta_miembros'];
 function cargarScript(src){ return new Promise((ok,no)=>{ if([...document.scripts].some(x=>x.src===src)) return ok(); const sc=document.createElement('script'); sc.src=src; sc.onload=ok; sc.onerror=()=>no(new Error('no se pudo cargar '+src)); document.head.appendChild(sc); }); }
 async function filasCrudas(table){
@@ -11217,11 +11617,11 @@ if(document.readyState==='loading'){
 /* v7.5.3 — candados (ver ponerCandado) */
 ['guardarCbGastos','guardarCbIngresos','guardarCbGlobales','guardarCbOficina','saveVirtRegistro','saveVirtProv',
  'guardarDesglose','guardarArqueo','guardarUsuario','editarMonto','editMaqDigPct','nuevoCargoEmp','alternarActivo',
- 'agregarUsuario','addOutCat','addMaquina','addMaqGasto','addDenom','markMaster'].forEach(n=>ponerCandado(n,'Guardando…'));
+ 'agregarUsuario','addOutCat','addMaquina','addMaqGasto','addDenom','markMaster','vacGuardarCfg','vacMarcarTomadas'].forEach(n=>ponerCandado(n,'Guardando…'));
 ['cbProrratearOficina','cbImportSelected','ejecutarCierreMes','closeCorte','reopenCorte','reabrirCierreMes','unlockMaster',
  'quitarUsuario','superRestablecer','wipeData'].forEach(n=>ponerCandado(n,'Procesando…'));
 ['deleteVirtProv','delTxn','delOutCat','delMaquina','delMaqGasto','delLectura','borrarMantenimiento','borrarEmpleado',
- 'borrarCargoEmp'].forEach(n=>ponerCandado(n,'Borrando…'));
+ 'borrarCargoEmp','borrarVacacion'].forEach(n=>ponerCandado(n,'Borrando…'));
 </script>
 </body>
 </html>
